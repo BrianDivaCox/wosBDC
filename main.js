@@ -183,6 +183,18 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   }
 });
 
+const showPasswordBtn = document.getElementById('showPasswordBtn');
+if(showPasswordBtn) showPasswordBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (authPassword.type === 'password') {
+    authPassword.type = 'text';
+    showPasswordBtn.textContent = '🙈';
+  } else {
+    authPassword.type = 'password';
+    showPasswordBtn.textContent = '👁️';
+  }
+});
+
 if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
   const email = authEmail.value.trim();
   const password = authPassword.value;

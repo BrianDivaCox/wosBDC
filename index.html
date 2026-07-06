@@ -148,7 +148,10 @@
       <div id="authErrorMsg" style="color:var(--danger); font-size:13px; margin-bottom:15px; display:none;"></div>
       
       <input type="email" id="authEmail" placeholder="Email" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
-      <input type="password" id="authPassword" placeholder="Password" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
+      <div style="position:relative; width:100%; margin-bottom:15px;">
+        <input type="password" id="authPassword" placeholder="Password" style="width:100%; padding:10px; padding-right:40px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
+        <button id="showPasswordBtn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">👁️</button>
+      </div>
       <input type="number" id="authGameId" placeholder="Game ID (Found in Player Profile)" style="width:100%; padding:10px; margin-bottom:20px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box; display:none;">
       
       <button id="authSubmitBtn" style="width:100%; padding:12px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Sign In</button>
