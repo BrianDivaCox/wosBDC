@@ -446,10 +446,12 @@ const views = {
   roster: async () => {
     renderLoading("Loading Player Lookup");
     try {
-      const [data, rosterRawData, lbRawData] = await Promise.all([
+      const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
         fetchSheet("activity "),
         fetchSheet("Chief's List"),
-        fetchSheet("LeaderBoards")
+        fetchSheet("LeaderBoards"),
+        fetchSheet("Showdown History"),
+        fetchSheet("Showdown")
       ]);
       
       if (!data || data.length < 2) throw new Error("No data found.");
@@ -514,6 +516,45 @@ const views = {
           }
         }
       }
+      
+      // Parse dynamic All-Time Showdown totals from history and current showdown
+      const allTimeShowdownMap = {};
+      
+      const processShowdownTable = (tableData) => {
+        if (!tableData) return;
+        for (let r = 0; r < tableData.length; r++) {
+          let row = tableData[r];
+          // Find the Ranking/Name header row
+          if (row.some(c => typeof c === 'string' && c.toLowerCase().trim() === 'ranking')) {
+            let nameCol = row.findIndex(c => typeof c === 'string' && (c.toLowerCase().includes('name') || c.toLowerCase().includes('member') || c.toLowerCase().includes('player')));
+            let totalCol = row.findIndex(c => typeof c === 'string' && (c.toLowerCase().includes('total')));
+            
+            if (nameCol !== -1 && totalCol !== -1) {
+              let dr = r + 1;
+              // Skip horns/winners rows if they exist
+              while (dr < tableData.length && tableData[dr][nameCol] && (tableData[dr][nameCol].toString().toLowerCase().includes('horns') || tableData[dr][nameCol].toString().toLowerCase().includes('winners'))) {
+                dr++;
+              }
+              
+              // Process player scores
+              while (dr < tableData.length && tableData[dr][nameCol] !== undefined && tableData[dr][nameCol] !== "") {
+                let pName = tableData[dr][nameCol];
+                let pScore = tableData[dr][totalCol];
+                
+                if (pName && (typeof pScore === 'number' || (typeof pScore === 'string' && !isNaN(pScore)))) {
+                  let safeName = pName.toString().trim();
+                  if (!allTimeShowdownMap[safeName]) allTimeShowdownMap[safeName] = 0;
+                  allTimeShowdownMap[safeName] += Number(pScore);
+                }
+                dr++;
+              }
+            }
+          }
+        }
+      };
+      
+      processShowdownTable(sdHistoryRawData);
+      processShowdownTable(sdCurrentRawData);
       
       const headers = data[0];
       const players = [];
@@ -588,11 +629,21 @@ const views = {
         
         // Add Leaderboard Badges if they exist
         let lbData = lbMap[chiefName];
-        if (lbData && lbData.length > 0) {
+        let dynamicSD = allTimeShowdownMap[chiefName];
+        
+        if ((lbData && lbData.length > 0) || dynamicSD) {
           headerBadgesHtml += `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">`;
-          lbData.forEach(lb => {
-            headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${lb.emoji} ${lb.title}: <span style="color:var(--accent);">${lb.score}</span></span>`;
-          });
+          
+          if (dynamicSD) {
+            headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⚔️ All-Time Showdown (Dynamic): <span style="color:var(--accent);">${dynamicSD.toLocaleString()}</span></span>`;
+          }
+          
+          if (lbData) {
+            lbData.forEach(lb => {
+              if (lb.title.toLowerCase().includes('all-time showdown')) return; // Skip old static one
+              headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${lb.emoji} ${lb.title}: <span style="color:var(--accent);">${lb.score}</span></span>`;
+            });
+          }
           headerBadgesHtml += `</div>`;
         }
         
