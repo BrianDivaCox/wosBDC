@@ -493,7 +493,7 @@ const views = {
         for (let r = 0; r < lbRawData.length; r++) {
           for (let c = 0; c < lbRawData[r].length; c++) {
             let cell = lbRawData[r][c];
-            if (typeof cell === 'string' && cell.toLowerCase().includes('leaderboard')) {
+            if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || cell.toLowerCase().includes('all-time bear donations'))) {
               let title = cell.replace(/leaderboard/i, '').trim();
               let emoji = "🏆";
               if (title.toLowerCase().includes("bear")) emoji = "🐻";
