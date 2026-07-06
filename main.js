@@ -1,5 +1,5 @@
 import './style.css'
-import { initPresence } from './presence.js'
+import { initPresence } from './src/presence.js'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxpvuesjr19OFhqIY1JtFMqHee6I4YKLkEDqTCVNGDxkMyyfm1b5wLiIVXtbn6vjBg/exec';
 
