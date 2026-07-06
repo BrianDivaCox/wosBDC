@@ -1030,19 +1030,19 @@ const views = {
         }
         metricsHtml += `</div></div>`;
         
-        let avatarImgHtml = \`\${chiefName.charAt(0).toUpperCase()}\`;
-        let tryUrl = avatarMap[chiefName] || \`/images/\${chiefName}.png\`;
+        let avatarImgHtml = `${chiefName.charAt(0).toUpperCase()}`;
+        let tryUrl = avatarMap[chiefName] || `/images/${chiefName}.png`;
         
-        avatarImgHtml = \`
-          <img src="\${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">\${chiefName.charAt(0).toUpperCase()}</div>
-        \`;
+        avatarImgHtml = `
+          <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${chiefName.charAt(0).toUpperCase()}</div>
+        `;
         
-        container.innerHTML = \`
+        container.innerHTML = `
           <div class="card" style="animation: fadeIn 0.3s ease;">
             <div style="display:flex; align-items:flex-start; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
               <div style="width:50px; height:50px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; font-weight:bold; flex-shrink:0; overflow:hidden;">
-                \${avatarImgHtml}
+                ${avatarImgHtml}
               </div>
               <div style="overflow:hidden;">
                 <h2 style="margin:0; color:var(--text-main); font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${chiefName}</h2>
