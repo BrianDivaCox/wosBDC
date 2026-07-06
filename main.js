@@ -832,7 +832,7 @@ const views = {
       let html = `
         <div class="card" style="margin-bottom:20px; text-align:center;">
           <div class="card-title" style="margin-bottom:5px; font-size:24px;">📊 Visual Analytics</div>
-          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">Live metrics automatically generated from your Alliance spreadsheets.</p>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">Live metrics automatically generated from your Alliance database.</p>
           
           <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:30px;">
             <div style="background:var(--bg-main); border:1px solid var(--border); border-radius:12px; padding:20px; width:100%; max-width:400px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
