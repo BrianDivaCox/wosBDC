@@ -810,6 +810,10 @@ const views = {
         
         for (let col = 1; col < headers.length; col++) {
           let header = headers[col] || `Metric ${col}`;
+          
+          // Skip showing BT Donations in the checklist boxes (it's in the tag above)
+          if (header.toLowerCase().includes("bt donation")) continue;
+          
           let val = p[col];
           
           // Format Checkmarks and empty values
