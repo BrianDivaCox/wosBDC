@@ -779,11 +779,10 @@ const views = {
                  
                  headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap Wins: <span style="color:var(--text-main);">${innerText}</span></span>`;
               }
-              let activityCurrent = (p[6] !== undefined && p[6] !== "") ? p[6] : 0;
-              if (btDonationsCurrent || btDonationsAllTime || activityCurrent > 0) {
+              if (btDonationsCurrent || btDonationsAllTime) {
                  let allTimeStr = btDonationsAllTime ? `#${btDonationsAllTime.rank} (${btDonationsAllTime.score}) All-Time` : `0 All-Time`;
                  
-                 let currentScoreStr = activityCurrent;
+                 let currentScoreStr = 0;
                  if (btDonationsCurrent) {
                      currentScoreStr = `#${btDonationsCurrent.rank} (${btDonationsCurrent.score})`;
                  }
@@ -809,7 +808,7 @@ const views = {
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">
         `;
         
-        for (let col = 1; col <= 6; col++) {
+        for (let col = 1; col < headers.length; col++) {
           let header = headers[col] || `Metric ${col}`;
           let val = p[col];
           
