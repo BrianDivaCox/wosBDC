@@ -796,6 +796,118 @@ const views = {
       app.innerHTML = html;
       
     } catch(e) { renderError(e.message); }
+  },
+  
+  analytics: async () => {
+    renderLoading("Loading Analytics");
+    try {
+      const rosterRawData = await fetchSheet("Chief's List");
+      
+      if (!rosterRawData || rosterRawData.length < 2) throw new Error("No data found.");
+      
+      let giftCodesYes = 0;
+      let giftCodesNo = 0;
+      
+      // Parse roster data to count gift code redemptions
+      // Column C (index 2) holds the Gift Codes boolean
+      for (let i = 1; i < rosterRawData.length; i++) {
+        let name = rosterRawData[i][0];
+        if (name && name.toString().trim() !== "") {
+          let gcVal = rosterRawData[i][2];
+          if (gcVal !== undefined && gcVal !== null && gcVal !== "") {
+            let strVal = gcVal.toString().toLowerCase().trim();
+            if (gcVal === true || strVal === "true" || strVal === "✓" || strVal === "yes") {
+              giftCodesYes++;
+            } else if (gcVal === false || strVal === "false" || strVal === "✗" || strVal === "no") {
+              giftCodesNo++;
+            } else {
+              giftCodesNo++; // Treat any weird string as not signed up
+            }
+          } else {
+            giftCodesNo++; // Treat missing as not signed up
+          }
+        }
+      }
+      
+      let html = `
+        <div class="card" style="margin-bottom:20px; text-align:center;">
+          <div class="card-title" style="margin-bottom:5px; font-size:24px;">📊 Visual Analytics</div>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">Live metrics automatically generated from your Alliance spreadsheets.</p>
+          
+          <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:30px;">
+            <div style="background:var(--bg-main); border:1px solid var(--border); border-radius:12px; padding:20px; width:100%; max-width:400px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+              <h3 style="color:var(--text-main); margin-top:0; margin-bottom:15px; font-size:18px;">Gift Code Auto Redeem</h3>
+              <div style="position:relative; height:250px; width:100%; display:flex; justify-content:center;">
+                <canvas id="giftCodeChart"></canvas>
+              </div>
+              <div style="margin-top:15px; font-size:14px; color:var(--text-muted);">
+                <span style="color:var(--success); font-weight:bold;">${giftCodesYes}</span> Enrolled | 
+                <span style="color:var(--danger); font-weight:bold;">${giftCodesNo}</span> Missing
+              </div>
+            </div>
+            
+            <!-- Placeholder for future charts -->
+            <div style="background:var(--bg-main); border:1px solid var(--border); border-radius:12px; padding:20px; width:100%; max-width:400px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.05); min-height:300px;">
+              <div style="color:var(--text-muted); font-style:italic; opacity:0.7;">
+                More analytics coming soon...
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      app.innerHTML = html;
+      
+      // Render Chart using Chart.js after the canvas is in the DOM
+      // We must get the current accent color from CSS variables
+      const rootStyle = getComputedStyle(document.documentElement);
+      let accentColor = rootStyle.getPropertyValue('--accent').trim();
+      let cardBg = rootStyle.getPropertyValue('--card-bg').trim();
+      let textColor = rootStyle.getPropertyValue('--text-main').trim();
+      
+      const ctx = document.getElementById('giftCodeChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Enrolled', 'Not Enrolled'],
+          datasets: [{
+            data: [giftCodesYes, giftCodesNo],
+            backgroundColor: [
+              accentColor, // dynamically matches theme
+              '#475569'    // Slate color for not enrolled
+            ],
+            borderWidth: 2,
+            borderColor: cardBg,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: textColor,
+                font: {
+                  family: 'monospace',
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              titleFont: { family: 'monospace' },
+              bodyFont: { family: 'monospace' },
+              padding: 10,
+              cornerRadius: 8
+            }
+          },
+          cutout: '70%'
+        }
+      });
+      
+    } catch(e) { renderError(e.message); }
   }
 };
 
