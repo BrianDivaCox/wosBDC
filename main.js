@@ -541,6 +541,7 @@ const views = {
               
               let dr = r + 2;
               while (dr < lbRawData.length && lbRawData[dr][c] !== "") {
+                let pRank = lbRawData[dr][c];     // Column 1 is Rank
                 let pName = lbRawData[dr][c + 1]; // Column 2 is Name
                 let pScore = lbRawData[dr][scoreCol]; // The intelligently detected score column
                 
@@ -555,7 +556,7 @@ const views = {
                   }
                   
                   if (!lbMap[safeName]) lbMap[safeName] = [];
-                  lbMap[safeName].push({ title, score: pScore, emoji });
+                  lbMap[safeName].push({ title, score: pScore, rank: pRank, emoji });
                 }
                 dr++;
               }
@@ -761,8 +762,8 @@ const views = {
                 if (t.includes('bear trap 1')) bear1 = lb.score;
                 else if (t.includes('bear trap 2')) bear2 = lb.score;
                 else if (t.includes('both bear trap')) bearBoth = lb.score;
-                else if (t.includes('all-time bear donations')) btDonationsAllTime = lb.score;
-                else if (t.includes('bear donations')) btDonationsCurrent = lb.score;
+                else if (t.includes('all-time bear donations')) btDonationsAllTime = lb;
+                else if (t.includes('bear donations')) btDonationsCurrent = lb;
                 else {
                   otherLbs.push(lb);
                 }
@@ -780,9 +781,15 @@ const views = {
               }
               let activityCurrent = (p[6] !== undefined && p[6] !== "") ? p[6] : 0;
               if (btDonationsCurrent || btDonationsAllTime || activityCurrent > 0) {
-                 let allTimeStr = btDonationsAllTime || 0;
-                 let currentStr = btDonationsCurrent || activityCurrent || 0;
-                 let innerText = `${allTimeStr} All-Time | ${currentStr} Current`;
+                 let allTimeStr = btDonationsAllTime ? `#${btDonationsAllTime.rank} (${btDonationsAllTime.score}) All-Time` : `0 All-Time`;
+                 
+                 let currentScoreStr = activityCurrent;
+                 if (btDonationsCurrent) {
+                     currentScoreStr = `#${btDonationsCurrent.rank} (${btDonationsCurrent.score})`;
+                 }
+                 let currentStr = `${currentScoreStr} Current`;
+                 
+                 let innerText = `${allTimeStr} | ${currentStr}`;
                  
                  headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🍯 BT Donations: <span style="color:var(--text-main);">${innerText}</span></span>`;
               }
