@@ -215,7 +215,7 @@ const views = {
       for (let r = 0; r < data.length; r++) {
         for (let c = 0; c < data[r].length; c++) {
           let cell = data[r][c];
-          if (typeof cell === 'string' && cell.toLowerCase().includes('leaderboard')) {
+          if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || cell.toLowerCase().includes('all-time bear donations'))) {
             let title = cell;
             let headers = [];
             let hc = c;
