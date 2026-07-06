@@ -480,10 +480,20 @@ const views = {
               if (title.toLowerCase().includes("bear")) emoji = "🐻";
               else if (title.toLowerCase().includes("showdown")) emoji = "⚔️";
               
+              // Find the primary score column by scanning the headers (the last column of the table)
+              let scoreCol = c + 2; // Default fallback
+              if (r + 1 < lbRawData.length) {
+                let hc = c;
+                while (hc < lbRawData[r+1].length && lbRawData[r+1][hc] !== "") {
+                  scoreCol = hc;
+                  hc++;
+                }
+              }
+              
               let dr = r + 2;
               while (dr < lbRawData.length && lbRawData[dr][c] !== "") {
                 let pName = lbRawData[dr][c + 1]; // Column 2 is Name
-                let pScore = lbRawData[dr][c + 2]; // Column 3 is Score
+                let pScore = lbRawData[dr][scoreCol]; // The intelligently detected score column
                 
                 if (pName && pScore) {
                   let safeName = pName.toString().trim();
