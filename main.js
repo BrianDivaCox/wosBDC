@@ -737,10 +737,9 @@ const views = {
               }
               
               if (btDonationsCurrent || btDonationsAllTime) {
-                 let innerText = "";
-                 if (btDonationsCurrent && btDonationsAllTime) innerText = `${btDonationsAllTime} All-Time | ${btDonationsCurrent} Current`;
-                 else if (btDonationsAllTime) innerText = `${btDonationsAllTime} All-Time`;
-                 else if (btDonationsCurrent) innerText = `${btDonationsCurrent} Current`;
+                 let allTimeStr = btDonationsAllTime || 0;
+                 let currentStr = btDonationsCurrent || 0;
+                 let innerText = `${allTimeStr} All-Time | ${currentStr} Current`;
                  
                  headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🍯 BT Donations: <span style="color:var(--text-main);">${innerText}</span></span>`;
               }
