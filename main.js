@@ -556,6 +556,19 @@ const views = {
       processShowdownTable(sdHistoryRawData);
       processShowdownTable(sdCurrentRawData);
       
+      // Calculate All-Time Showdown Rankings
+      const allTimeRankingsMap = {};
+      const sortedShowdownPlayers = Object.entries(allTimeShowdownMap)
+        .map(([name, score]) => ({ name, score }))
+        .sort((a, b) => b.score - a.score);
+        
+      sortedShowdownPlayers.forEach((p, index) => {
+        allTimeRankingsMap[p.name] = {
+          score: p.score,
+          rank: index + 1
+        };
+      });
+      
       const headers = data[0];
       const players = [];
       // Start from index 1 to skip header
@@ -629,13 +642,13 @@ const views = {
         
         // Add Leaderboard Badges if they exist
         let lbData = lbMap[chiefName];
-        let dynamicSD = allTimeShowdownMap[chiefName];
+        let dynamicSD = allTimeRankingsMap[chiefName];
         
         if ((lbData && lbData.length > 0) || dynamicSD) {
           headerBadgesHtml += `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">`;
           
           if (dynamicSD) {
-            headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⚔️ All-Time Showdown (Dynamic): <span style="color:var(--accent);">${dynamicSD.toLocaleString()}</span></span>`;
+            headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⚔️ All-Time Showdown Rank #${dynamicSD.rank}: <span style="color:var(--accent);">${dynamicSD.score.toLocaleString()}</span></span>`;
           }
           
           if (lbData) {
