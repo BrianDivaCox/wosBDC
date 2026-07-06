@@ -735,10 +735,10 @@ const views = {
                  
                  headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap Wins: <span style="color:var(--text-main);">${innerText}</span></span>`;
               }
-              
-              if (btDonationsCurrent || btDonationsAllTime) {
+              let activityCurrent = (p[6] !== undefined && p[6] !== "") ? p[6] : 0;
+              if (btDonationsCurrent || btDonationsAllTime || activityCurrent > 0) {
                  let allTimeStr = btDonationsAllTime || 0;
-                 let currentStr = btDonationsCurrent || 0;
+                 let currentStr = btDonationsCurrent || activityCurrent || 0;
                  let innerText = `${allTimeStr} All-Time | ${currentStr} Current`;
                  
                  headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🍯 BT Donations: <span style="color:var(--text-main);">${innerText}</span></span>`;
