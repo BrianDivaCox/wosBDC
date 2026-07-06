@@ -675,7 +675,7 @@ const views = {
         // Add Activity Streaks & Event Badges
         let activityBadges = ``;
         let missedDays = p[1];
-        if (missedDays === 0 || missedDays === "0") {
+        if (missedDays === undefined || missedDays === null || missedDays.toString().trim() === "" || missedDays === 0 || missedDays === "0") {
            activityBadges += `<span style="background:color-mix(in srgb, #f97316 15%, transparent); border:1px solid #f97316; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Perfect Attendance</span>`;
         }
         
