@@ -675,7 +675,7 @@ const views = {
                else if (bear1) innerText = `T1: ${bear1}`;
                else if (bear2) innerText = `T2: ${bear2}`;
                
-               headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap: <span style="color:var(--text-main);">${innerText}</span></span>`;
+               headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap Wins: <span style="color:var(--text-main);">${innerText}</span></span>`;
             }
             
             otherLbs.forEach(lb => {
