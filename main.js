@@ -1,4 +1,5 @@
 import './style.css'
+import { initPresence } from './presence.js'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxpvuesjr19OFhqIY1JtFMqHee6I4YKLkEDqTCVNGDxkMyyfm1b5wLiIVXtbn6vjBg/exec';
 
@@ -1276,3 +1277,4 @@ allLinks.forEach(link => {
 
 // Initial load
 views.home();
+initPresence();
