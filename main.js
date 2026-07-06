@@ -325,8 +325,8 @@ const views = {
               let eventDay = dRow[startCol] || "";
               if (!eventDay) break;
               
-              let goal = Number(dRow[startCol + 4]) || 0; // Index 10
-              let dailyAmt = Number(dRow[startCol + 5]) || 0; // Index 11
+              let goal = Number(dRow[startCol + 2]) || 0; // Index 8 (Daily Goal)
+              let dailyAmt = Number(dRow[startCol + 5]) || 0; // Index 11 (Daily Amount)
               
               let progress = goal > 0 ? Math.min(100, (dailyAmt / goal) * 100) : 0;
               
