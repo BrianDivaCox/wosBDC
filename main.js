@@ -648,13 +648,13 @@ const views = {
           headerBadgesHtml += `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">`;
           
           if (dynamicSD) {
-            headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⚔️ All-Time Showdown Rank #${dynamicSD.rank}: <span style="color:var(--accent);">${dynamicSD.score.toLocaleString()}</span></span>`;
+            headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⚔️ All-Time Showdown Rank #${dynamicSD.rank}: <span style="color:var(--accent);">${dynamicSD.score.toLocaleString()}</span></span>`;
           }
           
           if (lbData) {
             lbData.forEach(lb => {
               if (lb.title.toLowerCase().includes('all-time showdown')) return; // Skip old static one
-              headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${lb.emoji} ${lb.title}: <span style="color:var(--accent);">${lb.score}</span></span>`;
+              headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${lb.emoji} ${lb.title}: <span style="color:var(--accent);">${lb.score}</span></span>`;
             });
           }
           headerBadgesHtml += `</div>`;
