@@ -78,7 +78,7 @@ initTheme();
 
 // --- Auth State & UI Logic ---
 let currentUser = null;
-const authNavBtn = document.getElementById('authNavBtn');
+const authSidebarBtn = document.getElementById('authSidebarBtn');
 const authModalOverlay = document.getElementById('authModalOverlay');
 const authModal = document.getElementById('authModal');
 const closeAuthBtn = document.getElementById('closeAuthBtn');
@@ -105,11 +105,11 @@ onValue(ref(db, 'avatars'), (snap) => {
 listenToAuth((user) => {
   currentUser = user;
   if (user) {
-    authNavBtn.innerHTML = `👤 ${user.chiefName || 'Account'}`;
+    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${user.chiefName || 'Account'}`;
     // If they are on the home page, maybe reload or show a toast
     if (app.querySelector('#accountHubView')) views.account(); // Refresh account view if open
   } else {
-    authNavBtn.innerHTML = `🔐 Sign In`;
+    if(authSidebarBtn) authSidebarBtn.innerHTML = `🔐 Sign In / Register`;
     if (app.querySelector('#accountHubView')) views.home(); // Kick to home if on account view
   }
 });
@@ -124,15 +124,18 @@ const closeAuthModal = () => {
   authModalOverlay.classList.remove('active');
 };
 
-if(authNavBtn) authNavBtn.addEventListener('click', (e) => {
+if(authSidebarBtn) authSidebarBtn.addEventListener('click', (e) => {
   e.preventDefault();
   if (currentUser) {
     // Navigate to Account Hub
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    authNavBtn.classList.add('active');
     if (mobileMenu) mobileMenu.classList.remove('open');
+    settingsSidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
     views.account();
   } else {
+    settingsSidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
     openAuthModal();
   }
 });
