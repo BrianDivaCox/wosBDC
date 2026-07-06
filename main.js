@@ -652,8 +652,33 @@ const views = {
           }
           
           if (lbData) {
+            let bear1, bear2, bearBoth;
+            let otherLbs = [];
+            
             lbData.forEach(lb => {
               if (lb.title.toLowerCase().includes('all-time showdown')) return; // Skip old static one
+              
+              let t = lb.title.toLowerCase();
+              if (t.includes('bear trap 1')) bear1 = lb.score;
+              else if (t.includes('bear trap 2')) bear2 = lb.score;
+              else if (t.includes('both bear trap')) bearBoth = lb.score;
+              else {
+                otherLbs.push(lb);
+              }
+            });
+            
+            if (bear1 || bear2 || bearBoth) {
+               let innerText = "";
+               if (bearBoth && bear1 && bear2) innerText = `${bearBoth} Total (T1: ${bear1} | T2: ${bear2})`;
+               else if (bear1 && bear2) innerText = `T1: ${bear1} | T2: ${bear2}`;
+               else if (bearBoth) innerText = `${bearBoth} Total`;
+               else if (bear1) innerText = `T1: ${bear1}`;
+               else if (bear2) innerText = `T2: ${bear2}`;
+               
+               headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap: <span style="color:var(--text-main);">${innerText}</span></span>`;
+            }
+            
+            otherLbs.forEach(lb => {
               headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${lb.emoji} ${lb.title}: <span style="color:var(--text-main);">${lb.score}</span></span>`;
             });
           }
