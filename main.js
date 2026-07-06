@@ -446,9 +446,10 @@ const views = {
   roster: async () => {
     renderLoading("Loading Player Lookup");
     try {
-      const [data, rosterRawData] = await Promise.all([
+      const [data, rosterRawData, lbRawData] = await Promise.all([
         fetchSheet("activity "),
-        fetchSheet("Chief's List")
+        fetchSheet("Chief's List"),
+        fetchSheet("LeaderBoards")
       ]);
       
       if (!data || data.length < 2) throw new Error("No data found.");
@@ -463,6 +464,43 @@ const views = {
               giftCodes: rosterRawData[i][2], // Col C
               timeActive: rosterRawData[i][4] // Col E
             };
+          }
+        }
+      }
+      
+      // Parse Leaderboards data into a lookup map (Name -> [{title, score, emoji}])
+      const lbMap = {};
+      if (lbRawData) {
+        for (let r = 0; r < lbRawData.length; r++) {
+          for (let c = 0; c < lbRawData[r].length; c++) {
+            let cell = lbRawData[r][c];
+            if (typeof cell === 'string' && cell.toLowerCase().includes('leaderboard')) {
+              let title = cell.replace(/leaderboard/i, '').trim();
+              let emoji = "🏆";
+              if (title.toLowerCase().includes("bear")) emoji = "🐻";
+              else if (title.toLowerCase().includes("showdown")) emoji = "⚔️";
+              
+              let dr = r + 2;
+              while (dr < lbRawData.length && lbRawData[dr][c] !== "") {
+                let pName = lbRawData[dr][c + 1]; // Column 2 is Name
+                let pScore = lbRawData[dr][c + 2]; // Column 3 is Score
+                
+                if (pName && pScore) {
+                  let safeName = pName.toString().trim();
+                  
+                  // Format score if it's a number
+                  if (typeof pScore === 'number') {
+                     pScore = pScore.toLocaleString();
+                  } else if (typeof pScore === 'string' && !isNaN(pScore) && pScore.trim() !== "") {
+                     pScore = Number(pScore).toLocaleString();
+                  }
+                  
+                  if (!lbMap[safeName]) lbMap[safeName] = [];
+                  lbMap[safeName].push({ title, score: pScore, emoji });
+                }
+                dr++;
+              }
+            }
           }
         }
       }
@@ -536,6 +574,16 @@ const views = {
               <span style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⏱️ Active: ${taVal}</span>
             </div>
           `;
+        }
+        
+        // Add Leaderboard Badges if they exist
+        let lbData = lbMap[chiefName];
+        if (lbData && lbData.length > 0) {
+          headerBadgesHtml += `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">`;
+          lbData.forEach(lb => {
+            headerBadgesHtml += `<span style="background:rgba(168,85,247,0.1); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${lb.emoji} ${lb.title}: <span style="color:var(--accent);">${lb.score}</span></span>`;
+          });
+          headerBadgesHtml += `</div>`;
         }
         
         // Generate Metric Cards for columns B to G (index 1 to 6)
