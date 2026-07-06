@@ -585,8 +585,23 @@ const views = {
           rank: index + 1
         };
       });
-      
       const headers = data[0];
+      
+      // Determine if a column is an upcoming/unscheduled event (no one has a 'true' value)
+      const colIsUpcoming = {};
+      for (let c = 1; c < headers.length; c++) {
+        let hasAnyTrue = false;
+        for (let r = 1; r < data.length; r++) {
+          if (!data[r]) continue;
+          let val = data[r][c];
+          if (val === true || (typeof val === 'string' && (val.toLowerCase().trim() === 'true' || val === '✓' || val.toLowerCase().trim() === 'yes' || val === '✅'))) {
+            hasAnyTrue = true;
+            break;
+          }
+        }
+        colIsUpcoming[c] = !hasAnyTrue;
+      }
+      
       const players = [];
       // Start from index 1 to skip header
       for (let i = 1; i < data.length; i++) {
@@ -740,7 +755,7 @@ const views = {
             if (val === true || strVal === "true" || strVal === "✓" || strVal === "yes") {
               val = "✅";
             } else if (val === false || strVal === "false" || strVal === "✗" || strVal === "no") {
-              val = "❌";
+              val = colIsUpcoming[col] ? "⏳" : "❌";
             }
           }
           
