@@ -345,7 +345,7 @@ const views = {
             
             <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px dashed var(--border);">
               <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:bold; margin-bottom:8px;">
-                <span style="color:var(--text-main);">🌟 All-Time Showdown Goal</span>
+                <span style="color:var(--text-main);">🌟 The 20M Challenge</span>
                 <span style="color:var(--text-muted);">${formatNumber(totalAllianceScore)} / <span style="color:var(--accent);">${formatNumber(allTimeGoal)}</span></span>
               </div>
               <div style="width:100%; height:12px; background:rgba(0,0,0,0.3); border-radius:6px; overflow:hidden; border:1px solid var(--border);">
