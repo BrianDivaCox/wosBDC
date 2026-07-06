@@ -113,7 +113,10 @@ const views = {
   home: async () => {
     renderLoading('Loading Home & News');
     try {
-      const data = await fetchSheet('News'); 
+      const [data, showdownData] = await Promise.all([
+        fetchSheet('News'),
+        fetchSheet('Showdown')
+      ]);
       
       let currentMode = 'cards'; // Default to cards
       
@@ -174,10 +177,63 @@ const views = {
         return contentHtml;
       };
 
-      app.innerHTML = `
+      // --- Alliance Showdown Goals Tracker ---
+      let goalsHtml = "";
+      if (showdownData) {
+        for (let r = 0; r < showdownData.length; r++) {
+          let row = showdownData[r];
+          if (row.some(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'))) {
+            let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'));
+            
+            goalsHtml += `<div class="card" style="margin-bottom:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+              <h3 style="margin-top:0; color:var(--text-main); font-size:20px; margin-bottom:20px;">🏆 Alliance Showdown Progress</h3>
+              <div style="display:flex; flex-direction:column; gap:16px;">`;
+            
+            for (let i = 1; i <= 6; i++) {
+              if (r + i < showdownData.length) {
+                let dRow = showdownData[r + i];
+                let eventDay = dRow[startCol] || "";
+                if (!eventDay) break;
+                
+                let goal = Number(dRow[startCol + 4]) || 0; // Index 10
+                let dailyAmt = Number(dRow[startCol + 5]) || 0; // Index 11
+                
+                let progress = goal > 0 ? Math.min(100, (dailyAmt / goal) * 100) : 0;
+                
+                const formatNumber = (num) => {
+                  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                  return num.toLocaleString();
+                };
+                
+                goalsHtml += `
+                  <div>
+                    <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold; margin-bottom:6px;">
+                      <span style="color:var(--text-main);">${eventDay}</span>
+                      <span style="color:var(--text-muted);">${formatNumber(dailyAmt)} / <span style="color:var(--accent);">${formatNumber(goal)}</span></span>
+                    </div>
+                    <div style="width:100%; height:8px; background:rgba(0,0,0,0.2); border-radius:4px; overflow:hidden; border:1px solid var(--border);">
+                      <div style="width:${progress}%; height:100%; background:var(--accent); border-radius:4px; transition:width 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:0 0 10px var(--accent);"></div>
+                    </div>
+                  </div>`;
+              }
+            }
+            goalsHtml += `</div></div>`;
+            break;
+          }
+        }
+      }
+      
+      let headerHtml = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="margin:0; color:var(--text-main); font-size:24px;">📰 Alliance News</h2>
+        </div>
+      `;
+      
+      app.innerHTML = goalsHtml + headerHtml + `
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
-            <div class="card-title" style="margin:0;">📰 Community News</div>
+            <div class="card-title" style="margin:0;">Recent Updates</div>
             <button id="newsToggleBtn" style="background:var(--bg-main); border:1px solid var(--accent); color:var(--accent); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; font-weight:bold; transition:all 0.2s; display:flex; align-items:center; gap:8px;">
               ${currentMode === 'table' ? '🎴 Switch to Card View' : '📊 Switch to Table View'}
             </button>
@@ -638,6 +694,29 @@ const views = {
               <span style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⏱️ Active: ${taVal}</span>
             </div>
           `;
+        }
+        
+        // Add Activity Streaks & Event Badges
+        let activityBadges = ``;
+        let missedDays = p[1];
+        if (missedDays === undefined || missedDays === null || missedDays === "" || missedDays === 0 || missedDays === "0") {
+           activityBadges += `<span style="background:color-mix(in srgb, #f97316 15%, transparent); border:1px solid #f97316; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Perfect Attendance</span>`;
+        }
+        
+        const isTrue = (val) => val === true || (typeof val === 'string' && val.toLowerCase().trim() === 'true');
+        
+        if (isTrue(p[2])) {
+           activityBadges += `<span style="background:color-mix(in srgb, #fbbf24 15%, transparent); border:1px solid #fbbf24; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🏆 Championship</span>`;
+        }
+        if (isTrue(p[3])) {
+           activityBadges += `<span style="background:color-mix(in srgb, #ef4444 15%, transparent); border:1px solid #ef4444; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🛡️ Mercenary</span>`;
+        }
+        if (isTrue(p[4])) {
+           activityBadges += `<span style="background:color-mix(in srgb, #38bdf8 15%, transparent); border:1px solid #38bdf8; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">❄️ Polar Terrors</span>`;
+        }
+        
+        if (activityBadges) {
+           headerBadgesHtml += `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">${activityBadges}</div>`;
         }
         
         // Add Leaderboard Badges if they exist
