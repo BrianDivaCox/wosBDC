@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhiteOut Survival Community Portal</title>
+  </head>
+  <body class="dark-mode">
+    <nav class="navbar">
+      <div class="nav-inner">
+        <div class="nav-brand" style="line-height:1.1; text-align:center;">
+          ❄️ WhiteOut Dashboard
+          <span style="display:block; font-size:12px; color:var(--text-muted); font-weight:normal; margin-top:2px;">for BDC Alliance</span>
+        </div>
+        
+        <div class="mobile-menu" id="mobileMenu">
+          <div class="nav-links">
+            <a href="#" class="nav-link active" data-target="home">Home</a>
+            <a href="#" class="nav-link" data-target="roster">Roster</a>
+            
+            <div class="dropdown">
+              <a href="#" class="nav-link" data-target="leaderboards">Leaderboards ▾</a>
+              <div class="dropdown-content">
+                <a href="#" class="sub-link" data-target="leaderboards" data-filter="Bear Trap">Bear Trap</a>
+                <a href="#" class="sub-link" data-target="leaderboards" data-filter="Showdown">Showdown</a>
+              </div>
+            </div>
+            
+            <a href="#" class="nav-link" data-target="showdown">Showdown</a>
+            <div class="dropdown">
+              <a href="#" class="nav-link" data-target="giftcodes">Perks ▾</a>
+              <div class="dropdown-content">
+                <a href="#" class="sub-link" style="color:var(--accent); font-weight:bold;" data-target="giftcodes">🎁 Auto Redeem</a>
+              </div>
+            </div>
+            <a href="#" class="nav-link" data-target="activity">Activity</a>
+            <div class="dropdown">
+              <a href="#" class="nav-link" data-target="schedule">Schedule ▾</a>
+              <div class="dropdown-content">
+                <a href="#" class="sub-link" data-target="schedule">Calendar View</a>
+                <a href="#" class="sub-link" data-target="todays_schedule">Today's Schedule</a>
+              </div>
+            </div>
+            <a href="#" class="nav-link mobile-only-link" id="mobileSettingsBtn">🗄️ Dashboard Hub</a>
+          </div>
+
+        </div>
+        
+        <div class="nav-controls">
+          <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+          <button id="settingsBtn" class="settings-btn" title="Control Panel">☰</button>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Settings Sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    <div id="settingsSidebar" class="settings-sidebar">
+      <div class="sidebar-header">
+        <h2>Dashboard Hub</h2>
+        <button id="closeSidebar" class="close-btn">&times;</button>
+      </div>
+      
+      <div class="sidebar-section" style="margin-bottom:20px; background:var(--bg-main); padding:15px; border-radius:8px; border:1px solid var(--border);">
+        <h3 style="margin-top:0; margin-bottom:10px; font-size:16px; color:var(--text-main); border-bottom:1px solid var(--border); padding-bottom:5px;">Global Timers</h3>
+        <div id="global-timers" style="display:flex; flex-direction:column; gap:5px;">
+          <div style="color:var(--text-main); font-size:14px; font-weight:bold;">UTC: <span id="utc-clock" style="float:right;">00:00:00</span></div>
+          <div style="color:var(--text-main); font-size:14px; font-weight:bold;">Local: <span id="local-clock" style="float:right;">00:00:00</span></div>
+          <div style="color:var(--text-main); font-size:14px; font-weight:bold; margin-top:5px; color:var(--accent);">⏳ Reset: <span id="reset-timer" style="float:right;">00:00:00</span></div>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Theme Engine</h3>
+        
+        <div class="theme-option">
+          <div class="theme-circle" data-theme="midnight" style="background: #0f172a;"></div>
+          <span>Midnight</span>
+        </div>
+        
+        <div class="theme-option">
+          <div class="theme-circle" data-theme="oled" style="background: #000000;"></div>
+          <span>OLED Black</span>
+        </div>
+        
+        <div class="theme-option">
+          <div class="theme-circle" data-theme="ombre" style="background: linear-gradient(135deg, #ec4899, #22d3ee);"></div>
+          <span>Diva</span>
+        </div>
+        
+        <div class="theme-option">
+          <div class="theme-circle" data-theme="ocean" style="background: #0f766e;"></div>
+          <span>Deep Ocean</span>
+        </div>
+        
+        <div class="theme-option">
+          <div class="theme-circle" data-theme="mermaid" style="background: linear-gradient(135deg, #2dd4bf, #d946ef);"></div>
+          <span>Mermaid</span>
+        </div>
+        
+        <div class="theme-option">
+          <div class="theme-circle" data-theme="forest" style="background: #14532d;"></div>
+          <span>Forest Canopy</span>
+        </div>
+        
+        <div class="theme-option">
+          <div class="theme-circle" data-theme="beta" style="background: linear-gradient(135deg, #ef4444, #3b82f6, #22c55e);"></div>
+          <span>Beta</span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="app" class="container">
+      <!-- Dynamic Content Injection -->
+    </div>
+    
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,871 @@
+import './style.css'
+
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxpvuesjr19OFhqIY1JtFMqHee6I4YKLkEDqTCVNGDxkMyyfm1b5wLiIVXtbn6vjBg/exec';
+
+// --- Settings Sidebar Logic ---
+const settingsBtn = document.getElementById('settingsBtn');
+const closeSidebar = document.getElementById('closeSidebar');
+const settingsSidebar = document.getElementById('settingsSidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+const openSidebar = () => {
+  if(settingsSidebar) settingsSidebar.classList.add('open');
+  if(sidebarOverlay) sidebarOverlay.classList.add('active');
+};
+
+const closeSidebarFunc = () => {
+  if(settingsSidebar) settingsSidebar.classList.remove('open');
+  if(sidebarOverlay) sidebarOverlay.classList.remove('active');
+};
+
+const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
+if(mobileSettingsBtn) mobileSettingsBtn.addEventListener('click', () => {
+  openSidebar();
+  if(mobileMenu) mobileMenu.classList.remove('open'); // close the hamburger menu
+});
+
+if(settingsBtn) settingsBtn.addEventListener('click', openSidebar);
+if(closeSidebar) closeSidebar.addEventListener('click', closeSidebarFunc);
+if(sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebarFunc);
+
+// --- Mobile Menu Logic ---
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+
+if(mobileMenuBtn) {
+  mobileMenuBtn.addEventListener('click', () => {
+    if(mobileMenu) mobileMenu.classList.toggle('open');
+  });
+}
+
+// --- Theme Logic ---
+const initTheme = () => {
+  const savedTheme = localStorage.getItem('theme') || 'midnight';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  
+  // Highlight the active circle
+  document.querySelectorAll('.theme-option').forEach(option => {
+    const circle = option.querySelector('.theme-circle');
+    if (circle && circle.getAttribute('data-theme') === savedTheme) {
+      circle.classList.add('active');
+    } else if (circle) {
+      circle.classList.remove('active');
+    }
+  });
+};
+
+document.querySelectorAll('.theme-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const circle = option.querySelector('.theme-circle');
+    if(!circle) return;
+    
+    const theme = circle.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    // Update active circle
+    document.querySelectorAll('.theme-circle').forEach(c => c.classList.remove('active'));
+    circle.classList.add('active');
+    
+    // Auto-close sidebar to see changes
+    closeSidebarFunc();
+  });
+});
+
+initTheme();
+
+// --- Routing & Views ---
+const app = document.getElementById('app');
+const navLinks = document.querySelectorAll('.nav-link');
+
+const renderLoading = (message) => {
+  app.innerHTML = `<div class="card"><div class="loading">⏳ ${message}...</div></div>`;
+};
+
+const renderError = (err) => {
+  app.innerHTML = `<div class="card"><div class="loading" style="color:var(--danger)">❌ Error: ${err}</div></div>`;
+};
+
+// Data Fetcher
+const fetchSheet = async (sheetName) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    return json.data;
+  } catch(err) {
+    throw err;
+  }
+};
+
+// --- Formatters ---
+const formatCell = (cell) => {
+  if (cell === true || cell === 'TRUE' || cell === 'true') {
+    return `<input type="checkbox" checked onclick="return false;" style="accent-color: var(--accent); transform: scale(1.2); cursor: default;">`;
+  } else if (cell === false || cell === 'FALSE' || cell === 'false') {
+    return `<input type="checkbox" onclick="return false;" style="transform: scale(1.2); cursor: default;">`;
+  }
+  return cell;
+};
+
+// View renderers
+const views = {
+  home: async () => {
+    renderLoading('Loading Home & News');
+    try {
+      const data = await fetchSheet('News'); 
+      
+      let currentMode = 'cards'; // Default to cards
+      
+      const renderNewsContent = () => {
+        let contentHtml = "";
+        
+        // Data starts at Row 4 (index 3) and Column C (index 2)
+        const newsItems = [];
+        if (data && data.length > 3) {
+          for (let i = 3; i < data.length; i++) {
+            let text = data[i][2]; // Column C
+            if (text && text.toString().trim() !== "") {
+              // Format Google Forms links as a nice "Sign-up" button
+              let formattedText = text.toString().replace(
+                /(https:\/\/docs\.google\.com\/forms[^\s]+|https:\/\/forms\.gle\/[^\s]+)/g, 
+                '<a href="$1" target="_blank" style="display:inline-block; margin-top:10px; background:var(--accent); color:#fff; padding:8px 16px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:14px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🎁 Sign-up for Auto Redeem Gift Codes</a>'
+              );
+              
+              // Format any other standard links normally
+              formattedText = formattedText.replace(
+                /(?<!href=")(https?:\/\/[^\s]+)/g, 
+                '<a href="$1" target="_blank" style="color:var(--accent); text-decoration:underline; word-break:break-all;">$1</a>'
+              );
+              
+              newsItems.push(formattedText);
+            }
+          }
+        }
+        
+        if(newsItems.length === 0) {
+          contentHtml = `<div class="loading">No news found.</div>`;
+        } else {
+          if (currentMode === 'table') {
+            contentHtml += `<table style="table-layout:fixed; width:100%;"><thead><tr><th>Announcement</th></tr></thead><tbody>`;
+            for(let i=0; i<newsItems.length; i++){
+              contentHtml += `<tr><td style="white-space:normal; word-wrap:break-word;">${newsItems[i]}</td></tr>`;
+            }
+            contentHtml += `</tbody></table>`;
+          } else {
+            // Card mode
+            contentHtml += `<div style="display:flex; flex-direction:column; gap:15px; animation: fadeIn 0.3s ease;">`;
+            for(let i=0; i<newsItems.length; i++){
+              contentHtml += `
+                <div style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; padding:20px; display:flex; gap:20px; align-items:flex-start; box-shadow:0 4px 6px rgba(0,0,0,0.05); transition:transform 0.2s;">
+                  <div style="background:rgba(168,85,247,0.1); color:var(--accent); width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+                    📢
+                  </div>
+                  <div style="width:100%; overflow:hidden;">
+                    <div style="font-weight:bold; color:var(--text-main); font-size:18px; margin-bottom:8px;">Alliance Notice</div>
+                    <div style="color:var(--text-muted); font-size:15px; line-height:1.6; white-space:pre-wrap; word-break:break-word;">${newsItems[i]}</div>
+                  </div>
+                </div>
+              `;
+            }
+            contentHtml += `</div>`;
+          }
+        }
+        return contentHtml;
+      };
+
+      app.innerHTML = `
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+            <div class="card-title" style="margin:0;">📰 Community News</div>
+            <button id="newsToggleBtn" style="background:var(--bg-main); border:1px solid var(--accent); color:var(--accent); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; font-weight:bold; transition:all 0.2s; display:flex; align-items:center; gap:8px;">
+              ${currentMode === 'table' ? '🎴 Switch to Card View' : '📊 Switch to Table View'}
+            </button>
+          </div>
+          <div id="newsContentContainer">
+            ${renderNewsContent()}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('newsToggleBtn').addEventListener('click', (e) => {
+        currentMode = currentMode === 'table' ? 'cards' : 'table';
+        e.target.innerHTML = currentMode === 'table' ? '🎴 Switch to Card View' : '📊 Switch to Table View';
+        document.getElementById('newsContentContainer').innerHTML = renderNewsContent();
+      });
+      
+    } catch(e) { renderError(e.message); }
+  },
+  
+  roster: async () => {
+    renderLoading("Loading Chief's List");
+    try {
+      const data = await fetchSheet("Chief's List");
+      let html = `<div class="card"><div class="card-title">👥 Roster (Chief's List)</div>`;
+      if(data.length <= 1) html += `<div class="loading">No members found.</div>`;
+      else {
+        html += `<table><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody>`;
+        for(let i=1; i<data.length; i++){
+          if(data[i][0]) html += `<tr><td>${data[i][0]}</td><td><span class="badge">${data[i][1] || 'Member'}</span></td></tr>`;
+        }
+        html += `</tbody></table>`;
+      }
+      html += `</div>`;
+      app.innerHTML = html;
+    } catch(e) { renderError(e.message); }
+  },
+
+  leaderboards: async (filterString) => {
+    renderLoading("Loading Leaderboards");
+    try {
+      const data = await fetchSheet("LeaderBoards");
+      let html = ``;
+      
+      let boards = [];
+      for (let r = 0; r < data.length; r++) {
+        for (let c = 0; c < data[r].length; c++) {
+          let cell = data[r][c];
+          if (typeof cell === 'string' && cell.toLowerCase().includes('leaderboard')) {
+            let title = cell;
+            let headers = [];
+            let hc = c;
+            
+            // Read headers on the next row
+            if (r + 1 < data.length) {
+              while (hc < data[r+1].length && data[r+1][hc] !== "") {
+                headers.push(data[r+1][hc]);
+                hc++;
+              }
+            }
+            
+            // Read data rows starting from 2 rows down
+            let rows = [];
+            let dr = r + 2;
+            while (dr < data.length && data[dr][c] !== "") {
+              let rowData = [];
+              let hasPlayerData = false;
+              
+              for (let i = 0; i < headers.length; i++) {
+                let cellVal = data[dr][c + i];
+                rowData.push(cellVal);
+                // Check if any column OTHER than Rank has actual data
+                if (i > 0 && cellVal !== "") {
+                  hasPlayerData = true;
+                }
+              }
+              
+              if (hasPlayerData) {
+                rows.push(rowData);
+              }
+              dr++;
+            }
+            
+            if (headers.length > 0) {
+              // Only add if it matches the filter, or if no filter is active
+              if (!filterString || title.toLowerCase().includes(filterString.toLowerCase())) {
+                boards.push({ title, headers, rows });
+              }
+            }
+          }
+        }
+      }
+
+      html += `<div style="display:flex; flex-wrap:wrap; gap:20px;">`;
+      
+      boards.forEach(board => {
+        html += `<div class="card" style="flex: 1; min-width: 320px;"><div class="card-title">🏆 ${board.title}</div>`;
+        html += `<table><thead><tr>`;
+        board.headers.forEach(h => html += `<th>${h}</th>`);
+        html += `</tr></thead><tbody>`;
+        
+        board.rows.forEach(row => {
+          html += `<tr>`;
+          row.forEach((cell, idx) => {
+            if (typeof cell === 'number') {
+              if (idx === 0) {
+                 if (cell === 1) cell = '🥇 1';
+                 else if (cell === 2) cell = '🥈 2';
+                 else if (cell === 3) cell = '🥉 3';
+              } else {
+                 cell = cell.toLocaleString();
+              }
+            }
+            // Ensure strings that look like numbers are also formatted, but carefully
+            else if (typeof cell === 'string' && !isNaN(cell) && cell.trim() !== "" && idx > 0) {
+              cell = Number(cell).toLocaleString();
+            }
+            
+            html += `<td ${idx === 0 ? 'style="font-weight:bold; color:var(--text-muted);"' : ''}>${formatCell(cell)}</td>`;
+          });
+          html += `</tr>`;
+        });
+        
+        html += `</tbody></table></div>`;
+      });
+      
+      html += `</div>`;
+      app.innerHTML = html;
+    } catch(e) { renderError(e.message); }
+  },
+  
+  showdown: async () => {
+    renderLoading("Loading Showdown Data");
+    try {
+      const data = await fetchSheet("Showdown");
+      let html = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+      
+      let goalsCard = '';
+      let allianceCard = '';
+      let playersCard = '';
+      
+      for (let r = 0; r < data.length; r++) {
+        let row = data[r];
+        
+        // 1. Find Alliance Showdown block (Daily Goals)
+        if (row.some(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'))) {
+          let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'));
+          
+          goalsCard += `<div class="card" style="overflow-x:auto;"><div class="card-title">🎯 Daily Goals</div><table><thead><tr>
+            <th>Event Day</th><th>Daily Amount</th><th>Left +/-</th><th>Daily Goal</th>
+          </tr></thead><tbody>`;
+          
+          // Next 6 rows are the days
+          for (let i = 1; i <= 6; i++) {
+            if (r + i < data.length) {
+              let dRow = data[r + i];
+              let eventDay = dRow[startCol] || "";
+              if (!eventDay) break;
+              let dailyAmt = dRow[startCol + 5] || 0;
+              let left = dRow[startCol + 3] || 0;
+              let goal = dRow[startCol + 2] || 0;
+              
+              goalsCard += `<tr>
+                <td>${eventDay}</td>
+                <td style="font-weight:bold; color:var(--text-main);">${Number(dailyAmt).toLocaleString()}</td>
+                <td style="color:${left < 0 ? 'var(--danger)' : '#10b981'}">${Number(left).toLocaleString()}</td>
+                <td>${Number(goal).toLocaleString()}</td>
+              </tr>`;
+            }
+          }
+          goalsCard += `</tbody></table></div>`;
+        }
+        
+        // 2. Find Alliance's Horns/Scores
+        if (row.some(c => typeof c === 'string' && c.toLowerCase().includes("alliance's"))) {
+          let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes("alliance's"));
+          allianceCard += `<div class="card" style="overflow-x:auto;"><div class="card-title">🛡️ Alliance Progress</div><table><thead><tr>`;
+          
+          for (let c = startCol; c <= startCol + 8; c++) {
+            allianceCard += `<th>${row[c] || ""}</th>`;
+          }
+          allianceCard += `</tr></thead><tbody>`;
+          
+          // Grab the next 4 rows: Enemy, Our Alliance, Horns, Winners
+          for (let i = 1; i <= 4; i++) {
+            if (r + i < data.length) {
+              let aRow = data[r + i];
+              allianceCard += `<tr>`;
+              for (let c = startCol; c <= startCol + 8; c++) {
+                let val = aRow[c];
+                
+                // If it's the first row (Enemy) and the name is missing, provide a placeholder
+                if (i === 1 && c === startCol && (!val || val.toString().trim() === "")) {
+                  val = "Enemy Alliance";
+                }
+                
+                if (typeof val === 'number') val = val.toLocaleString();
+                
+                let styleStr = c === startCol ? "font-weight:bold;" : "";
+                
+                // Win/Loss Calculation for Days 1-6 and Total (Cols startCol+3 to startCol+8)
+                if (c >= startCol + 3 && c <= startCol + 8) {
+                  let enemyRow = r + 1 < data.length ? data[r+1] : null;
+                  let ourRow = r + 2 < data.length ? data[r+2] : null;
+                  
+                  if (enemyRow && ourRow) {
+                    // Extract raw numeric values (remove commas if they exist, though they are usually pure numbers from API)
+                    let eScore = Number(enemyRow[c].toString().replace(/,/g, '')) || 0;
+                    let oScore = Number(ourRow[c].toString().replace(/,/g, '')) || 0;
+                    
+                    if (eScore > 0 || oScore > 0) {
+                      if (oScore > eScore) {
+                        styleStr += " background:rgba(16,185,129,0.15);"; // Green tint
+                        if (i === 2 || i === 4) styleStr += " color:#10b981; font-weight:bold;"; // Highlight Our Score and Winners
+                      } else if (oScore < eScore) {
+                        styleStr += " background:rgba(239,68,68,0.15);"; // Red tint
+                        if (i === 2 || i === 4) styleStr += " color:#ef4444; font-weight:bold;"; // Highlight Our Score and Winners
+                      }
+                    }
+                  }
+                }
+                
+                allianceCard += `<td style="${styleStr}">${val !== undefined && val !== "" ? val : ""}</td>`;
+              }
+              allianceCard += `</tr>`;
+            }
+          }
+          allianceCard += `</tbody></table></div>`;
+        }
+        
+        // 3. Find Player Ranking
+        if (row.some(c => typeof c === 'string' && c.toLowerCase().includes("ranking"))) {
+          let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes("ranking"));
+          playersCard += `<div class="card" style="overflow-x:auto;"><div class="card-title">🏆 Player Rankings</div><table><thead><tr>`;
+          
+          for (let c = startCol; c <= startCol + 8; c++) {
+            playersCard += `<th>${row[c] || ""}</th>`;
+          }
+          playersCard += `</tr></thead><tbody>`;
+          
+          let pr = r + 1;
+          while (pr < data.length) {
+            let pRow = data[pr];
+            let member = pRow[startCol + 1];
+            
+            // Stop parsing if we hit an empty row or the discord templates
+            if (pRow.every(cell => cell === "") || (typeof member === 'string' && member.includes("Showdown Update"))) {
+              break;
+            }
+            
+            playersCard += `<tr>`;
+            for (let c = startCol; c <= startCol + 8; c++) {
+              let val = pRow[c];
+              
+              if (c === startCol && typeof val === 'number') {
+                if (val === 1) val = '🥇 1';
+                else if (val === 2) val = '🥈 2';
+                else if (val === 3) val = '🥉 3';
+              } else if (typeof val === 'number') {
+                val = val.toLocaleString();
+              }
+              
+              playersCard += `<td ${c===startCol || c===startCol+1 ? 'style="font-weight:bold; color:var(--text-muted);"' : ''}>${formatCell(val)}</td>`;
+            }
+            playersCard += `</tr>`;
+            pr++;
+          }
+          playersCard += `</tbody></table></div>`;
+        }
+      }
+      
+      if (!goalsCard && !allianceCard && !playersCard) {
+        html += `<div class="card"><div class="loading" style="color:var(--danger);">Could not parse Showdown layout. Check Spreadsheet formatting.</div></div>`;
+      } else {
+        html += goalsCard + allianceCard + playersCard;
+      }
+      
+      html += `</div>`;
+      app.innerHTML = html;
+    } catch(e) { renderError(e.message); }
+  },
+  
+  activity: async () => {
+    renderLoading("Loading Player Lookup");
+    try {
+      const [data, rosterRawData] = await Promise.all([
+        fetchSheet("activity "),
+        fetchSheet("Chief's List")
+      ]);
+      
+      if (!data || data.length < 2) throw new Error("No data found.");
+      
+      // Parse roster data into a lookup map (Col A -> { giftCodes: Col C, timeActive: Col E })
+      const rosterMap = {};
+      if (rosterRawData && rosterRawData.length > 0) {
+        for (let i = 1; i < rosterRawData.length; i++) {
+          let name = rosterRawData[i][0];
+          if (name) {
+            rosterMap[name.toString().trim()] = {
+              giftCodes: rosterRawData[i][2], // Col C
+              timeActive: rosterRawData[i][4] // Col E
+            };
+          }
+        }
+      }
+      
+      const headers = data[0];
+      const players = [];
+      // Start from index 1 to skip header
+      for (let i = 1; i < data.length; i++) {
+        if (data[i][0] && data[i][0].toString().trim() !== "") {
+          players.push(data[i]);
+        }
+      }
+      
+      // Sort players alphabetically for the dropdown
+      players.sort((a, b) => a[0].toString().localeCompare(b[0].toString()));
+      
+      let html = `<div class="card" style="margin-bottom:20px; text-align:center;">
+                    <div class="card-title" style="margin-bottom:15px; font-size:24px;">🔍 Player Lookup</div>
+                    <select id="playerLookupSelect" style="width:100%; max-width:400px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
+                      <option value="">-- Select a Chief --</option>
+                      ${players.map((p, i) => `<option value="${i}">${p[0]}</option>`).join('')}
+                    </select>
+                  </div>
+                  
+                  <div id="playerProfileContainer">
+                    <div style="text-align:center; color:var(--text-muted); padding:40px; font-size:16px;">
+                      Select a player to view their activity profile.
+                    </div>
+                  </div>`;
+                  
+      app.innerHTML = html;
+      
+      const select = document.getElementById('playerLookupSelect');
+      const container = document.getElementById('playerProfileContainer');
+      
+      select.addEventListener('change', (e) => {
+        const idx = e.target.value;
+        if (idx === "") {
+          container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:40px; font-size:16px;">Select a player to view their activity profile.</div>`;
+          return;
+        }
+        
+        const p = players[idx];
+        const chiefName = p[0].toString().trim();
+        
+        // Lookup Roster Info
+        let rosterInfo = rosterMap[chiefName];
+        let headerBadgesHtml = ``;
+        if (rosterInfo) {
+          // Format gift codes checkmark
+          let gcVal = rosterInfo.giftCodes;
+          let gcDisplay = "❌"; // Default to red X if they are not signed up (missing or false)
+          
+          if (gcVal !== undefined && gcVal !== null && gcVal !== "") {
+            let strVal = gcVal.toString().toLowerCase().trim();
+            if (gcVal === true || strVal === "true" || strVal === "✓" || strVal === "yes") {
+              gcDisplay = "✅";
+            } else if (gcVal === false || strVal === "false" || strVal === "✗" || strVal === "no") {
+              gcDisplay = "❌";
+            } else {
+              gcDisplay = gcVal; // Fallback for weird strings
+            }
+          }
+          
+          let taVal = rosterInfo.timeActive;
+          if (taVal === undefined || taVal === null || taVal.toString().trim() === "") taVal = "N/A";
+          
+          headerBadgesHtml = `
+            <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+              <span style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🎁 Gift Codes: ${gcDisplay}</span>
+              <span style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⏱️ Active: ${taVal}</span>
+            </div>
+          `;
+        }
+        
+        // Generate Metric Cards for columns B to G (index 1 to 6)
+        let metricsHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px; margin-top:20px;">`;
+        
+        for (let col = 1; col <= 6; col++) {
+          let header = headers[col] || `Metric ${col}`;
+          let val = p[col];
+          
+          // Format Checkmarks and empty values
+          if (val === undefined || val === null || val.toString().trim() === "") {
+            val = "<span style='color:var(--text-muted);'>-</span>";
+          } else {
+            let strVal = val.toString().toLowerCase().trim();
+            if (val === true || strVal === "true" || strVal === "✓" || strVal === "yes") {
+              val = "✅";
+            } else if (val === false || strVal === "false" || strVal === "✗" || strVal === "no") {
+              val = "❌";
+            }
+          }
+          
+          metricsHtml += `
+            <div style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; padding:15px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.05); transition:transform 0.2s;">
+              <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:bold;">${header}</div>
+              <div style="font-size:18px; font-weight:bold; color:var(--text-main);">${val}</div>
+            </div>
+          `;
+        }
+        metricsHtml += `</div>`;
+        
+        container.innerHTML = `
+          <div class="card" style="animation: fadeIn 0.3s ease;">
+            <div style="display:flex; align-items:flex-start; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+              <div style="width:50px; height:50px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; font-weight:bold; flex-shrink:0;">
+                ${chiefName.charAt(0).toUpperCase()}
+              </div>
+              <div style="overflow:hidden;">
+                <h2 style="margin:0; color:var(--text-main); font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${chiefName}</h2>
+                <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">BDC Alliance Member</div>
+                ${headerBadgesHtml}
+              </div>
+            </div>
+            ${metricsHtml}
+          </div>
+        `;
+      });
+      
+    } catch(e) { renderError(e.message); }
+  },
+  giftcodes: async () => {
+    app.innerHTML = `
+      <div class="card" style="display:flex; flex-direction:column; height: 85vh; min-height: 800px; padding:0; overflow:hidden; animation: fadeIn 0.3s ease;">
+        <div style="padding:15px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+          <span style="font-size:24px;">🎁</span>
+          <h2 style="margin:0; font-size:20px; color:var(--text-main);">Auto Redeem Sign-up</h2>
+        </div>
+        <div style="flex:1; width:100%; position:relative; background:var(--bg-main);">
+          <iframe 
+            src="https://forms.gle/zy4W2Fa1HDEr1hKBA" 
+            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"
+            frameborder="0" 
+            marginheight="0" 
+            marginwidth="0">
+            Loading…
+          </iframe>
+        </div>
+      </div>
+    `;
+  },
+  
+  schedule: async () => {
+    renderLoading("Loading Schedule");
+    try {
+      const data = await fetchSheet("schedule");
+      
+      // Find the row that contains the dates
+      let dateRowIdx = -1;
+      for (let r = 0; r < data.length; r++) {
+        if (data[r].some(cell => typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/))) {
+          dateRowIdx = r;
+          break;
+        }
+      }
+      
+      if (dateRowIdx === -1) {
+        app.innerHTML = `<div class="card"><div class="loading">Could not find dates in schedule.</div></div>`;
+        return;
+      }
+      
+      // Map each date to its column index
+      let days = [];
+      for (let c = 0; c < data[dateRowIdx].length; c++) {
+        let cell = data[dateRowIdx][c];
+        if (typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
+          let d = new Date(cell);
+          let formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          days.push({ dateStr: formatted, colIdx: c, categories: {} });
+        }
+      }
+      
+      // Extract events for each day, grouping by category
+      let currentCategory = "Events";
+      for (let r = dateRowIdx + 1; r < data.length; r++) {
+        if (data[r].every(cell => cell === "")) continue;
+        
+        // Detect category headers (e.g. "Events", "Rewards Events")
+        let nonEmptyCells = data[r].filter(c => c !== "");
+        if (nonEmptyCells.length === 1 && typeof nonEmptyCells[0] === 'string' && nonEmptyCells[0].toLowerCase().includes('event')) {
+          currentCategory = nonEmptyCells[0];
+          continue;
+        }
+        
+        days.forEach(day => {
+          let eventCell = data[r][day.colIdx];
+          if (eventCell && eventCell.trim() !== "") {
+            if (!day.categories[currentCategory]) day.categories[currentCategory] = [];
+            day.categories[currentCategory].push(eventCell);
+          }
+        });
+      }
+      
+      // Render the timeline as Daily Cards
+      let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+                    <h2 style="color:var(--text-main); margin:0;">📅 Event Schedule</h2>
+                    <a href="https://www.google.com/url?q=https://calendar.google.com/calendar/u/0?cid%3DMWZkOTI2ZjdkNzVhYWIyMzM1N2IxYjE1NTc5MzE2YTRlYTRjMDI3NjA4NDlmOTRkZjg2MDRlZWY5YjdiMTI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&sa=D&source=editors&ust=1783297509664500&usg=AOvVaw3Nu5FI78rflI7vvCvxd5MS" target="_blank" style="background:#0ea5e9; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:14px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">➕ Add to Google Calendar</a>
+                  </div>`;
+      html += `<div style="display:flex; flex-wrap:wrap; gap:20px;">`;
+      
+      days.forEach(day => {
+        html += `<div class="card" style="flex: 1; min-width: 250px; padding:0; overflow:hidden;">
+                   <div style="background:var(--accent); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:18px;">
+                     ${day.dateStr}
+                   </div>
+                   <div style="padding:15px;">`;
+                   
+        let catKeys = Object.keys(day.categories);
+        if (catKeys.length === 0) {
+          html += `<div style="padding:10px 0; color:var(--text-muted); text-align:center; font-style:italic;">No Events</div>`;
+        } else {
+          catKeys.forEach((cat, index) => {
+            // Add extra top margin for categories after the first one (e.g. between Events and Rewards)
+            let topMargin = index === 0 ? "5px" : "25px";
+            html += `<div style="font-weight:bold; color:var(--text-main); margin-top:${topMargin}; margin-bottom:8px; text-transform:uppercase; font-size:11px; letter-spacing:1px;">${cat}</div>`;
+            html += `<ul style="list-style:none; padding:0; margin:0; margin-bottom:15px;">`;
+            day.categories[cat].forEach((ev, idx) => {
+              html += `<li style="padding:8px 0; font-size:14px; color:var(--text-muted);">
+                         ${ev.includes('Bear Trap') ? '🪤' : '✨'} ${ev}
+                       </li>`;
+            });
+            html += `</ul>`;
+          });
+        }
+        html += `</div></div>`;
+      });
+      
+      html += `</div>`;
+      app.innerHTML = html;
+    } catch(e) { renderError(e.message); }
+  },
+  
+  todays_schedule: async () => {
+    renderLoading("Loading Today's Events");
+    try {
+      const data = await fetchSheet("WhiteOut Survival");
+      
+      let html = `<div class="card" style="overflow-x:auto;">
+                    <div class="card-title">🕒 Today's Schedule</div>
+                    <table><thead><tr>
+                      <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
+                    </tr></thead><tbody>`;
+      
+      for (let i = 1; i < Math.min(34, data.length); i++) {
+        let row = data[i];
+        let eventName = row[5];
+        let originalDateVal = row[6];
+        let originalUtcVal = row[7];
+        let pdtVal = row[8];
+        
+        let dateVal = originalDateVal;
+        let utcVal = originalUtcVal;
+        
+        if (!eventName || eventName.toString().trim() === "" || eventName.includes("Event's")) continue;
+        
+        let isPast = false;
+        let localTimeStr = "";
+        
+        if (typeof dateVal === 'string' && dateVal.match(/^\d{4}-\d{2}-\d{2}T/)) {
+          let eventDate = new Date(dateVal);
+          if (eventDate < new Date()) isPast = true;
+          dateVal = (eventDate.getMonth()+1) + '/' + eventDate.getDate();
+        } else if (dateVal === undefined) { dateVal = ""; }
+        
+        if (typeof utcVal === 'string' && utcVal.match(/^\d{4}-\d{2}-\d{2}T/)) {
+          let gasDate = new Date(utcVal);
+          
+          // Google Apps Script reads plain times as 1899-12-30 in the script's timezone (PST = UTC-8).
+          // So it added 8 hours to whatever the user typed. We subtract 8 hours to get the EXACT time the user typed.
+          gasDate.setUTCHours(gasDate.getUTCHours() - 8);
+          
+          let trueUtcHour = gasDate.getUTCHours();
+          let trueUtcMinute = gasDate.getUTCMinutes();
+          
+          // Format the True UTC time for the table in 24-hour standard format (e.g. 16:00)
+          let h24 = trueUtcHour.toString().padStart(2, '0');
+          let mStr = trueUtcMinute.toString().padStart(2, '0');
+          utcVal = `${h24}:${mStr}`;
+          
+          // Calculate the visitor's local time by treating that time as UTC!
+          let todayLocal = new Date();
+          todayLocal.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
+          localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        } else if (utcVal === undefined) { utcVal = ""; }
+        
+        // Handle Headers
+        if (eventName === "Rewards" || eventName === "TimeZones" || eventName === "Date") {
+          let titleColor = eventName === "Rewards" ? "#eab308" : "#10b981"; // Gold for Rewards, Green for others
+          let col4Text = eventName === "Rewards" ? pdtVal : "Your Time";
+          
+          html += `<tr style="height:30px;"></tr>
+                   <tr>
+                     <td style="font-weight:bold; color:${titleColor}; font-size:16px; padding-top:20px; text-transform:uppercase; border-bottom:2px solid var(--border);">${eventName}</td>
+                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${dateVal}</td>
+                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${utcVal}</td>
+                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${col4Text}</td>
+                   </tr>`;
+        } else {
+          let styleStr = isPast ? `text-decoration:line-through; opacity:0.5;` : `font-weight:500;`;
+          
+          // Display the original PDT value if no local time was calculated (e.g. text like "No Events")
+          let finalCol4Text = localTimeStr || pdtVal || "";
+          
+          html += `<tr style="${styleStr}">
+                     <td>${eventName.toString().includes('Bear Trap') ? '🪤' : '✨'} ${eventName}</td>
+                     <td>${dateVal}</td>
+                     <td>${utcVal}</td>
+                     <td>${finalCol4Text}</td>
+                   </tr>`;
+        }
+      }
+      
+      html += `</tbody></table></div>`;
+      app.innerHTML = html;
+      
+    } catch(e) { renderError(e.message); }
+  }
+};
+
+// --- GLOBAL TIMERS ---
+function updateGlobalTimers() {
+  const now = new Date();
+  
+  // UTC Clock
+  const utcClockEl = document.getElementById('utc-clock');
+  if (utcClockEl) {
+    let h = now.getUTCHours().toString().padStart(2, '0');
+    let m = now.getUTCMinutes().toString().padStart(2, '0');
+    let s = now.getUTCSeconds().toString().padStart(2, '0');
+    utcClockEl.textContent = `${h}:${m}:${s}`;
+  }
+  
+  // Local Clock
+  const localClockEl = document.getElementById('local-clock');
+  if (localClockEl) {
+    localClockEl.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+  }
+  
+  // Reset Timer (Reset is at 00:00 UTC)
+  const resetTimerEl = document.getElementById('reset-timer');
+  if (resetTimerEl) {
+    let nextReset = new Date();
+    nextReset.setUTCHours(24, 0, 0, 0); // Next midnight UTC
+    
+    let diff = nextReset - now;
+    let hours = Math.floor(diff / (1000 * 60 * 60));
+    let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    hours = hours.toString().padStart(2, '0');
+    minutes = minutes.toString().padStart(2, '0');
+    seconds = seconds.toString().padStart(2, '0');
+    
+    resetTimerEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
+  }
+}
+
+setInterval(updateGlobalTimers, 1000);
+updateGlobalTimers();
+
+// Handle Navigation
+const allLinks = document.querySelectorAll('.nav-link, .sub-link');
+allLinks.forEach(link => {
+  link.addEventListener('click', (e) => {
+    // Exclude the Theme Settings link since it handles itself
+    if (e.target.id === 'mobileSettingsBtn') return;
+    
+    e.preventDefault();
+    
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    
+    // If it's a sub-link in a dropdown, highlight the parent nav-link
+    if (e.target.classList.contains('sub-link')) {
+      e.target.closest('.dropdown').querySelector('.nav-link').classList.add('active');
+    } else {
+      e.target.classList.add('active');
+    }
+    
+    // Auto-close the hamburger menu if it's open
+    if (mobileMenu) mobileMenu.classList.remove('open');
+    
+    const target = e.target.getAttribute('data-target');
+    const filter = e.target.getAttribute('data-filter');
+    if (views[target]) views[target](filter);
+  });
+});
+
+// Initial load
+views.home();
