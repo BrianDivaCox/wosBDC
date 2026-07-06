@@ -113,10 +113,7 @@ const views = {
   home: async () => {
     renderLoading('Loading Home & News');
     try {
-      const [data, showdownData] = await Promise.all([
-        fetchSheet('News'),
-        fetchSheet('Showdown')
-      ]);
+      const data = await fetchSheet('News');
       
       let currentMode = 'cards'; // Default to cards
       
@@ -177,60 +174,13 @@ const views = {
         return contentHtml;
       };
 
-      // --- Alliance Showdown Goals Tracker ---
-      let goalsHtml = "";
-      if (showdownData) {
-        for (let r = 0; r < showdownData.length; r++) {
-          let row = showdownData[r];
-          if (row.some(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'))) {
-            let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'));
-            
-            goalsHtml += `<div class="card" style="margin-bottom:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
-              <h3 style="margin-top:0; color:var(--text-main); font-size:20px; margin-bottom:20px;">🏆 Alliance Showdown Progress</h3>
-              <div style="display:flex; flex-direction:column; gap:16px;">`;
-            
-            for (let i = 1; i <= 6; i++) {
-              if (r + i < showdownData.length) {
-                let dRow = showdownData[r + i];
-                let eventDay = dRow[startCol] || "";
-                if (!eventDay) break;
-                
-                let goal = Number(dRow[startCol + 4]) || 0; // Index 10
-                let dailyAmt = Number(dRow[startCol + 5]) || 0; // Index 11
-                
-                let progress = goal > 0 ? Math.min(100, (dailyAmt / goal) * 100) : 0;
-                
-                const formatNumber = (num) => {
-                  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-                  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-                  return num.toLocaleString();
-                };
-                
-                goalsHtml += `
-                  <div>
-                    <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold; margin-bottom:6px;">
-                      <span style="color:var(--text-main);">${eventDay}</span>
-                      <span style="color:var(--text-muted);">${formatNumber(dailyAmt)} / <span style="color:var(--accent);">${formatNumber(goal)}</span></span>
-                    </div>
-                    <div style="width:100%; height:8px; background:rgba(0,0,0,0.2); border-radius:4px; overflow:hidden; border:1px solid var(--border);">
-                      <div style="width:${progress}%; height:100%; background:var(--accent); border-radius:4px; transition:width 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:0 0 10px var(--accent);"></div>
-                    </div>
-                  </div>`;
-              }
-            }
-            goalsHtml += `</div></div>`;
-            break;
-          }
-        }
-      }
-      
       let headerHtml = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
           <h2 style="margin:0; color:var(--text-main); font-size:24px;">📰 Alliance News</h2>
         </div>
       `;
       
-      app.innerHTML = goalsHtml + headerHtml + `
+      app.innerHTML = headerHtml + `
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
             <div class="card-title" style="margin:0;">Recent Updates</div>
@@ -365,29 +315,40 @@ const views = {
         if (row.some(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'))) {
           let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'));
           
-          goalsCard += `<div class="card" style="overflow-x:auto;"><div class="card-title">🎯 Daily Goals</div><table><thead><tr>
-            <th>Event Day</th><th>Daily Amount</th><th>Left +/-</th><th>Daily Goal</th>
-          </tr></thead><tbody>`;
+          goalsCard += `<div class="card" style="margin-bottom:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+            <h3 style="margin-top:0; color:var(--text-main); font-size:20px; margin-bottom:20px;">🏆 Alliance Showdown Progress</h3>
+            <div style="display:flex; flex-direction:column; gap:16px;">`;
           
-          // Next 6 rows are the days
           for (let i = 1; i <= 6; i++) {
             if (r + i < data.length) {
               let dRow = data[r + i];
               let eventDay = dRow[startCol] || "";
               if (!eventDay) break;
-              let dailyAmt = dRow[startCol + 5] || 0;
-              let left = dRow[startCol + 3] || 0;
-              let goal = dRow[startCol + 2] || 0;
               
-              goalsCard += `<tr>
-                <td>${eventDay}</td>
-                <td style="font-weight:bold; color:var(--text-main);">${Number(dailyAmt).toLocaleString()}</td>
-                <td style="color:${left < 0 ? 'var(--danger)' : '#10b981'}">${Number(left).toLocaleString()}</td>
-                <td>${Number(goal).toLocaleString()}</td>
-              </tr>`;
+              let goal = Number(dRow[startCol + 4]) || 0; // Index 10
+              let dailyAmt = Number(dRow[startCol + 5]) || 0; // Index 11
+              
+              let progress = goal > 0 ? Math.min(100, (dailyAmt / goal) * 100) : 0;
+              
+              const formatNumber = (num) => {
+                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                return num.toLocaleString();
+              };
+              
+              goalsCard += `
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold; margin-bottom:6px;">
+                    <span style="color:var(--text-main);">${eventDay}</span>
+                    <span style="color:var(--text-muted);">${formatNumber(dailyAmt)} / <span style="color:var(--accent);">${formatNumber(goal)}</span></span>
+                  </div>
+                  <div style="width:100%; height:8px; background:rgba(0,0,0,0.2); border-radius:4px; overflow:hidden; border:1px solid var(--border);">
+                    <div style="width:${progress}%; height:100%; background:var(--accent); border-radius:4px; transition:width 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:0 0 10px var(--accent);"></div>
+                  </div>
+                </div>`;
             }
           }
-          goalsCard += `</tbody></table></div>`;
+          goalsCard += `</div></div>`;
         }
         
         // 2. Find Alliance's Horns/Scores
