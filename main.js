@@ -957,11 +957,9 @@ const views = {
     try {
       const data = await fetchSheet("WhiteOut Survival");
       
-      let html = `<div class="card" style="overflow-x:auto;">
-                    <div class="card-title">🕒 Today's Schedule</div>
-                    <table><thead><tr>
-                      <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
-                    </tr></thead><tbody>`;
+      let todayHtml = "";
+      let upcomingHtml = "";
+      let currentCategory = "today";
       
       for (let i = 1; i < Math.min(34, data.length); i++) {
         let row = data[i];
@@ -977,10 +975,21 @@ const views = {
         
         let isPast = false;
         let localTimeStr = "";
+        let hasDate = (typeof originalDateVal === 'string' && originalDateVal.match(/^\d{4}-\d{2}-\d{2}T/));
         
-        if (typeof dateVal === 'string' && dateVal.match(/^\d{4}-\d{2}-\d{2}T/)) {
-          let eventDate = new Date(dateVal);
-          if (eventDate < new Date()) isPast = true;
+        if (hasDate) {
+          let eventDate = new Date(originalDateVal);
+          let now = new Date();
+          
+          if (eventDate < now) isPast = true;
+          
+          let isToday = (eventDate.getDate() === now.getDate() && eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear());
+          if (isToday) {
+            currentCategory = "today";
+          } else {
+            currentCategory = "upcoming";
+          }
+          
           dateVal = (eventDate.getMonth()+1) + '/' + eventDate.getDate();
         } else if (dateVal === undefined) { dateVal = ""; }
         
@@ -1005,12 +1014,14 @@ const views = {
           localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         } else if (utcVal === undefined) { utcVal = ""; }
         
+        let rowHtml = "";
+        
         // Handle Headers
         if (eventName === "Rewards" || eventName === "TimeZones" || eventName === "Date") {
           let titleColor = eventName === "Rewards" ? "#eab308" : "#10b981"; // Gold for Rewards, Green for others
           let col4Text = eventName === "Rewards" ? pdtVal : "Your Time";
           
-          html += `<tr style="height:30px;"></tr>
+          rowHtml += `<tr style="height:30px;"></tr>
                    <tr>
                      <td style="font-weight:bold; color:${titleColor}; font-size:16px; padding-top:20px; text-transform:uppercase; border-bottom:2px solid var(--border);">${eventName}</td>
                      <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${dateVal}</td>
@@ -1023,17 +1034,46 @@ const views = {
           // Display the original PDT value if no local time was calculated (e.g. text like "No Events")
           let finalCol4Text = localTimeStr || pdtVal || "";
           
-          html += `<tr style="${styleStr}">
+          rowHtml += `<tr style="${styleStr}">
                      <td>${eventName.toString().includes('Bear Trap') ? '🪤' : '✨'} ${eventName}</td>
                      <td>${dateVal}</td>
                      <td>${utcVal}</td>
                      <td>${finalCol4Text}</td>
                    </tr>`;
         }
+        
+        if (currentCategory === "today") {
+          todayHtml += rowHtml;
+        } else {
+          upcomingHtml += rowHtml;
+        }
       }
       
-      html += `</tbody></table></div>`;
-      app.innerHTML = html;
+      let finalHtml = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+      
+      if (todayHtml !== "") {
+        finalHtml += `<div class="card" style="overflow-x:auto;">
+                        <div class="card-title">🕒 Today's Schedule</div>
+                        <table><thead><tr>
+                          <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
+                        </tr></thead><tbody>${todayHtml}</tbody></table></div>`;
+      } else {
+        finalHtml += `<div class="card" style="overflow-x:auto;">
+                        <div class="card-title">🕒 Today's Schedule</div>
+                        <div style="padding: 20px; text-align: center; color: var(--text-muted);">No events scheduled for today.</div>
+                      </div>`;
+      }
+      
+      if (upcomingHtml !== "") {
+        finalHtml += `<div class="card" style="overflow-x:auto;">
+                        <div class="card-title">📅 Upcoming Schedule</div>
+                        <table><thead><tr>
+                          <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
+                        </tr></thead><tbody>${upcomingHtml}</tbody></table></div>`;
+      }
+      
+      finalHtml += `</div>`;
+      app.innerHTML = finalHtml;
       
     } catch(e) { renderError(e.message); }
   },
