@@ -87,12 +87,16 @@ const authToggleText = document.getElementById('authToggleText');
 const authSubmitBtn = document.getElementById('authSubmitBtn');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
-const authChiefName = document.getElementById('authChiefName');
+const authGameId = document.getElementById('authGameId');
 const authErrorMsg = document.getElementById('authErrorMsg');
 const authModalTitle = document.getElementById('authModalTitle');
 
 let isRegistering = false;
 export let avatarMap = {}; // Global cache for avatars
+
+// Global mappings
+export let idToNameMap = {};
+export let nameToIdMap = {};
 
 // Listen to Avatars globally
 onValue(ref(db, 'avatars'), (snap) => {
@@ -105,7 +109,7 @@ onValue(ref(db, 'avatars'), (snap) => {
 listenToAuth((user) => {
   currentUser = user;
   if (user) {
-    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${user.chiefName || 'Account'}`;
+    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${idToNameMap[user.gameId] || 'Account'}`;
     // If they are on the home page, maybe reload or show a toast
     if (app.querySelector('#accountHubView')) views.account(); // Refresh account view if open
   } else {
@@ -148,13 +152,13 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   authErrorMsg.style.display = 'none';
   if (isRegistering) {
     authModalTitle.textContent = 'Register';
-    authChiefName.style.display = 'block';
+    authGameId.style.display = 'block';
     authSubmitBtn.textContent = 'Create Account';
     authToggleText.textContent = 'Already have an account?';
     authToggleBtn.textContent = 'Sign In';
   } else {
     authModalTitle.textContent = 'Sign In';
-    authChiefName.style.display = 'none';
+    authGameId.style.display = 'none';
     authSubmitBtn.textContent = 'Sign In';
     authToggleText.textContent = 'Need an account?';
     authToggleBtn.textContent = 'Register';
@@ -164,7 +168,7 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
 if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
   const email = authEmail.value.trim();
   const password = authPassword.value;
-  const chiefName = authChiefName.value.trim();
+  const gameId = authGameId.value.trim();
   
   if (!email || !password) {
     authErrorMsg.textContent = 'Email and password required.';
@@ -177,8 +181,8 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
     authSubmitBtn.textContent = 'Loading...';
     
     if (isRegistering) {
-      if (!chiefName) throw new Error('Chief Name is required.');
-      await registerUser(email, password, chiefName);
+      if (!gameId) throw new Error('Game ID is required.');
+      await registerUser(email, password, gameId);
     } else {
       await loginUser(email, password);
     }
@@ -218,6 +222,29 @@ const fetchSheet = async (sheetName) => {
   }
 };
 
+// Immediately fetch mapping data to ensure auth UI is populated
+fetchSheet("Chief's List").then(rosterRawData => {
+  if (rosterRawData && rosterRawData.length > 0) {
+    for (let i = 1; i < rosterRawData.length; i++) {
+      let name = rosterRawData[i][0];
+      let id = rosterRawData[i][1];
+      if (name && id) {
+         idToNameMap[id] = name.toString().trim();
+         nameToIdMap[name.toString().trim()] = id;
+      }
+    }
+    // Update navbar if user already loaded
+    if (currentUser && authSidebarBtn) {
+       authSidebarBtn.innerHTML = `👤 ${idToNameMap[currentUser.gameId] || 'Account'}`;
+    }
+    // Update Account Hub if it is currently open
+    const accHubView = document.getElementById('accountHubView');
+    if (accHubView && currentUser) {
+       views.account(); // re-render account view with correct name
+    }
+  }
+}).catch(console.error);
+
 // --- Formatters ---
 const formatCell = (cell) => {
   if (cell === true || cell === 'TRUE' || cell === 'true') {
@@ -236,11 +263,13 @@ const views = {
       return;
     }
     
+    let currentChiefName = idToNameMap[currentUser.gameId] || `Game ID: ${currentUser.gameId}`;
+    
     app.innerHTML = `
       <div id="accountHubView" class="card" style="max-width:600px; margin:0 auto; text-align:center;">
         <h2 style="color:var(--text-main); margin-top:0;">Account Hub</h2>
         <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
-          <div style="font-size:18px; font-weight:bold; color:var(--accent); margin-bottom:10px;">👤 ${currentUser.chiefName || 'Unknown Chief'}</div>
+          <div style="font-size:18px; font-weight:bold; color:var(--accent); margin-bottom:10px;">👤 ${currentChiefName}</div>
           <div style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">${currentUser.email}</div>
           
           <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
@@ -277,7 +306,7 @@ const views = {
         uploadBtn.textContent = 'Uploading...';
         uploadBtn.disabled = true;
         
-        await uploadAvatar(currentUser.uid, currentUser.chiefName, file);
+        await uploadAvatar(currentUser.gameId, file);
         
         statusMsg.textContent = '✅ Profile picture updated successfully!';
         statusMsg.style.color = 'var(--success)';
@@ -471,7 +500,8 @@ const views = {
             if (idx === 1) {
                let pName = (cell || "").toString().trim();
                if (pName) {
-                 let tryUrl = avatarMap[pName] || `/images/${pName}.png`;
+                 let playerGameId = nameToIdMap[pName];
+                 let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `/images/${pName}.png`;
                  let avatarHtml = `
                    <div style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:10px; font-weight:bold; margin-right:8px; overflow:hidden; vertical-align:middle; flex-shrink:0;">
                      <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -1034,7 +1064,8 @@ const views = {
         metricsHtml += `</div></div>`;
         
         let avatarImgHtml = `${chiefName.charAt(0).toUpperCase()}`;
-        let tryUrl = avatarMap[chiefName] || `/images/${chiefName}.png`;
+        let playerGameId = nameToIdMap[chiefName];
+        let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `/images/${chiefName}.png`;
         
         avatarImgHtml = `
           <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">

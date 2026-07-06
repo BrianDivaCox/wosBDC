@@ -62,13 +62,13 @@ export async function loginUser(email, password) {
   return signInWithEmailAndPassword(auth, email, password);
 }
 
-export async function registerUser(email, password, chiefName) {
+export async function registerUser(email, password, gameId) {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
   
-  // Link their Chief Name in Realtime Database
+  // Link their Game ID in Realtime Database
   await set(ref(db, `users/${user.uid}`), {
-    chiefName: chiefName,
+    gameId: Number(gameId),
     email: email
   });
   
@@ -82,10 +82,10 @@ export async function logoutUser() {
 export function listenToAuth(callback) {
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Get their Chief Name
+      // Get their Game ID
       onValue(ref(db, `users/${user.uid}`), (snap) => {
         const data = snap.val();
-        if (data) user.chiefName = data.chiefName;
+        if (data) user.gameId = data.gameId;
         callback(user);
       }, { onlyOnce: true });
     } else {
@@ -94,13 +94,14 @@ export function listenToAuth(callback) {
   });
 }
 
-export async function uploadAvatar(userUid, chiefName, file) {
+export async function uploadAvatar(gameId, file) {
+  if (!gameId) throw new Error("Game ID is required to upload an avatar");
   // Upload to Firebase Storage
-  const avatarRef = storageRef(storage, `avatars/${chiefName}.png`);
+  const avatarRef = storageRef(storage, `avatars/${gameId}.png`);
   await uploadBytes(avatarRef, file);
   const url = await getDownloadURL(avatarRef);
   
   // Save URL to Realtime Database so the UI can quickly fetch it
-  await set(ref(db, `avatars/${chiefName}`), url);
+  await set(ref(db, `avatars/${gameId}`), url);
   return url;
 }
