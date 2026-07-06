@@ -588,6 +588,17 @@ const views = {
       const headers = data[0];
       
       // Determine if a column is an upcoming/unscheduled event (no one has a 'true' value)
+      // Determine if Showdown is active (at least one person has missed a day)
+      let showdownActive = false;
+      for (let r = 1; r < data.length; r++) {
+        if (!data[r]) continue;
+        let missed = data[r][1];
+        if (missed !== undefined && missed !== null && missed.toString().trim() !== "" && missed !== 0 && missed !== "0") {
+          showdownActive = true;
+          break;
+        }
+      }
+      
       const colIsUpcoming = {};
       for (let c = 1; c < headers.length; c++) {
         let hasAnyTrue = false;
@@ -675,8 +686,10 @@ const views = {
         // Add Activity Streaks & Event Badges
         let activityBadges = ``;
         let missedDays = p[1];
-        if (missedDays === undefined || missedDays === null || missedDays.toString().trim() === "" || missedDays === 0 || missedDays === "0") {
-           activityBadges += `<span style="background:color-mix(in srgb, #f97316 15%, transparent); border:1px solid #f97316; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Perfect Attendance</span>`;
+        if (showdownActive) {
+          if (missedDays === undefined || missedDays === null || missedDays.toString().trim() === "" || missedDays === 0 || missedDays === "0") {
+             activityBadges += `<span style="background:color-mix(in srgb, #f97316 15%, transparent); border:1px solid #f97316; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Perfect Attendance</span>`;
+          }
         }
         
         const isTrue = (val) => val === true || (typeof val === 'string' && val.toLowerCase().trim() === 'true');
