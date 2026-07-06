@@ -1,5 +1,6 @@
 import './style.css'
-import { initPresence } from './src/presence.js'
+import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, db } from './src/firebase.js'
+import { ref, onValue } from 'firebase/database'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxpvuesjr19OFhqIY1JtFMqHee6I4YKLkEDqTCVNGDxkMyyfm1b5wLiIVXtbn6vjBg/exec';
 
@@ -75,6 +76,121 @@ document.querySelectorAll('.theme-option').forEach(option => {
 
 initTheme();
 
+// --- Auth State & UI Logic ---
+let currentUser = null;
+const authNavBtn = document.getElementById('authNavBtn');
+const authModalOverlay = document.getElementById('authModalOverlay');
+const authModal = document.getElementById('authModal');
+const closeAuthBtn = document.getElementById('closeAuthBtn');
+const authToggleBtn = document.getElementById('authToggleBtn');
+const authToggleText = document.getElementById('authToggleText');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authChiefName = document.getElementById('authChiefName');
+const authErrorMsg = document.getElementById('authErrorMsg');
+const authModalTitle = document.getElementById('authModalTitle');
+
+let isRegistering = false;
+export let avatarMap = {}; // Global cache for avatars
+
+// Listen to Avatars globally
+onValue(ref(db, 'avatars'), (snap) => {
+  if (snap.val()) {
+    avatarMap = snap.val();
+  }
+});
+
+// Listen to Auth State
+listenToAuth((user) => {
+  currentUser = user;
+  if (user) {
+    authNavBtn.innerHTML = `👤 ${user.chiefName || 'Account'}`;
+    // If they are on the home page, maybe reload or show a toast
+    if (app.querySelector('#accountHubView')) views.account(); // Refresh account view if open
+  } else {
+    authNavBtn.innerHTML = `🔐 Sign In`;
+    if (app.querySelector('#accountHubView')) views.home(); // Kick to home if on account view
+  }
+});
+
+const openAuthModal = () => {
+  authErrorMsg.style.display = 'none';
+  authModal.style.display = 'block';
+  authModalOverlay.classList.add('active');
+};
+const closeAuthModal = () => {
+  authModal.style.display = 'none';
+  authModalOverlay.classList.remove('active');
+};
+
+if(authNavBtn) authNavBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (currentUser) {
+    // Navigate to Account Hub
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    authNavBtn.classList.add('active');
+    if (mobileMenu) mobileMenu.classList.remove('open');
+    views.account();
+  } else {
+    openAuthModal();
+  }
+});
+if(closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
+if(authModalOverlay) authModalOverlay.addEventListener('click', closeAuthModal);
+
+if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  isRegistering = !isRegistering;
+  authErrorMsg.style.display = 'none';
+  if (isRegistering) {
+    authModalTitle.textContent = 'Register';
+    authChiefName.style.display = 'block';
+    authSubmitBtn.textContent = 'Create Account';
+    authToggleText.textContent = 'Already have an account?';
+    authToggleBtn.textContent = 'Sign In';
+  } else {
+    authModalTitle.textContent = 'Sign In';
+    authChiefName.style.display = 'none';
+    authSubmitBtn.textContent = 'Sign In';
+    authToggleText.textContent = 'Need an account?';
+    authToggleBtn.textContent = 'Register';
+  }
+});
+
+if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  const chiefName = authChiefName.value.trim();
+  
+  if (!email || !password) {
+    authErrorMsg.textContent = 'Email and password required.';
+    authErrorMsg.style.display = 'block';
+    return;
+  }
+  
+  try {
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.textContent = 'Loading...';
+    
+    if (isRegistering) {
+      if (!chiefName) throw new Error('Chief Name is required.');
+      await registerUser(email, password, chiefName);
+    } else {
+      await loginUser(email, password);
+    }
+    
+    closeAuthModal();
+  } catch(err) {
+    authErrorMsg.textContent = err.message;
+    authErrorMsg.style.display = 'block';
+  } finally {
+    authSubmitBtn.disabled = false;
+    authSubmitBtn.textContent = isRegistering ? 'Create Account' : 'Sign In';
+  }
+});
+
+
 // --- Routing & Views ---
 const app = document.getElementById('app');
 const navLinks = document.querySelectorAll('.nav-link');
@@ -111,6 +227,67 @@ const formatCell = (cell) => {
 
 // View renderers
 const views = {
+  account: async () => {
+    if (!currentUser) {
+      views.home();
+      return;
+    }
+    
+    app.innerHTML = `
+      <div id="accountHubView" class="card" style="max-width:600px; margin:0 auto; text-align:center;">
+        <h2 style="color:var(--text-main); margin-top:0;">Account Hub</h2>
+        <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
+          <div style="font-size:18px; font-weight:bold; color:var(--accent); margin-bottom:10px;">👤 ${currentUser.chiefName || 'Unknown Chief'}</div>
+          <div style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">${currentUser.email}</div>
+          
+          <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
+            <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">🖼️ Profile Picture</h3>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">Upload a custom profile picture. It will automatically replace your default avatar on the Chief's Roster and Leaderboards.</p>
+            
+            <input type="file" id="avatarUploadInput" accept="image/png, image/jpeg, image/webp" style="display:none;">
+            <button id="avatarUploadBtn" style="background:var(--bg-main); border:1px solid var(--accent); color:var(--text-main); padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.2s;">Choose Image</button>
+            
+            <div id="avatarUploadStatus" style="margin-top:10px; font-size:13px; color:var(--success); font-weight:bold;"></div>
+          </div>
+        </div>
+        
+        <button id="logoutBtn" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold;">Sign Out</button>
+      </div>
+    `;
+    
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await logoutUser();
+      views.home();
+    });
+    
+    const uploadInput = document.getElementById('avatarUploadInput');
+    const uploadBtn = document.getElementById('avatarUploadBtn');
+    const statusMsg = document.getElementById('avatarUploadStatus');
+    
+    uploadBtn.addEventListener('click', () => uploadInput.click());
+    
+    uploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        uploadBtn.textContent = 'Uploading...';
+        uploadBtn.disabled = true;
+        
+        await uploadAvatar(currentUser.uid, currentUser.chiefName, file);
+        
+        statusMsg.textContent = '✅ Profile picture updated successfully!';
+        statusMsg.style.color = 'var(--success)';
+      } catch (err) {
+        statusMsg.textContent = '❌ Error: ' + err.message;
+        statusMsg.style.color = 'var(--danger)';
+      } finally {
+        uploadBtn.textContent = 'Choose Image';
+        uploadBtn.disabled = false;
+      }
+    });
+  },
+
   home: async () => {
     renderLoading('Loading Home & News');
     try {
@@ -286,7 +463,22 @@ const views = {
               cell = Number(cell).toLocaleString();
             }
             
-            html += `<td ${idx === 0 ? 'style="font-weight:bold; color:var(--text-muted);"' : ''}>${formatCell(cell)}</td>`;
+            // Inject avatar if it's the Name column (idx 1)
+            let formattedCell = formatCell(cell);
+            if (idx === 1) {
+               let pName = (cell || "").toString().trim();
+               if (pName) {
+                 let tryUrl = avatarMap[pName] || `/images/${pName}.png`;
+                 let avatarHtml = `
+                   <div style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:10px; font-weight:bold; margin-right:8px; overflow:hidden; vertical-align:middle; flex-shrink:0;">
+                     <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     <div style="display:none; width:100%; height:100%; align-items:center; justify-content:center;">${pName.charAt(0).toUpperCase()}</div>
+                   </div>`;
+                 formattedCell = `<div style="display:flex; align-items:center;">${avatarHtml}${formattedCell}</div>`;
+               }
+            }
+            
+            html += `<td ${idx === 0 ? 'style="font-weight:bold; color:var(--text-muted);"' : ''}>${formattedCell}</td>`;
           });
           html += `</tr>`;
         });
@@ -838,11 +1030,19 @@ const views = {
         }
         metricsHtml += `</div></div>`;
         
-        container.innerHTML = `
+        let avatarImgHtml = \`\${chiefName.charAt(0).toUpperCase()}\`;
+        let tryUrl = avatarMap[chiefName] || \`/images/\${chiefName}.png\`;
+        
+        avatarImgHtml = \`
+          <img src="\${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">\${chiefName.charAt(0).toUpperCase()}</div>
+        \`;
+        
+        container.innerHTML = \`
           <div class="card" style="animation: fadeIn 0.3s ease;">
             <div style="display:flex; align-items:flex-start; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
-              <div style="width:50px; height:50px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; font-weight:bold; flex-shrink:0;">
-                ${chiefName.charAt(0).toUpperCase()}
+              <div style="width:50px; height:50px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; font-weight:bold; flex-shrink:0; overflow:hidden;">
+                \${avatarImgHtml}
               </div>
               <div style="overflow:hidden;">
                 <h2 style="margin:0; color:var(--text-main); font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${chiefName}</h2>
