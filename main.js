@@ -197,23 +197,7 @@ const views = {
     } catch(e) { renderError(e.message); }
   },
   
-  roster: async () => {
-    renderLoading("Loading Chief's List");
-    try {
-      const data = await fetchSheet("Chief's List");
-      let html = `<div class="card"><div class="card-title">👥 Roster (Chief's List)</div>`;
-      if(data.length <= 1) html += `<div class="loading">No members found.</div>`;
-      else {
-        html += `<table><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody>`;
-        for(let i=1; i<data.length; i++){
-          if(data[i][0]) html += `<tr><td>${data[i][0]}</td><td><span class="badge">${data[i][1] || 'Member'}</span></td></tr>`;
-        }
-        html += `</tbody></table>`;
-      }
-      html += `</div>`;
-      app.innerHTML = html;
-    } catch(e) { renderError(e.message); }
-  },
+
 
   leaderboards: async (filterString) => {
     renderLoading("Loading Leaderboards");
@@ -459,7 +443,7 @@ const views = {
     } catch(e) { renderError(e.message); }
   },
   
-  activity: async () => {
+  roster: async () => {
     renderLoading("Loading Player Lookup");
     try {
       const [data, rosterRawData] = await Promise.all([
