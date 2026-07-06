@@ -1,6 +1,6 @@
 import './style.css'
-import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, db } from './src/firebase.js'
-import { ref, onValue } from 'firebase/database'
+import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db } from './src/firebase.js'
+import { ref, onValue, get, set } from 'firebase/database'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxpvuesjr19OFhqIY1JtFMqHee6I4YKLkEDqTCVNGDxkMyyfm1b5wLiIVXtbn6vjBg/exec';
 
@@ -105,16 +105,24 @@ onValue(ref(db, 'avatars'), (snap) => {
   }
 });
 
+const adminSidebarBtn = document.getElementById('adminSidebarBtn');
+
 // Listen to Auth State
 listenToAuth((user) => {
   currentUser = user;
   if (user) {
     if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${idToNameMap[user.gameId] || 'Account'}`;
+    if(adminSidebarBtn && user.gameId === 318843189) {
+      adminSidebarBtn.style.display = 'block';
+    } else if (adminSidebarBtn) {
+      adminSidebarBtn.style.display = 'none';
+    }
     // If they are on the home page, maybe reload or show a toast
     if (app.querySelector('#accountHubView')) views.account(); // Refresh account view if open
   } else {
     if(authSidebarBtn) authSidebarBtn.innerHTML = `🔐 Sign In / Register`;
-    if (app.querySelector('#accountHubView')) views.home(); // Kick to home if on account view
+    if(adminSidebarBtn) adminSidebarBtn.style.display = 'none';
+    if (app.querySelector('#accountHubView') || app.querySelector('#adminHubView')) views.home(); // Kick to home
   }
 });
 
@@ -143,6 +151,16 @@ if(authSidebarBtn) authSidebarBtn.addEventListener('click', (e) => {
     openAuthModal();
   }
 });
+
+if(adminSidebarBtn) adminSidebarBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if (mobileMenu) mobileMenu.classList.remove('open');
+  settingsSidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('active');
+  views.admin();
+});
+
 if(closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
 if(authModalOverlay) authModalOverlay.addEventListener('click', closeAuthModal);
 
@@ -255,8 +273,117 @@ const formatCell = (cell) => {
   return cell;
 };
 
+// --- GitHub Deployment Tracker ---
+const checkDeploymentStatus = async () => {
+  const statusEl = document.getElementById('github-deploy-status');
+  if (!statusEl) return;
+  try {
+    const res = await fetch('https://api.github.com/repos/BrianDivaCox/wosBDC/actions/runs?per_page=1');
+    const data = await res.json();
+    if (data && data.workflow_runs && data.workflow_runs.length > 0) {
+      const latestRun = data.workflow_runs[0];
+      const status = latestRun.status;
+      const conclusion = latestRun.conclusion;
+      
+      if (status === 'in_progress' || status === 'queued') {
+        statusEl.innerHTML = `<span style="color:#eab308; display:flex; align-items:center; gap:5px;"><span style="display:inline-block; animation: spin 2s linear infinite;">⏳</span> Building & Deploying...</span>`;
+      } else if (status === 'completed' && conclusion === 'success') {
+        statusEl.innerHTML = `<span style="color:var(--success);">✅ Live & Up to Date</span>`;
+      } else if (status === 'completed' && conclusion === 'failure') {
+        statusEl.innerHTML = `<span style="color:var(--danger);">❌ Deployment Failed</span>`;
+      } else {
+        statusEl.innerHTML = `<span style="color:var(--text-muted);">Status: ${status}</span>`;
+      }
+    }
+  } catch (err) {
+    statusEl.innerHTML = `<span style="color:var(--danger);">Error fetching status</span>`;
+  }
+};
+// Check immediately and then every 30 seconds
+checkDeploymentStatus();
+setInterval(checkDeploymentStatus, 30000);
+
+// Add spinning animation for the loader
+const style = document.createElement('style');
+style.textContent = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+document.head.appendChild(style);
+
 // View renderers
 const views = {
+  admin: async () => {
+    if (!currentUser || currentUser.gameId !== 318843189) {
+      views.home();
+      return;
+    }
+    
+    renderLoading("Loading Admin Panel");
+    try {
+      const usersSnap = await get(ref(db, 'users'));
+      const users = usersSnap.val() || {};
+      
+      let html = `
+        <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
+          <h2 style="color:var(--danger); margin-top:0;">🛡️ Admin Control Panel</h2>
+          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border);">
+            <div style="overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; text-align:left;">
+                <thead>
+                  <tr style="border-bottom:2px solid var(--border); color:var(--text-muted);">
+                    <th style="padding:10px;">Game ID</th>
+                    <th style="padding:10px;">Chief Name</th>
+                    <th style="padding:10px;">Email</th>
+                    <th style="padding:10px;">Avatar</th>
+                    <th style="padding:10px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+      `;
+      
+      for (const [uid, u] of Object.entries(users)) {
+        const cName = idToNameMap[u.gameId] || "Unknown";
+        const hasAvatar = avatarMap[u.gameId] ? true : false;
+        const avatarSrc = avatarMap[u.gameId] || `/images/${cName}.png`;
+        
+        html += `
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px; font-family:monospace; color:var(--accent);">${u.gameId}</td>
+            <td style="padding:10px; font-weight:bold; color:var(--text-main);">${cName}</td>
+            <td style="padding:10px; color:var(--text-muted); font-size:12px;">${u.email}</td>
+            <td style="padding:10px;">
+              <div style="width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--accent);">
+                <img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none';">
+              </div>
+            </td>
+            <td style="padding:10px;">
+              ${hasAvatar ? `<button class="delete-avatar-btn" data-id="${u.gameId}" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Delete Avatar</button>` : `<span style="color:var(--text-muted); font-size:12px;">Default</span>`}
+            </td>
+          </tr>
+        `;
+      }
+      
+      html += `</tbody></table></div></div></div>`;
+      app.innerHTML = html;
+      
+      // Bind delete avatar buttons
+      document.querySelectorAll('.delete-avatar-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          if (!confirm("Are you sure you want to delete this avatar?")) return;
+          const gid = e.target.getAttribute('data-id');
+          try {
+            e.target.textContent = "Deleting...";
+            await deleteAvatar(gid);
+            views.admin(); // Refresh view
+          } catch(err) {
+             alert(err.message);
+          }
+        });
+      });
+      
+    } catch(err) {
+      renderError(err.message);
+    }
+  },
+  
   account: async () => {
     if (!currentUser) {
       views.home();

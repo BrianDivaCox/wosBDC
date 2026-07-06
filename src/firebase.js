@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, onDisconnect, set, push, runTransaction } from "firebase/database";
+import { getDatabase, ref, onValue, onDisconnect, set, push, runTransaction, get } from "firebase/database";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -105,3 +105,12 @@ export async function uploadAvatar(gameId, file) {
   await set(ref(db, `avatars/${gameId}`), url);
   return url;
 }
+
+export async function deleteAvatar(gameId) {
+  if (!gameId) return;
+  // Remove from Realtime DB
+  await set(ref(db, `avatars/${gameId}`), null);
+  // Optional: We don't necessarily have to delete from Storage, just unlinking it in DB is enough.
+}
+
+export { get, set, ref };
