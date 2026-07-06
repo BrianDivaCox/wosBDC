@@ -308,6 +308,28 @@ const views = {
       let allianceCard = '';
       let playersCard = '';
       
+      let totalAllianceScore = 0;
+      for (let r = 0; r < data.length; r++) {
+        let row = data[r];
+        if (row.some(c => typeof c === 'string' && c.toLowerCase().includes("alliance's"))) {
+          let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes("alliance's"));
+          if (r + 2 < data.length) {
+            let ourRow = data[r+2];
+            let val = ourRow[startCol + 8];
+            if (val !== undefined && val !== null) {
+               totalAllianceScore = Number(val.toString().replace(/,/g, '')) || 0;
+            }
+          }
+          break;
+        }
+      }
+      
+      const formatNumber = (num) => {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toLocaleString();
+      };
+      
       for (let r = 0; r < data.length; r++) {
         let row = data[r];
         
@@ -315,8 +337,22 @@ const views = {
         if (row.some(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'))) {
           let startCol = row.findIndex(c => typeof c === 'string' && c.toLowerCase().includes('allience showdown'));
           
+          let allTimeGoal = 20000000;
+          let allTimeProgress = Math.min(100, (totalAllianceScore / allTimeGoal) * 100);
+          
           goalsCard += `<div class="card" style="margin-bottom:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
             <h3 style="margin-top:0; color:var(--text-main); font-size:20px; margin-bottom:20px;">🏆 Alliance Showdown Progress</h3>
+            
+            <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px dashed var(--border);">
+              <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:bold; margin-bottom:8px;">
+                <span style="color:var(--text-main);">🌟 All-Time Showdown Goal</span>
+                <span style="color:var(--text-muted);">${formatNumber(totalAllianceScore)} / <span style="color:var(--accent);">${formatNumber(allTimeGoal)}</span></span>
+              </div>
+              <div style="width:100%; height:12px; background:rgba(0,0,0,0.3); border-radius:6px; overflow:hidden; border:1px solid var(--border);">
+                <div style="width:${allTimeProgress}%; height:100%; background:linear-gradient(90deg, #8b5cf6, #d946ef); border-radius:6px; transition:width 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:0 0 10px #d946ef;"></div>
+              </div>
+            </div>
+            
             <div style="display:flex; flex-direction:column; gap:16px;">`;
           
           for (let i = 1; i <= 6; i++) {
@@ -329,12 +365,6 @@ const views = {
               let dailyAmt = Number(dRow[startCol + 5]) || 0; // Index 11 (Daily Amount)
               
               let progress = goal > 0 ? Math.min(100, (dailyAmt / goal) * 100) : 0;
-              
-              const formatNumber = (num) => {
-                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-                if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-                return num.toLocaleString();
-              };
               
               goalsCard += `
                 <div>
