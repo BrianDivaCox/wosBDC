@@ -196,7 +196,7 @@ if(showPasswordBtn) showPasswordBtn.addEventListener('click', (e) => {
 });
 
 if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
-  const email = authEmail.value.trim();
+  const email = authEmail.value.trim().toLowerCase();
   const password = authPassword.value;
   const gameId = authGameId.value.trim();
   
