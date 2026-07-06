@@ -802,7 +802,12 @@ const views = {
         }
         
         // Generate Metric Cards for columns B to G (index 1 to 6)
-        let metricsHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px; margin-top:20px;">`;
+        let metricsHtml = `
+          <div style="margin-top: 25px;">
+            <h3 style="margin: 0 0 5px 0; color:var(--text-main); font-size:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">📅 Events Checklist</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming</p>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">
+        `;
         
         for (let col = 1; col <= 6; col++) {
           let header = headers[col] || `Metric ${col}`;
@@ -827,7 +832,7 @@ const views = {
             </div>
           `;
         }
-        metricsHtml += `</div>`;
+        metricsHtml += `</div></div>`;
         
         container.innerHTML = `
           <div class="card" style="animation: fadeIn 0.3s ease;">
