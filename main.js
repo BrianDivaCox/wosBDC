@@ -106,6 +106,43 @@ onValue(ref(db, 'avatars'), (snap) => {
 
 const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 
+// --- Maintenance Mode State ---
+let maintenanceMode = false;
+const maintenanceOverlay = document.getElementById('maintenanceOverlay');
+
+const checkMaintenanceAccess = () => {
+  const isAdmin = currentUser && currentUser.gameId === 318843189;
+  const adminBanner = document.getElementById('adminMaintenanceBanner');
+  
+  if (maintenanceMode) {
+    if (isAdmin) {
+      maintenanceOverlay.style.display = 'none';
+      if(adminBanner) adminBanner.style.display = 'block';
+    } else {
+      maintenanceOverlay.style.display = 'flex';
+      if(adminBanner) adminBanner.style.display = 'none';
+    }
+  } else {
+    maintenanceOverlay.style.display = 'none';
+    if(adminBanner) adminBanner.style.display = 'none';
+  }
+};
+
+window.toggleMaintenance = async () => {
+  try {
+    await set(ref(db, 'config/maintenanceMode'), !maintenanceMode);
+    window.showToast(`Maintenance mode is now ${!maintenanceMode ? 'ON' : 'OFF'}`, !maintenanceMode ? 'error' : 'success');
+    if (app.querySelector('#adminHubView')) views.admin();
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+onValue(ref(db, 'config/maintenanceMode'), (snapshot) => {
+  maintenanceMode = snapshot.val() || false;
+  checkMaintenanceAccess();
+});
+
 // Listen to Auth State
 listenToAuth((user) => {
   currentUser = user;
@@ -134,6 +171,8 @@ listenToAuth((user) => {
     
     if (app.querySelector('#accountHubView') || app.querySelector('#adminHubView')) views.home(); // Kick to home
   }
+  
+  checkMaintenanceAccess();
 });
 
 const openAuthModal = () => {
@@ -369,6 +408,18 @@ const views = {
             <h2 style="color:var(--danger); margin:0;">🛡️ Admin Control Panel</h2>
             <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Bear Trap Donations</button>
           </div>
+          
+          <!-- Maintenance Mode Toggle -->
+          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--danger); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h3 style="margin:0; color:var(--danger);">Maintenance Mode</h3>
+              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Lock out all non-admin users and display a maintenance screen.</p>
+            </div>
+            <button onclick="window.toggleMaintenance()" style="background:${maintenanceMode ? 'var(--bg-main)' : 'var(--danger)'}; color:${maintenanceMode ? 'var(--success)' : '#fff'}; border:1px solid ${maintenanceMode ? 'var(--success)' : 'transparent'}; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; min-width:100px;">
+              ${maintenanceMode ? '🟢 Turn OFF' : '🔴 Turn ON'}
+            </button>
+          </div>
+          
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border);">
             <div style="overflow-x:auto;">
               <table style="width:100%; border-collapse:collapse; text-align:left;">

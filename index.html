@@ -21,7 +21,7 @@
               👁️ <span id="views-counter">...</span>
             </span>
             <span title="Version" style="background: rgba(168, 85, 247, 0.2); color: #a855f7; padding: 2px 6px; border-radius: 10px; font-weight: bold; display:flex; align-items:center; gap:4px;">
-              v1.0.3
+              v1.1.0
             </span>
             <span id="navbar-user-indicator" title="Logged In" style="display:none; background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 2px 6px; border-radius: 10px; font-weight: bold; align-items:center; gap:4px; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             </span>
@@ -146,6 +146,17 @@
       </div>
     </div>
     
+    <!-- Admin Banner -->
+    <div id="adminMaintenanceBanner" style="display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%); background:var(--danger); color:#fff; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:14px; z-index:9000; box-shadow:0 4px 10px rgba(0,0,0,0.5);">
+      ⚠️ MAINTENANCE MODE IS ACTIVE
+    </div>
+    
+    <div id="maintenanceOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-main); z-index:10000; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box;">
+      <div style="font-size:70px; margin-bottom:20px;">🚧</div>
+      <h1 style="color:var(--text-main); margin-bottom:15px; font-size:28px;">Site Under Maintenance</h1>
+      <p style="color:var(--text-muted); font-size:16px; max-width:400px; line-height:1.5;">We are currently performing scheduled maintenance on the dashboard. We will be back online ASAP!</p>
+    </div>
+
     <!-- Account Hub View Template (Injected into App) -->
     <div id="app" class="container">
       <!-- Dynamic Content Injection -->

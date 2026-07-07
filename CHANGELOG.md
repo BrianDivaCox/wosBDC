@@ -2,6 +2,13 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.1.0] - 2026-07-07
+
+### Added
+- **Maintenance Mode**: Engineered a global Maintenance Mode toggle switch within the Admin Control Panel.
+- **Maintenance Overlay**: Standard users are now safely locked out of the site with a full-screen "Site Under Maintenance" overlay when maintenance mode is active.
+- **Admin Warning Banner**: Added a persistent red banner at the top of the screen for Admins to remind them that the site is currently locked in Maintenance Mode.
+
 ## [1.0.3] - 2026-07-07
 
 ### Fixed
