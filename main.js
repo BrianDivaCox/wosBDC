@@ -378,8 +378,8 @@ if (versionBadge) versionBadge.addEventListener('click', async () => {
   
   try {
     changelogContent.innerHTML = '<span style="color:var(--text-muted)">Loading changelog...</span>';
-    const response = await fetch('/CHANGELOG.md');
-    if (!response.ok) throw new Error('Failed to fetch changelog');
+    const response = await fetch('https://raw.githubusercontent.com/BrianDivaCox/wosBDC/main/CHANGELOG.md');
+    if (!response.ok) throw new Error('Failed to fetch changelog from repository');
     let md = await response.text();
     
     // Basic Markdown parser for headings and bullets
