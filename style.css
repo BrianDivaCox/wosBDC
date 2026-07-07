@@ -461,8 +461,24 @@ tr:hover td {
 
   .nav-links {
     flex-direction: column;
+    align-items: flex-start;
     width: 100%;
-    gap: 10px;
+    gap: 15px;
+  }
+  
+  .dropdown-content {
+    position: static;
+    display: block; /* Always visible on mobile */
+    background-color: transparent;
+    box-shadow: none;
+    border: none;
+    padding-left: 15px;
+    margin-top: 10px;
+    min-width: unset;
+  }
+  
+  .dropdown-content .sub-link {
+    padding: 8px 10px;
   }
   
   .global-timers {

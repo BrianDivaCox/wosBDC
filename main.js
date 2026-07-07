@@ -1922,3 +1922,5 @@ allLinks.forEach(link => {
 // Initial load
 views.home();
 initPresence();
+
+window.views = views;
