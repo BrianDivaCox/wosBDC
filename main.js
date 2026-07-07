@@ -47,19 +47,17 @@ const initTheme = () => {
   document.documentElement.setAttribute('data-theme', savedTheme);
   
   // Highlight the active circle
-  document.querySelectorAll('.theme-option').forEach(option => {
-    const circle = option.querySelector('.theme-circle');
-    if (circle && circle.getAttribute('data-theme') === savedTheme) {
+  document.querySelectorAll('.theme-circle').forEach(circle => {
+    if (circle.getAttribute('data-theme') === savedTheme) {
       circle.classList.add('active');
-    } else if (circle) {
+    } else {
       circle.classList.remove('active');
     }
   });
 };
 
-document.querySelectorAll('.theme-option').forEach(option => {
-  option.addEventListener('click', () => {
-    const circle = option.querySelector('.theme-circle');
+document.querySelectorAll('.theme-circle').forEach(circle => {
+  circle.addEventListener('click', () => {
     if(!circle) return;
     
     const theme = circle.getAttribute('data-theme');
