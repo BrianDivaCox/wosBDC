@@ -485,3 +485,35 @@ tr:hover td {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.toast-msg {
+  background: var(--card-bg);
+  color: var(--text-main);
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  border-left: 4px solid var(--accent);
+  font-weight: bold;
+  animation: slideUpToast 0.3s ease, fadeOutToast 0.3s ease 2.7s forwards;
+}
+.toast-msg.success { border-left-color: var(--success); }
+.toast-msg.error { border-left-color: var(--danger); }
+@keyframes slideUpToast {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOutToast {
+  to { opacity: 0; }
+}

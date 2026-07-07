@@ -212,8 +212,10 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
     if (isRegistering) {
       if (!gameId) throw new Error('Game ID is required.');
       await registerUser(email, password, gameId);
+      window.showToast("Account created & signed in!", "success");
     } else {
       await loginUser(email, password);
+      window.showToast("Successfully signed in!", "success");
     }
     
     closeAuthModal();
@@ -230,6 +232,21 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
 // --- Routing & Views ---
 const app = document.getElementById('app');
 const navLinks = document.querySelectorAll('.nav-link');
+
+window.showToast = (message, type = 'success') => {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast-msg ${type}`;
+  toast.innerHTML = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.remove();
+    }
+  }, 3000);
+};
+
 
 const renderLoading = (message) => {
   app.innerHTML = `<div class="card"><div class="loading">⏳ ${message}...</div></div>`;
@@ -627,6 +644,7 @@ const views = {
     
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await logoutUser();
+      window.showToast("Signed out successfully.", "success");
       views.home();
     });
     
