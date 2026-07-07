@@ -2,6 +2,13 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.2.0] - 2026-07-07
+
+### Added
+- **Universal Player Editor (Admin)**: Built a massive new feature in the Admin Control Panel. Admins can now search for any Chief by username and instantly pull up a unified "Player Card".
+- **Cross-Sheet Editing**: From the Universal Player Editor, Admins can directly edit a player's `Polar Terrors` status (Yes/No), `Alliance Championship` status (Yes/No), and add `Bear Trap Donations`.
+- **Intelligent Formula Protection**: The editor securely updates the *source* event sheets via a new backend API, ensuring the `Activity` sheet's formulas are perfectly protected and automatically updated.
+
 ## [1.1.0] - 2026-07-07
 
 ### Added

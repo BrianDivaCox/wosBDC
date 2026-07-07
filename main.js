@@ -138,6 +138,89 @@ window.toggleMaintenance = async () => {
   }
 };
 
+window.searchPlayerFull = async () => {
+  const input = document.getElementById('uniSearchInput');
+  const btn = document.getElementById('uniSearchBtn');
+  const resDiv = document.getElementById('uniEditorRes');
+  if (!input || !input.value.trim()) return;
+  const name = input.value.trim();
+  
+  btn.innerHTML = 'Searching...';
+  btn.disabled = true;
+  resDiv.style.display = 'flex';
+  resDiv.innerHTML = '<span style="color:var(--text-muted)">Querying database...</span>';
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}?api=lookupFull&name=${encodeURIComponent(name)}`).then(r => r.json());
+    if (res.success) {
+      resDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h4 style="margin:0; color:var(--text-main); font-size:16px;">👤 ${res.name}</h4>
+          <span style="font-size:12px; color:var(--text-muted);">Current Bear Total: <strong style="color:var(--accent)">${res.btTotal}</strong></span>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:12px; color:var(--text-muted);">Polar Terrors (Yes/No)</label>
+            <select id="uniPtSelect" style="width:100%; padding:8px; border-radius:6px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); margin-top:4px;">
+              <option value="Yes" ${res.ptStatus === 'Yes' ? 'selected' : ''}>Yes</option>
+              <option value="No" ${res.ptStatus === 'No' ? 'selected' : ''}>No</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--text-muted);">Alliance Champ (Yes/No)</label>
+            <select id="uniAcSelect" style="width:100%; padding:8px; border-radius:6px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); margin-top:4px;">
+              <option value="Yes" ${res.acStatus === 'Yes' ? 'selected' : ''}>Yes</option>
+              <option value="No" ${res.acStatus === 'No' ? 'selected' : ''}>No</option>
+            </select>
+          </div>
+        </div>
+        
+        <div>
+          <label style="font-size:12px; color:var(--text-muted);">Add Bear Trap Donations (Leave blank to add none)</label>
+          <input type="number" id="uniBtAdd" placeholder="e.g. 500" style="width:100%; padding:8px; border-radius:6px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); margin-top:4px; box-sizing:border-box;">
+        </div>
+        
+        <button onclick="window.savePlayerFull('${res.name}')" style="background:var(--success); color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; margin-top:5px;">Save Changes</button>
+      `;
+    } else {
+      resDiv.innerHTML = `<span style="color:var(--danger)">Error: ${res.message}</span>`;
+    }
+  } catch (err) {
+    resDiv.innerHTML = `<span style="color:var(--danger)">Network Error: ${err.message}</span>`;
+  }
+  
+  btn.innerHTML = 'Search';
+  btn.disabled = false;
+};
+
+window.savePlayerFull = async (name) => {
+  const ptStatus = document.getElementById('uniPtSelect').value;
+  const acStatus = document.getElementById('uniAcSelect').value;
+  const btAdd = document.getElementById('uniBtAdd').value;
+  const resDiv = document.getElementById('uniEditorRes');
+  
+  const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
+  
+  resDiv.innerHTML = '<span style="color:var(--text-muted)">Saving changes to master sheets...</span>';
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}?api=updateFull&name=${encodeURIComponent(name)}&ptStatus=${encodeURIComponent(ptStatus)}&acStatus=${encodeURIComponent(acStatus)}&btAdd=${encodeURIComponent(btAdd)}&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+    if (res.success) {
+      window.showToast("Player updated successfully!", "success");
+      let successMsg = `<div style="color:var(--success); font-weight:bold; margin-bottom:5px;">✅ ${res.message}</div>`;
+      if (res.btRes && res.btRes.success) {
+        successMsg += `<div style="font-size:13px; color:var(--text-muted);">New Bear Total: ${res.btRes.newTotal}</div>`;
+      }
+      resDiv.innerHTML = successMsg;
+    } else {
+      resDiv.innerHTML = `<span style="color:var(--danger)">Error: ${res.message}</span>`;
+    }
+  } catch (err) {
+    resDiv.innerHTML = `<span style="color:var(--danger)">Network Error: ${err.message}</span>`;
+  }
+};
+
 onValue(ref(db, 'config/maintenanceMode'), (snapshot) => {
   maintenanceMode = snapshot.val() || false;
   checkMaintenanceAccess();
@@ -418,6 +501,23 @@ const views = {
             <button onclick="window.toggleMaintenance()" style="background:${maintenanceMode ? 'var(--bg-main)' : 'var(--danger)'}; color:${maintenanceMode ? 'var(--success)' : '#fff'}; border:1px solid ${maintenanceMode ? 'var(--success)' : 'transparent'}; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; min-width:100px;">
               ${maintenanceMode ? '🟢 Turn OFF' : '🔴 Turn ON'}
             </button>
+          </div>
+          
+          <!-- Universal Player Editor -->
+          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
+            <div style="margin-bottom:15px;">
+              <h3 style="margin:0; color:var(--accent);">Player Database Editor</h3>
+              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Search and update Alliance Championship, Polar Terrors, and Bear Donations for any chief.</p>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+              <input type="text" id="uniSearchInput" placeholder="Enter Chief Name..." style="flex:1; padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+              <button onclick="window.searchPlayerFull()" id="uniSearchBtn" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Search</button>
+            </div>
+            
+            <div id="uniEditorRes" style="display:none; flex-direction:column; gap:12px; border-top:1px solid var(--border); padding-top:15px;">
+               <!-- Populated by JS -->
+            </div>
           </div>
           
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border);">
