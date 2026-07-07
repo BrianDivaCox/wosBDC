@@ -1615,8 +1615,6 @@ const views = {
           let eventDate = new Date(originalDateVal);
           let now = new Date();
           
-          if (eventDate < now) isPast = true;
-          
           let isToday = (eventDate.getDate() === now.getDate() && eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear());
           if (isToday) {
             currentCategory = "today";
@@ -1625,28 +1623,44 @@ const views = {
           }
           
           dateVal = (eventDate.getMonth()+1) + '/' + eventDate.getDate();
-        } else if (dateVal === undefined) { dateVal = ""; }
-        
-        if (typeof utcVal === 'string' && utcVal.match(/^\d{4}-\d{2}-\d{2}T/)) {
-          let gasDate = new Date(utcVal);
           
-          // Google Apps Script reads plain times as 1899-12-30 in the script's timezone (PST = UTC-8).
-          // So it added 8 hours to whatever the user typed. We subtract 8 hours to get the EXACT time the user typed.
-          gasDate.setUTCHours(gasDate.getUTCHours() - 8);
-          
-          let trueUtcHour = gasDate.getUTCHours();
-          let trueUtcMinute = gasDate.getUTCMinutes();
-          
-          // Format the True UTC time for the table in 24-hour standard format (e.g. 16:00)
-          let h24 = trueUtcHour.toString().padStart(2, '0');
-          let mStr = trueUtcMinute.toString().padStart(2, '0');
-          utcVal = `${h24}:${mStr}`;
-          
-          // Calculate the visitor's local time by treating that time as UTC!
-          let todayLocal = new Date();
-          todayLocal.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
-          localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        } else if (utcVal === undefined) { utcVal = ""; }
+          if (typeof utcVal === 'string' && utcVal.match(/^\d{4}-\d{2}-\d{2}T/)) {
+            let gasDate = new Date(utcVal);
+            
+            // Google Apps Script reads plain times as 1899-12-30 in the script's timezone (PST = UTC-8).
+            // So it added 8 hours to whatever the user typed. We subtract 8 hours to get the EXACT time the user typed.
+            gasDate.setUTCHours(gasDate.getUTCHours() - 8);
+            
+            let trueUtcHour = gasDate.getUTCHours();
+            let trueUtcMinute = gasDate.getUTCMinutes();
+            
+            // Format the True UTC time for the table in 24-hour standard format (e.g. 16:00)
+            let h24 = trueUtcHour.toString().padStart(2, '0');
+            let mStr = trueUtcMinute.toString().padStart(2, '0');
+            utcVal = `${h24}:${mStr}`;
+            
+            // Calculate the visitor's local time by treating that time as UTC!
+            let todayLocal = new Date();
+            todayLocal.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
+            localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Check if exact event time is in the past
+            let exactEventDate = new Date(eventDate);
+            exactEventDate.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
+            if (exactEventDate < now) {
+              isPast = true;
+            }
+          } else {
+            if (utcVal === undefined) utcVal = "";
+            // For all-day events or events with no time, strike if it's strictly before today
+            if (!isToday && eventDate < now) {
+              isPast = true;
+            }
+          }
+        } else {
+          if (dateVal === undefined) dateVal = "";
+          if (utcVal === undefined) utcVal = "";
+        }
         
         let rowHtml = "";
         
