@@ -147,7 +147,9 @@ window.searchPlayerFull = async (name) => {
   }
   
   resDiv.style.display = 'block';
-  resDiv.innerHTML = '<div style="text-align:center; padding:20px;"><span style="color:var(--text-muted)">Querying master database...</span></div>';
+  if (!window.liveData || !window.liveData["activity "]) {
+    resDiv.innerHTML = '<div style="text-align:center; padding:20px;"><span style="color:var(--text-muted)">Querying master database...</span></div>';
+  }
   
   try {
     const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
@@ -1725,15 +1727,16 @@ const views = {
       const select = document.getElementById('playerLookupSelect');
       const container = document.getElementById('playerProfileContainer');
       
-      select.addEventListener('change', (e) => {
-        const idx = e.target.value;
+      const renderCardForChief = (idx) => {
         if (idx === "") {
           container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:40px; font-size:16px;">Select a player to view their activity profile.</div>`;
+          window.currentRosterChiefName = null;
           return;
         }
         
         const p = players[idx];
         const chiefName = p[0].toString().trim();
+        window.currentRosterChiefName = chiefName;
         
         let dynamicSD = null;
         if (allTimeRankingsMap[chiefName]) {
@@ -1758,7 +1761,19 @@ const views = {
         
         let html = window.generatePlayerProfileHtml(chiefName, p, headers, colIsUpcoming, rosterMap[chiefName], lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, btDonationsAllTime, btDonationsCurrent, otherLbs, false);
         container.innerHTML = html;
+      };
+      
+      select.addEventListener('change', (e) => {
+        renderCardForChief(e.target.value);
       });
+      
+      if (window.currentRosterChiefName) {
+        let idx = players.findIndex(p => p[0].toString().trim() === window.currentRosterChiefName);
+        if (idx !== -1) {
+          select.value = idx;
+          renderCardForChief(idx);
+        }
+      }
       
     } catch(e) { renderError(e.message); }
   },
@@ -2216,7 +2231,9 @@ allLinks.forEach(link => {
     const target = e.target.getAttribute('data-target');
     const filter = e.target.getAttribute('data-filter');
     if (views[target]) {
-      window.activeViewFunc = () => views[target](filter);
+      if (target === 'admin') window.activeViewFunc = null;
+      else window.activeViewFunc = () => views[target](filter);
+      
       views[target](filter);
     }
   });
