@@ -102,21 +102,26 @@ export function uploadAvatar(gameId, file, onProgress) {
     const avatarRef = storageRef(storage, `avatars/${gameId}.png`);
     const uploadTask = uploadBytesResumable(avatarRef, file);
     
+    // Failsafe timeout in case Firebase Storage is completely unconfigured and hangs
+    const failsafeTimeout = setTimeout(() => {
+      reject(new Error("Upload timed out. Is Firebase Storage enabled in your Console?"));
+      uploadTask.cancel();
+    }, 15000); // 15 seconds
+    
     uploadTask.on('state_changed', 
       (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (progress > 0) clearTimeout(failsafeTimeout); // Once it starts moving, clear the timeout
         if (onProgress) onProgress(progress);
       }, 
       (error) => {
-        // Handle unsuccessful uploads
+        clearTimeout(failsafeTimeout);
         reject(error);
       }, 
       async () => {
-        // Handle successful uploads on complete
+        clearTimeout(failsafeTimeout);
         try {
           const url = await getDownloadURL(uploadTask.snapshot.ref);
-          // Save URL to Realtime Database so the UI can quickly fetch it
           await set(ref(db, `avatars/${gameId}`), url);
           resolve(url);
         } catch (err) {
