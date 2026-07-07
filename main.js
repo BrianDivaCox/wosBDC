@@ -138,15 +138,13 @@ window.toggleMaintenance = async () => {
   }
 };
 
-window.searchPlayerFull = async () => {
-  const input = document.getElementById('uniSearchInput');
-  const btn = document.getElementById('uniSearchBtn');
+window.searchPlayerFull = async (name) => {
   const resDiv = document.getElementById('uniEditorRes');
-  if (!input || !input.value.trim()) return;
-  const name = input.value.trim();
+  if (!name || !name.trim()) {
+    resDiv.style.display = 'none';
+    return;
+  }
   
-  btn.innerHTML = 'Searching...';
-  btn.disabled = true;
   resDiv.style.display = 'flex';
   resDiv.innerHTML = '<span style="color:var(--text-muted)">Querying database...</span>';
   
@@ -189,9 +187,6 @@ window.searchPlayerFull = async () => {
   } catch (err) {
     resDiv.innerHTML = `<span style="color:var(--danger)">Network Error: ${err.message}</span>`;
   }
-  
-  btn.innerHTML = 'Search';
-  btn.disabled = false;
 };
 
 window.savePlayerFull = async (name) => {
@@ -480,15 +475,31 @@ const views = {
       return;
     }
     
-    renderLoading("Loading Admin Panel");
-    try {
-      const usersSnap = await get(ref(db, 'users'));
+        try {
+      const [usersSnap, rosterRawData] = await Promise.all([
+        get(ref(db, 'users')),
+        fetchSheet("Chief's List")
+      ]);
       const users = usersSnap.val() || {};
+      
+      const players = [];
+      if (rosterRawData && rosterRawData.length > 0) {
+        for (let i = 1; i < rosterRawData.length; i++) {
+          if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim() !== "") {
+            players.push(rosterRawData[i][0].toString().trim());
+          }
+        }
+      }
+      players.sort((a, b) => a.localeCompare(b));
+      let playerOptions = `<option value="">-- Select a Chief --</option>`;
+      players.forEach(p => {
+        playerOptions += `<option value="${p}">${p}</option>`;
+      });
       
       let html = `
         <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="color:var(--danger); margin:0;">🛡️ Admin Control Panel</h2>
+            <h2 style="color:var(--danger); margin:0;">🛠️ Admin Control Panel</h2>
             <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Bear Trap Donations</button>
           </div>
           
@@ -507,12 +518,13 @@ const views = {
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
             <div style="margin-bottom:15px;">
               <h3 style="margin:0; color:var(--accent);">Player Database Editor</h3>
-              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Search and update Alliance Championship, Polar Terrors, and Bear Donations for any chief.</p>
+              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select a chief to edit their Alliance Championship, Polar Terrors, and Bear Donations data.</p>
             </div>
             
             <div style="display:flex; gap:10px; margin-bottom:10px;">
-              <input type="text" id="uniSearchInput" placeholder="Enter Chief Name..." style="flex:1; padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
-              <button onclick="window.searchPlayerFull()" id="uniSearchBtn" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Search</button>
+              <select id="uniSearchInput" onchange="window.searchPlayerFull(this.value)" style="flex:1; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
+                ${playerOptions}
+              </select>
             </div>
             
             <div id="uniEditorRes" style="display:none; flex-direction:column; gap:12px; border-top:1px solid var(--border); padding-top:15px;">
