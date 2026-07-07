@@ -2342,7 +2342,7 @@ window.promptEventUpdate = async (name, eventHeader) => {
   
   const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
   try {
-    const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=Yes&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+    const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=yes&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
     if (res.success) {
       window.showToast("Successfully updated!", "success");
       window.sheetCache = {}; 
