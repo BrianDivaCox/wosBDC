@@ -2,6 +2,15 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.3.0] - 2026-07-07
+
+### Added
+- **Visual Events Checklist Editor**: Upgraded the Universal Player Editor to visually match the user-facing Player Card! Admins can now view a player's complete profile and click directly on "Action Required" (❌) cells in the checklist grid to mark events as Participated.
+- **Bear Trap Quick Editing**: Added a convenient "+ Add Donation" button directly into the Player Card header in Admin Mode, allowing for lightning-fast Bear Trap updates.
+
+### Fixed
+- **Mobile Hamburger Menu UX**: Rewrote the mobile navigation dropdown logic to behave as an accordion. Expanding a submenu (like Leaderboards) will now correctly collapse other submenus. Fixed an issue where menus wouldn't reliably close when tapping their arrows.
+
 ## [1.2.0] - 2026-07-07
 
 ### Added
