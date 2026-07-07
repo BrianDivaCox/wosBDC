@@ -30,14 +30,6 @@ if(settingsBtn) settingsBtn.addEventListener('click', openSidebar);
 if(closeSidebar) closeSidebar.addEventListener('click', closeSidebarFunc);
 if(sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebarFunc);
 
-const quickLookupBtn = document.getElementById('quickLookupBtn');
-if (quickLookupBtn) {
-  quickLookupBtn.addEventListener('click', () => {
-    closeSidebarFunc();
-    if(mobileMenu) mobileMenu.classList.remove('open');
-    views.quicklookup();
-  });
-}
 
 // --- Mobile Menu Logic ---
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -1505,30 +1497,7 @@ const views = {
     `;
   },
   
-  quicklookup: async () => {
-    app.innerHTML = `
-      <div class="card" style="display:flex; flex-direction:column; height: 85vh; min-height: 800px; padding:0; overflow:hidden; animation: fadeIn 0.3s ease;">
-        <div style="padding:15px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:24px;">🔍</span>
-            <h2 style="margin:0; font-size:20px; color:var(--text-main);">Quick Lookup</h2>
-          </div>
-          <button onclick="views.home()" style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:5px 15px; border-radius:6px; cursor:pointer;">Close</button>
-        </div>
-        <div style="flex:1; width:100%; position:relative; background:var(--bg-main);">
-          <iframe 
-            src="https://script.google.com/macros/s/AKfycbxpvuesjr19OFhqIY1JtFMqHee6I4YKLkEDqTCVNGDxkMyyfm1b5wLiIVXtbn6vjBg/exec" 
-            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"
-            frameborder="0" 
-            marginheight="0" 
-            marginwidth="0">
-            Loading…
-          </iframe>
-        </div>
-      </div>
-    `;
-  },
-  
+
   schedule: async () => {
     renderLoading("Loading Schedule");
     try {
