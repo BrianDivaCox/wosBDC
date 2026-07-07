@@ -714,7 +714,7 @@ const views = {
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
             <div style="margin-bottom:15px;">
               <h3 style="margin:0; color:var(--accent);">Player Database Editor</h3>
-              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select a chief to edit their Alliance Championship, Polar Terrors, and Bear Donations data.</p>
+              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select a chief and click their red "Missed" metrics below to instantly mark them as Participated for Alliance Championship, Polar Terrors, Mercenary Prestige, or Voter. Use the green button to add Bear Donations.</p>
             </div>
             
             <div style="display:flex; gap:10px; margin-bottom:10px;">
