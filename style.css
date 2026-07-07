@@ -355,7 +355,7 @@ body {
 .card-title {
   font-size: 22px;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-top: 20px;
   color: var(--text-main);
   border-bottom: 1px solid var(--border);
   padding-bottom: 10px;
@@ -489,7 +489,7 @@ tr:hover td {
 /* Toast Notifications */
 #toast-container {
   position: fixed;
-  bottom: 20px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -511,7 +511,7 @@ tr:hover td {
 .toast-msg.success { border-left-color: var(--success); }
 .toast-msg.error { border-left-color: var(--danger); }
 @keyframes slideUpToast {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeOutToast {

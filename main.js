@@ -109,18 +109,29 @@ const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 // Listen to Auth State
 listenToAuth((user) => {
   currentUser = user;
+  const navIndicator = document.getElementById('navbar-user-indicator');
+  
   if (user) {
-    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${idToNameMap[user.gameId] || 'Account'}`;
+    let name = idToNameMap[user.gameId] || 'Account';
+    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${name}`;
     if(adminSidebarBtn && user.gameId === 318843189) {
       adminSidebarBtn.style.display = 'block';
     } else if (adminSidebarBtn) {
       adminSidebarBtn.style.display = 'none';
     }
+    
+    if (navIndicator) {
+      navIndicator.innerHTML = `👤 ${name}`;
+      navIndicator.style.display = 'flex';
+    }
+    
     // If they are on the home page, maybe reload or show a toast
     if (app.querySelector('#accountHubView')) views.account(); // Refresh account view if open
   } else {
-    if(authSidebarBtn) authSidebarBtn.innerHTML = `🔐 Sign In / Register`;
+    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 Sign In / Register`;
     if(adminSidebarBtn) adminSidebarBtn.style.display = 'none';
+    if (navIndicator) navIndicator.style.display = 'none';
+    
     if (app.querySelector('#accountHubView') || app.querySelector('#adminHubView')) views.home(); // Kick to home
   }
 });
