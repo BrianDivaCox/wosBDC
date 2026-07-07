@@ -411,7 +411,13 @@ const views = {
       <div id="accountHubView" class="card" style="max-width:600px; margin:0 auto; text-align:center;">
         <h2 style="color:var(--text-main); margin-top:0;">Account Hub</h2>
         <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
-          <div style="font-size:18px; font-weight:bold; color:var(--accent); margin-bottom:10px;">👤 ${currentChiefName}</div>
+          <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:10px;">
+            <div style="width:80px; height:80px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold; margin-bottom:10px; overflow:hidden; border:2px solid var(--border);">
+              <img id="accountHubAvatarImg" src="${avatarMap[currentUser.gameId] || `/images/${currentChiefName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${currentChiefName.charAt(0).toUpperCase()}</div>
+            </div>
+            <div style="font-size:18px; font-weight:bold; color:var(--accent);">${currentChiefName}</div>
+          </div>
           <div style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">${currentUser.email}</div>
           
           <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
@@ -493,6 +499,14 @@ const views = {
         }).then(async (base64String) => {
            uploadBtn.textContent = 'Uploading...';
            await uploadAvatar(currentUser.gameId, base64String);
+           
+           // Update DOM immediately
+           const imgEl = document.getElementById('accountHubAvatarImg');
+           if (imgEl) {
+             imgEl.src = base64String;
+             imgEl.style.display = 'block';
+             if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'none';
+           }
         });
         
         statusMsg.style.color = 'var(--success)';
@@ -500,7 +514,7 @@ const views = {
         uploadBtn.textContent = 'Choose Image';
         uploadBtn.disabled = false;
         
-        // Refresh mapping so UI updates immediately
+        // Refresh mapping so UI updates immediately globally
         if (idToNameMap[currentUser.gameId]) {
            avatarMap[currentUser.gameId] = await get(ref(db, `avatars/${currentUser.gameId}`)).then(s => s.val());
         }
