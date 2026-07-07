@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, onDisconnect, set, push, runTransaction, get } from "firebase/database";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuw51XRkUz5sbr-i8DKiGUgMpAPSiR-vs",
@@ -94,16 +94,37 @@ export function listenToAuth(callback) {
   });
 }
 
-export async function uploadAvatar(gameId, file) {
-  if (!gameId) throw new Error("Game ID is required to upload an avatar");
-  // Upload to Firebase Storage
-  const avatarRef = storageRef(storage, `avatars/${gameId}.png`);
-  await uploadBytes(avatarRef, file);
-  const url = await getDownloadURL(avatarRef);
-  
-  // Save URL to Realtime Database so the UI can quickly fetch it
-  await set(ref(db, `avatars/${gameId}`), url);
-  return url;
+export function uploadAvatar(gameId, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    if (!gameId) return reject(new Error("Game ID is required to upload an avatar"));
+    
+    // Upload to Firebase Storage
+    const avatarRef = storageRef(storage, `avatars/${gameId}.png`);
+    const uploadTask = uploadBytesResumable(avatarRef, file);
+    
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (onProgress) onProgress(progress);
+      }, 
+      (error) => {
+        // Handle unsuccessful uploads
+        reject(error);
+      }, 
+      async () => {
+        // Handle successful uploads on complete
+        try {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          // Save URL to Realtime Database so the UI can quickly fetch it
+          await set(ref(db, `avatars/${gameId}`), url);
+          resolve(url);
+        } catch (err) {
+          reject(err);
+        }
+      }
+    );
+  });
 }
 
 export async function deleteAvatar(gameId) {

@@ -442,18 +442,30 @@ const views = {
       if (!file) return;
       
       try {
-        uploadBtn.textContent = 'Uploading...';
+        uploadBtn.textContent = 'Uploading... 0%';
         uploadBtn.disabled = true;
+        statusMsg.style.color = 'var(--text-muted)';
+        statusMsg.textContent = 'Preparing upload...';
         
-        await uploadAvatar(currentUser.gameId, file);
+        await uploadAvatar(currentUser.gameId, file, (progress) => {
+          const percent = Math.round(progress);
+          uploadBtn.textContent = `Uploading... ${percent}%`;
+          statusMsg.textContent = `Uploading: ${percent}%`;
+        });
         
-        statusMsg.textContent = '✅ Profile picture updated successfully!';
         statusMsg.style.color = 'var(--success)';
-      } catch (err) {
-        statusMsg.textContent = '❌ Error: ' + err.message;
-        statusMsg.style.color = 'var(--danger)';
-      } finally {
+        statusMsg.textContent = '✅ Profile picture updated successfully!';
         uploadBtn.textContent = 'Choose Image';
+        uploadBtn.disabled = false;
+        
+        // Refresh mapping so UI updates immediately
+        if (idToNameMap[currentUser.gameId]) {
+           avatarMap[currentUser.gameId] = await get(ref(db, `avatars/${currentUser.gameId}`)).then(s => s.val());
+        }
+      } catch (err) {
+        statusMsg.style.color = 'var(--danger)';
+        statusMsg.textContent = `❌ Upload failed: ${err.message}`;
+        uploadBtn.textContent = 'Try Again';
         uploadBtn.disabled = false;
       }
     });
