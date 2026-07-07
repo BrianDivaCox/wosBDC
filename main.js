@@ -390,19 +390,40 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   isRegistering = !isRegistering;
   authErrorMsg.style.display = 'none';
   if (isRegistering) {
-    authModalTitle.textContent = 'Register';
+    authModalTitle.textContent = 'Create Account';
     authGameId.style.display = 'block';
+    authGameId.value = '';
+    if(authChiefConfirm) authChiefConfirm.style.display = 'none';
     authSubmitBtn.textContent = 'Create Account';
     authToggleText.textContent = 'Already have an account?';
     authToggleBtn.textContent = 'Sign In';
   } else {
     authModalTitle.textContent = 'Sign In';
     authGameId.style.display = 'none';
+    if(authChiefConfirm) authChiefConfirm.style.display = 'none';
     authSubmitBtn.textContent = 'Sign In';
     authToggleText.textContent = 'Need an account?';
     authToggleBtn.textContent = 'Register';
   }
 });
+
+const authChiefConfirm = document.getElementById('authChiefConfirm');
+if (authGameId && authChiefConfirm) {
+  authGameId.addEventListener('input', () => {
+    if (!isRegistering) return;
+    const val = authGameId.value.trim();
+    if (!val) {
+      authChiefConfirm.style.display = 'none';
+      return;
+    }
+    authChiefConfirm.style.display = 'block';
+    if (idToNameMap[val]) {
+      authChiefConfirm.innerHTML = `Is your Chief Name: <strong style="color:var(--success)">${idToNameMap[val]}</strong>?`;
+    } else {
+      authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Game ID not found in master database.</span>`;
+    }
+  });
+}
 
 const showPasswordBtn = document.getElementById('showPasswordBtn');
 if(showPasswordBtn) showPasswordBtn.addEventListener('click', (e) => {
