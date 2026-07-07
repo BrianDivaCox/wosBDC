@@ -357,7 +357,7 @@ const views = {
       for (const [uid, u] of Object.entries(users)) {
         const cName = idToNameMap[u.gameId] || "Unknown";
         const hasAvatar = avatarMap[u.gameId] ? true : false;
-        const avatarSrc = avatarMap[u.gameId] || `/images/${cName}.png`;
+        const avatarSrc = avatarMap[u.gameId] || `images/${cName}.png`;
         
         html += `
           <tr style="border-bottom:1px solid var(--border);">
@@ -413,7 +413,7 @@ const views = {
         <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
           <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:10px;">
             <div style="width:80px; height:80px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold; margin-bottom:10px; overflow:hidden; border:2px solid var(--border);">
-              <img id="accountHubAvatarImg" src="${avatarMap[currentUser.gameId] || `/images/${currentChiefName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <img id="accountHubAvatarImg" src="${avatarMap[currentUser.gameId] || `images/${currentChiefName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
               <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${currentChiefName.charAt(0).toUpperCase()}</div>
             </div>
             <div style="font-size:18px; font-weight:bold; color:var(--accent);">${currentChiefName}</div>
@@ -708,7 +708,7 @@ const views = {
                let pName = (cell || "").toString().trim();
                if (pName) {
                  let playerGameId = nameToIdMap[pName];
-                 let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `/images/${pName}.png`;
+                 let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `images/${pName}.png`;
                  let avatarHtml = `
                    <div style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:10px; font-weight:bold; margin-right:8px; overflow:hidden; vertical-align:middle; flex-shrink:0;">
                      <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -1272,7 +1272,7 @@ const views = {
         
         let avatarImgHtml = `${chiefName.charAt(0).toUpperCase()}`;
         let playerGameId = nameToIdMap[chiefName];
-        let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `/images/${chiefName}.png`;
+        let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `images/${chiefName}.png`;
         
         avatarImgHtml = `
           <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
