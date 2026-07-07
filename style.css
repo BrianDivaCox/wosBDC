@@ -465,8 +465,12 @@ tr:hover td {
     min-width: unset;
   }
   
+  .dropdown:hover .dropdown-content {
+    display: none; /* Disable sticky hover on mobile */
+  }
+  
   .dropdown.open .dropdown-content {
-    display: block; /* Show only when tapped */
+    display: block !important; /* Show only when tapped */
   }
   
   .dropdown-content .sub-link {
