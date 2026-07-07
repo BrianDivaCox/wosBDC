@@ -529,3 +529,11 @@ tr:hover td {
 @keyframes fadeOutToast {
   to { opacity: 0; }
 }
+
+/* Google Translate Overrides */
+.goog-te-banner-frame.skiptranslate { display: none !important; }
+body { top: 0px !important; }
+#google_translate_element select { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; padding: 5px; font-family: inherit; font-size: 12px; cursor: pointer; }
+.goog-logo-link { display: none !important; }
+.goog-te-gadget { color: transparent !important; font-size: 0px; }
+.goog-te-gadget .goog-te-combo { margin: 0; }
