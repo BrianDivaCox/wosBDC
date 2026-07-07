@@ -2,6 +2,13 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.0.2] - 2026-07-07
+
+### Changed
+- **Dashboard Hub Renamed**: Changed the "Dashboard Hub" menu to "Settings" (with a ⚙️ icon) to improve usability and reduce confusion.
+- **Persistent Login Indicator**: Added a permanent, dynamic pill to the top Navigation Bar that displays the user's name when logged in.
+- **Toast Notifications**: Overhauled Toast notifications to slide down from the top of the screen to prevent mobile soft-keyboards and Safari navbars from obscuring them.
+
 ## [1.0.1] - 2026-07-07
 
 ### Added
