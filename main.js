@@ -562,22 +562,46 @@ const formatCell = (cell) => {
   return cell;
 };
 
-// --- GitHub Deployment Tracker ---
+// --- Dev Mode Deployment Tracker ---
+const devModeToggle = document.getElementById('devModeToggle');
+const devDeployBanner = document.getElementById('devDeployBanner');
+const devModeSlider = document.getElementById('devModeSlider');
+const statusEl = document.getElementById('github-deploy-status');
+let devModePollingInterval = null;
+let lastDeployStatus = null;
+
 const checkDeploymentStatus = async () => {
-  const statusEl = document.getElementById('github-deploy-status');
   if (!statusEl) return;
   try {
-    const res = await fetch('https://api.github.com/repos/BrianDivaCox/wosBDC/actions/runs?per_page=1');
+    const res = await fetch('https://api.github.com/repos/BrianDivaCox/wosBDC/actions/runs?branch=main&per_page=1');
     const data = await res.json();
     if (data && data.workflow_runs && data.workflow_runs.length > 0) {
       const latestRun = data.workflow_runs[0];
       const status = latestRun.status;
       const conclusion = latestRun.conclusion;
       
+      const isDevMode = localStorage.getItem('devMode') === 'true';
+      
       if (status === 'in_progress' || status === 'queued') {
         statusEl.innerHTML = `<span style="color:#eab308; display:flex; align-items:center; gap:5px;"><span style="display:inline-block; animation: spin 2s linear infinite;">⏳</span> Building & Deploying...</span>`;
+        if (isDevMode && devDeployBanner) {
+            devDeployBanner.style.display = 'block';
+            devDeployBanner.style.backgroundColor = '#f59e0b';
+            devDeployBanner.style.color = '#fff';
+            devDeployBanner.innerHTML = '🚀 Deployment in progress... Auto-refresh enabled.';
+            lastDeployStatus = 'in_progress';
+        }
       } else if (status === 'completed' && conclusion === 'success') {
         statusEl.innerHTML = `<span style="color:var(--success);">✅ Live & Up to Date</span>`;
+        if (isDevMode && lastDeployStatus === 'in_progress') {
+            window.location.reload(true);
+        } else if (isDevMode && devDeployBanner) {
+            devDeployBanner.style.display = 'block';
+            devDeployBanner.style.backgroundColor = '#10b981';
+            devDeployBanner.style.color = '#fff';
+            devDeployBanner.innerHTML = '🟢 Live and up to date.';
+            lastDeployStatus = 'completed';
+        }
       } else if (status === 'completed' && conclusion === 'failure') {
         statusEl.innerHTML = `<span style="color:var(--danger);">❌ Deployment Failed</span>`;
       } else {
@@ -590,10 +614,43 @@ const checkDeploymentStatus = async () => {
     statusEl.innerHTML = `<span style="color:var(--danger);">Error fetching status</span>`;
   }
 };
-// Check once on load
-checkDeploymentStatus();
+
+if (devModeToggle) {
+  const isDevMode = localStorage.getItem('devMode') === 'true';
+  devModeToggle.checked = isDevMode;
+  if (isDevMode && devModeSlider) {
+    devModeSlider.style.transform = 'translateX(20px)';
+  }
+  
+  if (isDevMode) {
+    checkDeploymentStatus();
+    devModePollingInterval = setInterval(checkDeploymentStatus, 10000);
+  }
+  
+  devModeToggle.addEventListener('change', (e) => {
+    const enabled = e.target.checked;
+    localStorage.setItem('devMode', enabled);
+    if (devModeSlider) {
+      devModeSlider.style.transform = enabled ? 'translateX(20px)' : 'translateX(0)';
+    }
+    
+    if (enabled) {
+      checkDeploymentStatus();
+      devModePollingInterval = setInterval(checkDeploymentStatus, 10000);
+    } else {
+      if (devModePollingInterval) clearInterval(devModePollingInterval);
+      if (devDeployBanner) devDeployBanner.style.display = 'none';
+    }
+  });
+}
+
+// Check once on load if not dev mode (dev mode already checks)
+if (localStorage.getItem('devMode') !== 'true') {
+    checkDeploymentStatus();
+}
 // Also check when the user opens the sidebar
-document.getElementById('settingsBtn').addEventListener('click', checkDeploymentStatus);
+const settingsBtnEl = document.getElementById('settingsBtn');
+if (settingsBtnEl) settingsBtnEl.addEventListener('click', checkDeploymentStatus);
 
 // Add spinning animation for the loader
 const style = document.createElement('style');
@@ -2289,3 +2346,4 @@ window.promptBearTrap = async (name) => {
     alert("Network Error: " + err.message);
   }
 };
+
