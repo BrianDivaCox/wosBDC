@@ -1,3 +1,8 @@
+### v1.4.0 (2026-07-07)
+- **Infrastructure**: Migrated the primary database read architecture to Firebase Realtime Database to eliminate rate limits and HTML parsing crashes.
+- **Performance**: Reduced data fetching times from 2-3 seconds down to ~50 milliseconds.
+- **Admin**: Introduced hybrid Google Sheets / Firebase sync architecture.
+
 # Changelog
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
