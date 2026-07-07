@@ -139,6 +139,7 @@ window.toggleMaintenance = async () => {
 };
 
 window.searchPlayerFull = async (name) => {
+  window.activeViewFunc = () => window.searchPlayerFull(name);
   const resDiv = document.getElementById('uniEditorRes');
   if (!name || !name.trim()) {
     resDiv.style.display = 'none';
@@ -517,32 +518,54 @@ const renderError = (err) => {
   app.innerHTML = `<div class="card"><div class="loading" style="color:var(--danger)">❌ Error: ${err}</div></div>`;
 };
 
-// Data Fetcher
+window.liveData = {};
+window.liveListeners = {};
+window.livePromises = {};
+window.activeViewFunc = null;
+
 const fetchSheet = async (sheetName) => {
-  try {
-    const snapshot = await get(ref(db, `sheets/${sheetName}`));
-    if (snapshot.exists()) {
-      return snapshot.val();
-    } else {
-      // If Firebase misses the cache, fallback to Google Apps Script
-      console.warn(`Cache miss for ${sheetName}, falling back to GAS`);
-      const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
-      const text = await res.text();
-      let json;
-      try {
-        json = JSON.parse(text);
-      } catch (e) {
-        if (text.trim().startsWith('<')) {
-           throw new Error("Database API is currently unavailable (Google Apps Script Error or Rate Limit).");
+  if (window.liveData[sheetName]) return window.liveData[sheetName];
+  if (window.livePromises[sheetName]) return window.livePromises[sheetName];
+  
+  window.livePromises[sheetName] = new Promise((resolve, reject) => {
+    const sheetRef = ref(db, `sheets/${sheetName}`);
+    window.liveListeners[sheetName] = onValue(sheetRef, (snapshot) => {
+      const data = snapshot.val();
+      const isUpdate = window.liveData[sheetName] !== undefined;
+      
+      window.liveData[sheetName] = data;
+      
+      if (!isUpdate) {
+        resolve(data);
+      } else {
+        if (window.activeViewFunc) {
+          console.log(`Live sync: ${sheetName} updated. Re-rendering view...`);
+          window.activeViewFunc();
         }
-        throw new Error("Invalid JSON response from Database API.");
       }
-      if (json.error) throw new Error(json.error);
-      return json.data;
-    }
-  } catch(err) {
-    throw err;
-  }
+    }, async (error) => {
+      console.warn(`Cache miss for ${sheetName}, falling back to GAS`);
+      try {
+        const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          if (text.trim().startsWith('<')) {
+             throw new Error("Database API is currently unavailable.");
+          }
+          throw new Error("Invalid JSON response.");
+        }
+        if (json.error) throw new Error(json.error);
+        if (!window.liveData[sheetName]) resolve(json.data);
+      } catch (err) {
+        if (!window.liveData[sheetName]) reject(err);
+      }
+    });
+  });
+  
+  return window.livePromises[sheetName];
 };
 
 // Immediately fetch mapping data to ensure auth UI is populated
@@ -2192,11 +2215,15 @@ allLinks.forEach(link => {
     
     const target = e.target.getAttribute('data-target');
     const filter = e.target.getAttribute('data-filter');
-    if (views[target]) views[target](filter);
+    if (views[target]) {
+      window.activeViewFunc = () => views[target](filter);
+      views[target](filter);
+    }
   });
 });
 
 // Initial load
+window.activeViewFunc = () => views.home();
 views.home();
 initPresence();
 
@@ -2285,7 +2312,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   metricsHtml += '<p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming' + (isAdmin ? ' <span style="color:var(--danger); font-weight:bold; margin-left:10px;">(Click ❌ to edit)</span>' : '') + '</p>';
   metricsHtml += '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">';
   
-  const supportedEvents = ["Alliance Championship", "Polar Terrors", "Mercenary Prestige", "Voter"];
+  const supportedEvents = ["Championship", "Polar Terrors", "Mercenary Prestige", "Voter"];
   
   for (let col = 1; col < headers.length; col++) {
     let header = headers[col] || "Metric " + col;
