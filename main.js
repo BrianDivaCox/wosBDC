@@ -702,21 +702,7 @@ const views = {
               cell = Number(cell).toLocaleString();
             }
             
-            // Inject avatar if it's the Name column (idx 1)
             let formattedCell = formatCell(cell);
-            if (idx === 1) {
-               let pName = (cell || "").toString().trim();
-               if (pName) {
-                 let playerGameId = nameToIdMap[pName];
-                 let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `images/${pName}.png`;
-                 let avatarHtml = `
-                   <div style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:10px; font-weight:bold; margin-right:8px; overflow:hidden; vertical-align:middle; flex-shrink:0;">
-                     <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                     <div style="display:none; width:100%; height:100%; align-items:center; justify-content:center;">${pName.charAt(0).toUpperCase()}</div>
-                   </div>`;
-                 formattedCell = `<div style="display:flex; align-items:center;">${avatarHtml}${formattedCell}</div>`;
-               }
-            }
             
             html += `<td ${idx === 0 ? 'style="font-weight:bold; color:var(--text-muted);"' : ''}>${formattedCell}</td>`;
           });
@@ -1282,7 +1268,7 @@ const views = {
         container.innerHTML = `
           <div class="card" style="animation: fadeIn 0.3s ease;">
             <div style="display:flex; align-items:flex-start; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
-              <div style="width:50px; height:50px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; font-weight:bold; flex-shrink:0; overflow:hidden;">
+              <div style="width:80px; height:80px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:32px; color:#fff; font-weight:bold; flex-shrink:0; overflow:hidden; border:2px solid var(--border);">
                 ${avatarImgHtml}
               </div>
               <div style="overflow:hidden;">
