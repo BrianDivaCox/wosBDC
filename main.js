@@ -145,47 +145,138 @@ window.searchPlayerFull = async (name) => {
     return;
   }
   
-  resDiv.style.display = 'flex';
-  resDiv.innerHTML = '<span style="color:var(--text-muted)">Querying database...</span>';
+  resDiv.style.display = 'block';
+  resDiv.innerHTML = '<div style="text-align:center; padding:20px;"><span style="color:var(--text-muted)">Querying master database...</span></div>';
   
   try {
-    const res = await fetch(`${API_BASE_URL}?api=lookupFull&name=${encodeURIComponent(name)}`).then(r => r.json());
-    if (res.success) {
-      resDiv.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h4 style="margin:0; color:var(--text-main); font-size:16px;">👤 ${res.name}</h4>
-          <span style="font-size:12px; color:var(--text-muted);">Current Bear Total: <strong style="color:var(--accent)">${res.btTotal}</strong></span>
-        </div>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-          <div>
-            <label style="font-size:12px; color:var(--text-muted);">Polar Terrors (Yes/No)</label>
-            <select id="uniPtSelect" style="width:100%; padding:8px; border-radius:6px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); margin-top:4px;">
-              <option value="Yes" ${res.ptStatus === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${res.ptStatus === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:12px; color:var(--text-muted);">Alliance Champ (Yes/No)</label>
-            <select id="uniAcSelect" style="width:100%; padding:8px; border-radius:6px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); margin-top:4px;">
-              <option value="Yes" ${res.acStatus === 'Yes' ? 'selected' : ''}>Yes</option>
-              <option value="No" ${res.acStatus === 'No' ? 'selected' : ''}>No</option>
-            </select>
-          </div>
-        </div>
-        
-        <div>
-          <label style="font-size:12px; color:var(--text-muted);">Add Bear Trap Donations (Leave blank to add none)</label>
-          <input type="number" id="uniBtAdd" placeholder="e.g. 500" style="width:100%; padding:8px; border-radius:6px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); margin-top:4px; box-sizing:border-box;">
-        </div>
-        
-        <button onclick="window.savePlayerFull('${res.name}')" style="background:var(--success); color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; margin-top:5px;">Save Changes</button>
-      `;
-    } else {
-      resDiv.innerHTML = `<span style="color:var(--danger)">Error: ${res.message}</span>`;
+    const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
+      fetchSheet("activity "),
+      fetchSheet("Chief's List"),
+      fetchSheet("LeaderBoards"),
+      fetchSheet("Showdown History"),
+      fetchSheet("Showdown")
+    ]);
+    
+    // Parse Maps
+    const rosterMap = {};
+    if (rosterRawData && rosterRawData.length > 0) {
+      for (let i = 1; i < rosterRawData.length; i++) {
+        let chief = rosterRawData[i][0];
+        if (chief) rosterMap[chief.toString().trim()] = { giftCodes: rosterRawData[i][2], timeActive: rosterRawData[i][4] };
+      }
     }
+    
+    const lbMap = {};
+    const otherLbs = [];
+    let btDonationsAllTime = null, btDonationsCurrent = null, bear1 = null, bear2 = null, bearBoth = null;
+    
+    if (lbRawData) {
+      for (let r = 0; r < lbRawData.length; r++) {
+        for (let c = 0; c < lbRawData[r].length; c++) {
+          let cell = lbRawData[r][c];
+          if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || cell.toLowerCase().includes('all-time bear donations'))) {
+            let title = cell.replace(/leaderboard/i, '').trim();
+            let emoji = "🏆";
+            if (title.toLowerCase().includes("bear")) emoji = "🐻";
+            else if (title.toLowerCase().includes("showdown")) emoji = "⚔️";
+            
+            let scoreCol = c + 2;
+            if (r + 1 < lbRawData.length) {
+              let hc = c;
+              while (hc < lbRawData[r+1].length && lbRawData[r+1][hc] !== "") { scoreCol = hc; hc++; }
+            }
+            
+            let dr = r + 2;
+            while (dr < lbRawData.length && lbRawData[dr][c] !== "") {
+              let pRank = lbRawData[dr][c];
+              let pName = lbRawData[dr][c + 1];
+              let pScore = lbRawData[dr][scoreCol];
+              
+              if (pName && pScore && pName.toString().trim() === name) {
+                if (typeof pScore === 'number') pScore = pScore.toLocaleString();
+                else if (typeof pScore === 'string' && !isNaN(pScore) && pScore.trim() !== "") pScore = Number(pScore).toLocaleString();
+                
+                let t = title.toLowerCase();
+                if (t.includes('all-time showdown')) {}
+                else if (t.includes('bear trap 1')) bear1 = pScore;
+                else if (t.includes('bear trap 2')) bear2 = pScore;
+                else if (t.includes('both bear trap')) bearBoth = pScore;
+                else if (t.includes('all-time bear donations')) btDonationsAllTime = {rank: pRank, score: pScore};
+                else if (t.includes('bear donations')) btDonationsCurrent = {rank: pRank, score: pScore};
+                else otherLbs.push({ title, score: pScore, rank: pRank, emoji });
+              }
+              dr++;
+            }
+          }
+        }
+      }
+    }
+    
+    const allTimeShowdownMap = {};
+    const processShowdownTable = (tableData) => {
+      if (!tableData) return;
+      for (let r = 0; r < tableData.length; r++) {
+        let row = tableData[r];
+        if (row.some(c => typeof c === 'string' && c.toLowerCase().trim() === 'ranking')) {
+          let nameCol = row.findIndex(c => typeof c === 'string' && (c.toLowerCase().includes('name') || c.toLowerCase().includes('member') || c.toLowerCase().includes('player')));
+          let totalCol = row.findIndex(c => typeof c === 'string' && (c.toLowerCase().includes('total')));
+          if (nameCol !== -1 && totalCol !== -1) {
+            let dr = r + 1;
+            while (dr < tableData.length && tableData[dr][nameCol] && (tableData[dr][nameCol].toString().toLowerCase().includes('horns') || tableData[dr][nameCol].toString().toLowerCase().includes('winners'))) dr++;
+            while (dr < tableData.length && tableData[dr][nameCol] !== undefined && tableData[dr][nameCol] !== "") {
+              let pName = tableData[dr][nameCol];
+              let pScore = tableData[dr][totalCol];
+              if (pName && (typeof pScore === 'number' || (typeof pScore === 'string' && !isNaN(pScore)))) {
+                let safeName = pName.toString().trim();
+                if (!allTimeShowdownMap[safeName]) allTimeShowdownMap[safeName] = 0;
+                allTimeShowdownMap[safeName] += Number(pScore);
+              }
+              dr++;
+            }
+          }
+        }
+      }
+    };
+    processShowdownTable(sdHistoryRawData);
+    processShowdownTable(sdCurrentRawData);
+    
+    let dynamicSD = null;
+    const sortedShowdownPlayers = Object.entries(allTimeShowdownMap).map(([n, s]) => ({ name: n, score: s })).sort((a, b) => b.score - a.score);
+    sortedShowdownPlayers.forEach((p, index) => {
+      if (p.name === name) dynamicSD = { score: p.score, rank: index + 1 };
+    });
+    
+    const headers = data[0];
+    let showdownActive = false;
+    let colIsUpcoming = {};
+    for (let c = 1; c < headers.length; c++) {
+       let hasAnyTrue = false;
+       for (let r = 1; r < data.length; r++) {
+          let v = data[r][c];
+          if (c === 1 && data[r]) {
+             let missed = data[r][1];
+             if (missed !== undefined && missed !== null && missed.toString().trim() !== "" && missed !== 0 && missed !== "0") showdownActive = true;
+          }
+          if (v === true || (typeof v === 'string' && (v.toLowerCase().trim() === 'true' || v.toLowerCase().trim() === 'yes'))) hasAnyTrue = true;
+       }
+       colIsUpcoming[c] = !hasAnyTrue;
+    }
+    
+    // Find player row in Activity
+    let pRow = null;
+    for (let i = 1; i < data.length; i++) {
+       if (data[i][0] && data[i][0].toString().trim() === name) { pRow = data[i]; break; }
+    }
+    
+    if (!pRow) throw new Error("Player not found in Activity sheet.");
+    
+    // Render using our global function in Admin Mode!
+    let html = window.generatePlayerProfileHtml(name, pRow, headers, colIsUpcoming, rosterMap[name], null, dynamicSD, showdownActive, bearBoth, bear1, bear2, btDonationsAllTime, btDonationsCurrent, otherLbs, true);
+    
+    resDiv.innerHTML = html;
+    
   } catch (err) {
-    resDiv.innerHTML = `<span style="color:var(--danger)">Network Error: ${err.message}</span>`;
+    resDiv.innerHTML = `<span style="color:var(--danger)">Error: ${err.message}</span>`;
   }
 };
 
@@ -1527,183 +1618,29 @@ const views = {
         const p = players[idx];
         const chiefName = p[0].toString().trim();
         
-        // Lookup Roster Info
-        let rosterInfo = rosterMap[chiefName];
-        let headerBadgesHtml = ``;
-        if (rosterInfo) {
-          // Format gift codes checkmark
-          let gcVal = rosterInfo.giftCodes;
-          let gcDisplay = "❌"; // Default to red X if they are not signed up (missing or false)
-          
-          if (gcVal !== undefined && gcVal !== null && gcVal !== "") {
-            let strVal = gcVal.toString().toLowerCase().trim();
-            if (gcVal === true || strVal === "true" || strVal === "✓" || strVal === "yes") {
-              gcDisplay = "✅";
-            } else if (gcVal === false || strVal === "false" || strVal === "✗" || strVal === "no") {
-              gcDisplay = "❌";
-            } else {
-              gcDisplay = gcVal; // Fallback for weird strings
-            }
-          }
-          
-          let taVal = rosterInfo.timeActive;
-          if (taVal === undefined || taVal === null || taVal.toString().trim() === "") taVal = "N/A";
-          
-          headerBadgesHtml = `
-            <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
-              <span style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🎁 Gift Codes: ${gcDisplay}</span>
-              <span style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⏱️ Active: ${taVal}</span>
-            </div>
-          `;
+        let dynamicSD = null;
+        if (allTimeRankingsMap[chiefName]) {
+          dynamicSD = allTimeRankingsMap[chiefName];
         }
         
-        // Add Activity Streaks & Event Badges
-        let activityBadges = ``;
-        let missedDays = p[1];
-        if (showdownActive) {
-          if (missedDays === undefined || missedDays === null || missedDays.toString().trim() === "" || missedDays === 0 || missedDays === "0") {
-             activityBadges += `<span style="background:color-mix(in srgb, #f97316 15%, transparent); border:1px solid #f97316; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Perfect Attendance</span>`;
-          }
-        }
-        
-        const isTrue = (val) => val === true || (typeof val === 'string' && val.toLowerCase().trim() === 'true');
-        
-        if (isTrue(p[2])) {
-           activityBadges += `<span style="background:color-mix(in srgb, #fbbf24 15%, transparent); border:1px solid #fbbf24; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🏆 Championship</span>`;
-        }
-        if (isTrue(p[3])) {
-           activityBadges += `<span style="background:color-mix(in srgb, #ef4444 15%, transparent); border:1px solid #ef4444; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🛡️ Mercenary</span>`;
-        }
-        if (isTrue(p[4])) {
-           activityBadges += `<span style="background:color-mix(in srgb, #38bdf8 15%, transparent); border:1px solid #38bdf8; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">❄️ Polar Terrors</span>`;
-        }
-        
-        if (activityBadges) {
-           headerBadgesHtml += `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">${activityBadges}</div>`;
-        }
-        
-        // Add Leaderboard Badges if they exist
         let lbData = lbMap[chiefName];
-        let dynamicSD = allTimeRankingsMap[chiefName];
-        
-        if ((lbData && lbData.length > 0) || dynamicSD) {
-          headerBadgesHtml += `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">`;
-          
-          if (dynamicSD) {
-            headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⚔️ All-Time Showdown Rank #${dynamicSD.rank}: <span style="color:var(--text-main);">${dynamicSD.score.toLocaleString()}</span></span>`;
-          }
-          
-            if (lbData) {
-              let bear1, bear2, bearBoth;
-              let btDonationsCurrent, btDonationsAllTime;
-              let otherLbs = [];
-              
-              lbData.forEach(lb => {
-                if (lb.title.toLowerCase().includes('all-time showdown')) return; // Skip old static one
-                
+        let bearBoth = null, bear1 = null, bear2 = null, btDonationsAllTime = null, btDonationsCurrent = null;
+        let otherLbs = [];
+        if (lbData) {
+            lbData.forEach(lb => {
+                if (lb.title.toLowerCase().includes('all-time showdown')) return;
                 let t = lb.title.toLowerCase();
                 if (t.includes('bear trap 1')) bear1 = lb.score;
                 else if (t.includes('bear trap 2')) bear2 = lb.score;
                 else if (t.includes('both bear trap')) bearBoth = lb.score;
                 else if (t.includes('all-time bear donations')) btDonationsAllTime = lb;
                 else if (t.includes('bear donations')) btDonationsCurrent = lb;
-                else {
-                  otherLbs.push(lb);
-                }
-              });
-              
-              if (bear1 || bear2 || bearBoth) {
-                 let innerText = "";
-                 if (bearBoth && bear1 && bear2) innerText = `${bearBoth} Total (T1: ${bear1} | T2: ${bear2})`;
-                 else if (bear1 && bear2) innerText = `T1: ${bear1} | T2: ${bear2}`;
-                 else if (bearBoth) innerText = `${bearBoth} Total`;
-                 else if (bear1) innerText = `T1: ${bear1}`;
-                 else if (bear2) innerText = `T2: ${bear2}`;
-                 
-                 headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap Wins: <span style="color:var(--text-main);">${innerText}</span></span>`;
-              }
-              if (btDonationsCurrent || btDonationsAllTime) {
-                 let allTimeStr = btDonationsAllTime ? `#${btDonationsAllTime.rank} (${btDonationsAllTime.score}) All-Time` : `0 All-Time`;
-                 
-                 let currentScoreStr = 0;
-                 if (btDonationsCurrent) {
-                     currentScoreStr = `#${btDonationsCurrent.rank} (${btDonationsCurrent.score})`;
-                 }
-                 let currentStr = `${currentScoreStr} Current`;
-                 
-                 let innerText = `${allTimeStr} | ${currentStr}`;
-                 
-                 headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🍯 BT Donations: <span style="color:var(--text-main);">${innerText}</span></span>`;
-              }
-              
-              otherLbs.forEach(lb => {
-                headerBadgesHtml += `<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${lb.emoji} ${lb.title}: <span style="color:var(--text-main);">${lb.score}</span></span>`;
-              });
-            }
-          headerBadgesHtml += `</div>`;
+                else otherLbs.push(lb);
+            });
         }
         
-        // Generate Metric Cards for columns B to G (index 1 to 6)
-        let metricsHtml = `
-          <div style="margin-top: 25px;">
-            <h3 style="margin: 0 0 5px 0; color:var(--text-main); font-size:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">📅 Events Checklist</h3>
-            <p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming</p>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">
-        `;
-        
-        for (let col = 1; col < headers.length; col++) {
-          let header = headers[col] || `Metric ${col}`;
-          
-          // Skip showing BT Donations in the checklist boxes (it's in the tag above)
-          if (header.toLowerCase().includes("bt donation")) continue;
-          
-          let val = p[col];
-          
-          // Format Checkmarks and empty values
-          if (val === undefined || val === null || val.toString().trim() === "") {
-            val = "<span style='color:var(--text-muted);'>-</span>";
-          } else {
-            let strVal = val.toString().toLowerCase().trim();
-            if (val === true || strVal === "true" || strVal === "✓" || strVal === "yes") {
-              val = "✅";
-            } else if (val === false || strVal === "false" || strVal === "✗" || strVal === "no") {
-              val = colIsUpcoming[col] ? "⏳" : "❌";
-            }
-          }
-          
-          metricsHtml += `
-            <div style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; padding:15px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.05); transition:transform 0.2s;">
-              <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:bold;">${header}</div>
-              <div style="font-size:18px; font-weight:bold; color:var(--text-main);">${val}</div>
-            </div>
-          `;
-        }
-        metricsHtml += `</div></div>`;
-        
-        let avatarImgHtml = `${chiefName.charAt(0).toUpperCase()}`;
-        let playerGameId = nameToIdMap[chiefName];
-        let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : `images/${chiefName}.png`;
-        
-        avatarImgHtml = `
-          <img src="${tryUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${chiefName.charAt(0).toUpperCase()}</div>
-        `;
-        
-        container.innerHTML = `
-          <div class="card" style="animation: fadeIn 0.3s ease;">
-            <div style="display:flex; align-items:flex-start; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
-              <div style="width:80px; height:80px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:32px; color:#fff; font-weight:bold; flex-shrink:0; overflow:hidden; border:2px solid var(--border);">
-                ${avatarImgHtml}
-              </div>
-              <div style="overflow:hidden;">
-                <h2 style="margin:0; color:var(--text-main); font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${chiefName}</h2>
-                <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">BDC Alliance Member</div>
-                ${headerBadgesHtml}
-              </div>
-            </div>
-            ${metricsHtml}
-          </div>
-        `;
+        let html = window.generatePlayerProfileHtml(chiefName, p, headers, colIsUpcoming, rosterMap[chiefName], lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, btDonationsAllTime, btDonationsCurrent, otherLbs, false);
+        container.innerHTML = html;
       });
       
     } catch(e) { renderError(e.message); }
@@ -2118,13 +2055,30 @@ updateGlobalTimers();
 const allLinks = document.querySelectorAll('.nav-link, .sub-link');
 allLinks.forEach(link => {
   link.addEventListener('click', (e) => {
+    const targetEl = e.currentTarget;
+    
     // Exclude the Theme Settings link since it handles itself
-    if (e.target.id === 'mobileSettingsBtn') return;
+    if (targetEl.id === 'mobileSettingsBtn') return;
     
     // Mobile dropdown toggle logic
-    if (window.innerWidth <= 768 && e.target.classList.contains('nav-link') && e.target.nextElementSibling && e.target.nextElementSibling.classList.contains('dropdown-content')) {
+    if (window.innerWidth <= 768 && targetEl.classList.contains('nav-link') && targetEl.nextElementSibling && targetEl.nextElementSibling.classList.contains('dropdown-content')) {
       e.preventDefault();
-      e.target.parentElement.classList.toggle('open');
+      e.stopPropagation(); // Prevent the document click listener from firing
+      
+      const parent = targetEl.parentElement;
+      const isOpen = parent.classList.contains('open');
+      
+      // Close all other dropdowns
+      document.querySelectorAll('.dropdown').forEach(d => {
+        if (d !== parent) d.classList.remove('open');
+      });
+      
+      // Toggle this one
+      if (isOpen) {
+        parent.classList.remove('open');
+      } else {
+        parent.classList.add('open');
+      }
       return;
     }
     
@@ -2153,3 +2107,185 @@ views.home();
 initPresence();
 
 window.views = views;
+
+
+window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, rosterInfo, lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, btDonationsAllTime, btDonationsCurrent, otherLbs, isAdmin = false) => {
+  let headerBadgesHtml = '';
+  if (rosterInfo) {
+    let gcVal = rosterInfo.giftCodes;
+    if (gcVal === true || gcVal === 'TRUE' || (typeof gcVal === 'string' && gcVal.toLowerCase().trim() === 'true')) {
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--success) 15%, transparent); border:1px solid var(--success); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">✅ All Gift Codes</span>';
+    }
+    let taVal = rosterInfo.timeActive;
+    if (taVal && taVal.toString().trim() !== "") {
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--text-main) 10%, transparent); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⏱️ '+taVal+'</span>';
+    }
+  }
+  
+  let activityBadges = '';
+  let missedDays = p[1];
+  if (showdownActive) {
+    if (missedDays === undefined || missedDays === null || missedDays.toString().trim() === "" || missedDays === 0 || missedDays === "0") {
+       activityBadges += '<span style="background:color-mix(in srgb, #f97316 15%, transparent); border:1px solid #f97316; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Perfect Attendance</span>';
+    }
+  }
+  
+  const isTrue = (val) => val === true || (typeof val === 'string' && val.toLowerCase().trim() === 'true');
+  
+  if (isTrue(p[2])) {
+     activityBadges += '<span style="background:color-mix(in srgb, #fbbf24 15%, transparent); border:1px solid #fbbf24; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🏆 Championship</span>';
+  }
+  if (isTrue(p[3])) {
+     activityBadges += '<span style="background:color-mix(in srgb, #ef4444 15%, transparent); border:1px solid #ef4444; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⚔️ Mercenary</span>';
+  }
+  if (isTrue(p[4])) {
+     activityBadges += '<span style="background:color-mix(in srgb, #38bdf8 15%, transparent); border:1px solid #38bdf8; color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻‍❄️ Polar Terrors</span>';
+  }
+  
+  if (activityBadges) {
+     headerBadgesHtml += '<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">' + activityBadges + '</div>';
+  }
+  
+  if ((lbData && lbData.length > 0) || dynamicSD) {
+    headerBadgesHtml += '<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">';
+    
+    if (dynamicSD) {
+       let scoreStr = Number(dynamicSD.score).toLocaleString();
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🏅 All-Time Showdown: <span style="color:var(--text-main);">#'+dynamicSD.rank+' ('+scoreStr+')</span></span>';
+    }
+    
+    if (bear1 || bear2 || bearBoth) {
+       let innerText = "";
+       if (bearBoth && bear1 && bear2) innerText = bearBoth + ' Total (T1: ' + bear1 + ' | T2: ' + bear2 + ')';
+       else if (bear1 && bear2) innerText = 'T1: ' + bear1 + ' | T2: ' + bear2;
+       else if (bearBoth) innerText = bearBoth + ' Total';
+       else if (bear1) innerText = 'T1: ' + bear1;
+       else if (bear2) innerText = 'T2: ' + bear2;
+       
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap Wins: <span style="color:var(--text-main);">'+innerText+'</span></span>';
+    }
+    if (btDonationsCurrent || btDonationsAllTime) {
+       let allTimeStr = btDonationsAllTime ? '#' + btDonationsAllTime.rank + ' (' + btDonationsAllTime.score + ') All-Time' : '0 All-Time';
+       let currentScoreStr = 0;
+       if (btDonationsCurrent) {
+           currentScoreStr = '#' + btDonationsCurrent.rank + ' (' + btDonationsCurrent.score + ')';
+       }
+       let currentStr = currentScoreStr + ' Current';
+       let innerText = allTimeStr + ' | ' + currentStr;
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🥩 BT Donations: <span style="color:var(--text-main);">'+innerText+'</span></span>';
+       
+       if (isAdmin) {
+          headerBadgesHtml += '<button onclick="window.promptBearTrap(\'' + chiefName + '\')" style="margin-left:10px; background:var(--success); color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px;">+ Add Donation</button>';
+       }
+    }
+    
+    otherLbs.forEach(lb => {
+      headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">' + lb.emoji + ' ' + lb.title + ': <span style="color:var(--text-main);">' + lb.score + '</span></span>';
+    });
+    
+    headerBadgesHtml += '</div>';
+  }
+  
+  let metricsHtml = '<div style="margin-top: 25px;">';
+  metricsHtml += '<h3 style="margin: 0 0 5px 0; color:var(--text-main); font-size:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">📅 Events Checklist</h3>';
+  metricsHtml += '<p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming' + (isAdmin ? ' <span style="color:var(--danger); font-weight:bold; margin-left:10px;">(Click ❌ to edit)</span>' : '') + '</p>';
+  metricsHtml += '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">';
+  
+  const supportedEvents = ["Alliance Championship", "Polar Terrors", "Mercenary Prestige", "Voter"];
+  
+  for (let col = 1; col < headers.length; col++) {
+    let header = headers[col] || "Metric " + col;
+    if (header.toLowerCase().includes("bt donation")) continue;
+    
+    let val = p[col];
+    let isX = false;
+    
+    if (val === undefined || val === null || val.toString().trim() === "") {
+      val = "<span style='color:var(--text-muted);'>-</span>";
+      isX = true; // empty treats as action required
+    } else {
+      let strVal = val.toString().toLowerCase().trim();
+      if (val === true || strVal === "true" || strVal === "✅" || strVal === "yes") {
+        val = "✅";
+      } else if (val === false || strVal === "false" || strVal === "❌" || strVal === "no") {
+        val = colIsUpcoming[col] ? "⏳" : "❌";
+        if (val === "❌") isX = true;
+      }
+    }
+    
+    let boxStyle = "background:var(--bg-main); border:1px solid var(--border); border-radius:8px; padding:15px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.05); transition:transform 0.2s;";
+    let boxContent = '<div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:bold;">'+header+'</div>';
+    boxContent += '<div style="font-size:18px; font-weight:bold; color:var(--text-main);">'+val+'</div>';
+    
+    let isSupported = supportedEvents.some(s => header.toLowerCase().includes(s.toLowerCase()));
+    
+    if (isAdmin && isX && isSupported) {
+       metricsHtml += '<div onclick="window.promptEventUpdate(\''+chiefName+'\', \''+header+'\')" style="cursor:pointer; border-color:var(--danger); '+boxStyle+'" onmouseover="this.style.transform=\'scale(1.05)\'; this.style.background=\'color-mix(in srgb, var(--danger) 10%, var(--bg-main))\';" onmouseout="this.style.transform=\'none\'; this.style.background=\'var(--bg-main)\';">' + boxContent + '</div>';
+    } else if (isAdmin && isX) {
+       metricsHtml += '<div title="This event is not supported for editing yet." style="'+boxStyle+'">' + boxContent + '</div>';
+    } else {
+       metricsHtml += '<div style="'+boxStyle+'">' + boxContent + '</div>';
+    }
+  }
+  metricsHtml += '</div></div>';
+  
+  let playerGameId = nameToIdMap[chiefName];
+  let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : 'images/' + chiefName + '.png';
+  
+  let avatarImgHtml = '<img src="'+tryUrl+'" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"><div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">' + chiefName.charAt(0).toUpperCase() + '</div>';
+  
+  let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1);">' + avatarImgHtml + '</div><div style="flex:1;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px;">' + chiefName + '</h2>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
+  return html;
+};
+
+window.promptEventUpdate = async (name, eventHeader) => {
+  if (!confirm("Mark " + eventHeader + " as Participated (✅) for " + name + "?")) return;
+  
+  let eventSheetName = eventHeader;
+  if (eventHeader.toLowerCase().includes('championship')) eventSheetName = "Alliance Championship ";
+  
+  window.showToast("Updating "+eventHeader+"...", "success");
+  
+  const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
+  try {
+    const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=Yes&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+    if (res.success) {
+      window.showToast("Successfully updated!", "success");
+      window.sheetCache = {}; 
+      if (document.getElementById('uniSearchInput')) {
+        window.searchPlayerFull(name); 
+      } else {
+        views.roster();
+      }
+    } else {
+      alert("Error: " + res.message);
+    }
+  } catch (err) {
+    alert("Network Error: " + err.message);
+  }
+};
+
+window.promptBearTrap = async (name) => {
+  let amt = prompt("Enter Bear Trap Donation Amount to ADD for " + name + ":");
+  if (!amt) return;
+  if (isNaN(amt)) { alert("Invalid number"); return; }
+  
+  window.showToast("Adding donation...", "success");
+  const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
+  try {
+    const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(name)}&amount=${encodeURIComponent(amt)}&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+    if (res.success) {
+      window.showToast("Successfully added! New Total: " + res.newTotal, "success");
+      window.sheetCache = {}; 
+      if (document.getElementById('uniSearchInput')) {
+        window.searchPlayerFull(name);
+      } else {
+        views.roster();
+      }
+    } else {
+      alert("Error: " + res.message);
+    }
+  } catch (err) {
+    alert("Network Error: " + err.message);
+  }
+};
