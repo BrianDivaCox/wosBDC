@@ -306,14 +306,17 @@ const checkDeploymentStatus = async () => {
       } else {
         statusEl.innerHTML = `<span style="color:var(--text-muted);">Status: ${status}</span>`;
       }
+    } else if (data && data.message && data.message.includes('rate limit')) {
+      statusEl.innerHTML = `<span style="color:var(--danger);">⚠️ GitHub API Rate Limited. Please wait.</span>`;
     }
   } catch (err) {
     statusEl.innerHTML = `<span style="color:var(--danger);">Error fetching status</span>`;
   }
 };
-// Check immediately and then every 30 seconds
+// Check once on load
 checkDeploymentStatus();
-setInterval(checkDeploymentStatus, 30000);
+// Also check when the user opens the sidebar
+document.getElementById('settingsBtn').addEventListener('click', checkDeploymentStatus);
 
 // Add spinning animation for the loader
 const style = document.createElement('style');
