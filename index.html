@@ -20,7 +20,7 @@
             <span title="Total Views" style="background: rgba(236, 72, 153, 0.2); color: #ec4899; padding: 2px 6px; border-radius: 10px; font-weight: bold; display:flex; align-items:center; gap:4px;">
               👁️ <span id="views-counter">...</span>
             </span>
-            <span title="Version" style="background: rgba(168, 85, 247, 0.2); color: #a855f7; padding: 2px 6px; border-radius: 10px; font-weight: bold; display:flex; align-items:center; gap:4px;">
+            <span id="versionBadge" title="Click to view Changelog" style="background: rgba(168, 85, 247, 0.2); color: #a855f7; padding: 2px 6px; border-radius: 10px; font-weight: bold; display:flex; align-items:center; gap:4px; cursor:pointer;">
               v1.2.0
             </span>
             <span id="navbar-user-indicator" title="Logged In" style="display:none; background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 2px 6px; border-radius: 10px; font-weight: bold; align-items:center; gap:4px; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -121,6 +121,17 @@
     <!-- Toast Notifications -->
     <div id="toast-container"></div>
     
+    <!-- Changelog Modal -->
+    <div id="changelogModalOverlay" class="sidebar-overlay"></div>
+    <div id="changelogModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card-bg); padding:30px; border-radius:12px; border:1px solid var(--accent); box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:1001; width:90%; max-width:600px; max-height:80vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+        <h2 style="margin:0; color:var(--text-main); display:flex; align-items:center; gap:10px;">📜 Dashboard Changelog</h2>
+        <button id="closeChangelogBtn" class="close-btn">&times;</button>
+      </div>
+      <div id="changelogContent" style="color:var(--text-main); font-size:14px; line-height:1.6;">
+        Loading changelog...
+      </div>
+    </div>
     <!-- Auth Modals -->
     <div id="authModalOverlay" class="sidebar-overlay"></div>
     <div id="authModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card-bg); padding:30px; border-radius:12px; border:1px solid var(--border); box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:1001; width:90%; max-width:400px;">

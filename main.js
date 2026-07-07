@@ -357,6 +357,48 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
 });
 
 
+// --- Changelog Modal ---
+const versionBadge = document.getElementById('versionBadge');
+const changelogModal = document.getElementById('changelogModal');
+const changelogModalOverlay = document.getElementById('changelogModalOverlay');
+const closeChangelogBtn = document.getElementById('closeChangelogBtn');
+const changelogContent = document.getElementById('changelogContent');
+
+const closeChangelogModal = () => {
+  if (changelogModal) changelogModal.style.display = 'none';
+  if (changelogModalOverlay) changelogModalOverlay.classList.remove('active');
+};
+
+if (closeChangelogBtn) closeChangelogBtn.addEventListener('click', closeChangelogModal);
+if (changelogModalOverlay) changelogModalOverlay.addEventListener('click', closeChangelogModal);
+
+if (versionBadge) versionBadge.addEventListener('click', async () => {
+  if (changelogModal) changelogModal.style.display = 'block';
+  if (changelogModalOverlay) changelogModalOverlay.classList.add('active');
+  
+  try {
+    changelogContent.innerHTML = '<span style="color:var(--text-muted)">Loading changelog...</span>';
+    const response = await fetch('/CHANGELOG.md');
+    if (!response.ok) throw new Error('Failed to fetch changelog');
+    let md = await response.text();
+    
+    // Basic Markdown parser for headings and bullets
+    md = md.replace(/### (.*)/g, '<h4 style="color:var(--accent); margin-bottom:5px; margin-top:15px;">$1</h4>');
+    md = md.replace(/## \[(.*?)\] - (.*)/g, '<h3 style="color:var(--text-main); border-bottom:1px solid var(--border); padding-bottom:5px; margin-top:20px;">Version $1 <span style="font-size:12px; color:var(--text-muted); font-weight:normal; float:right;">$2</span></h3>');
+    md = md.replace(/# (.*)/g, ''); // Remove main title
+    md = md.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    md = md.replace(/`([^`]+)`/g, '<code style="background:var(--bg-main); padding:2px 4px; border-radius:4px; color:var(--danger);">$1</code>');
+    md = md.replace(/^- (.*)/gm, '<li style="margin-bottom:5px;">$1</li>');
+    
+    // Wrap consecutive li elements in ul
+    md = md.replace(/(<li.*<\/li>\n?)+/g, match => `<ul style="padding-left:20px; margin-top:5px; color:var(--text-main);">${match}</ul>`);
+    
+    changelogContent.innerHTML = md;
+  } catch (err) {
+    changelogContent.innerHTML = `<span style="color:var(--danger)">Error loading changelog: ${err.message}</span>`;
+  }
+});
+
 // --- Routing & Views ---
 const app = document.getElementById('app');
 const navLinks = document.querySelectorAll('.nav-link');
