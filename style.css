@@ -456,13 +456,17 @@ tr:hover td {
   
   .dropdown-content {
     position: static;
-    display: block; /* Always visible on mobile */
+    display: none; /* Hide by default on mobile */
     background-color: transparent;
     box-shadow: none;
     border: none;
     padding-left: 15px;
     margin-top: 10px;
     min-width: unset;
+  }
+  
+  .dropdown.open .dropdown-content {
+    display: block; /* Show only when tapped */
   }
   
   .dropdown-content .sub-link {

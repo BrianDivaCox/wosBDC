@@ -2079,6 +2079,13 @@ allLinks.forEach(link => {
     // Exclude the Theme Settings link since it handles itself
     if (e.target.id === 'mobileSettingsBtn') return;
     
+    // Mobile dropdown toggle logic
+    if (window.innerWidth <= 768 && e.target.classList.contains('nav-link') && e.target.nextElementSibling && e.target.nextElementSibling.classList.contains('dropdown-content')) {
+      e.preventDefault();
+      e.target.parentElement.classList.toggle('open');
+      return;
+    }
+    
     e.preventDefault();
     
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
