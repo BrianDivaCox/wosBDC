@@ -347,7 +347,10 @@ const views = {
       
       let html = `
         <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
-          <h2 style="color:var(--danger); margin-top:0;">🛡️ Admin Control Panel</h2>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="color:var(--danger); margin:0;">🛡️ Admin Control Panel</h2>
+            <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Bear Trap Donations</button>
+          </div>
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border);">
             <div style="overflow-x:auto;">
               <table style="width:100%; border-collapse:collapse; text-align:left;">
@@ -406,6 +409,187 @@ const views = {
     } catch(err) {
       renderError(err.message);
     }
+  },
+  
+  beartrap: async () => {
+    if (!currentUser || currentUser.gameId !== 318843189) {
+      views.home();
+      return;
+    }
+    
+    app.innerHTML = `
+      <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <h2 style="color:var(--accent); margin:0;">🐻 Bear Trap Donations</h2>
+          <button onclick="views.admin()" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); padding:5px 12px; border-radius:6px; cursor:pointer;">Back to Admin</button>
+        </div>
+        
+        <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
+          <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">🔍 Quick Lookup</h3>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="beartrapLookup" list="chiefList" placeholder="Player Name..." style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+            <button onclick="window.doBeartrapLookup()" style="background:var(--accent); color:#fff; border:none; padding:0 20px; border-radius:6px; cursor:pointer; font-weight:bold;">Check</button>
+          </div>
+          <div id="beartrapLookupResult" style="margin-top:10px; font-weight:bold; text-align:center;"></div>
+        </div>
+
+        <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
+          <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">📝 Add Donations</h3>
+          <div id="beartrapEntries">
+            <div class="beartrap-row" style="display:flex; gap:10px; margin-bottom:10px;">
+              <input type="text" class="bt-name" list="chiefList" placeholder="Player Name..." style="flex:2; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+              <input type="number" class="bt-amount" placeholder="Amount..." style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+              <button onclick="this.parentElement.remove()" style="background:var(--danger); color:#fff; border:none; width:40px; border-radius:6px; cursor:pointer; font-weight:bold;">X</button>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:10px;">
+            <button onclick="window.addBeartrapRow()" style="background:transparent; border:1px solid var(--border); color:var(--text-main); padding:10px; border-radius:6px; cursor:pointer; flex:1;">+ Add Row</button>
+            <button id="submitBeartrapBtn" onclick="window.submitBeartrapDonations()" style="background:var(--success); border:none; color:#fff; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; flex:2;">Submit All</button>
+          </div>
+          <div id="beartrapStatus" style="margin-top:15px; text-align:center; font-size:14px;"></div>
+        </div>
+        
+        <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+             <h3 style="margin:0; color:var(--text-main); font-size:16px;">🕒 Admin Log</h3>
+             <button onclick="window.loadBeartrapLog()" style="background:transparent; border:none; color:var(--accent); cursor:pointer; font-size:12px;">🔄 Refresh</button>
+          </div>
+          <div id="beartrapLog" style="max-height:200px; overflow-y:auto; font-size:13px; color:var(--text-muted);">
+            Loading...
+          </div>
+        </div>
+
+      </div>
+      <datalist id="chiefList"></datalist>
+    `;
+    
+    // Populate datalist from idToNameMap
+    const dl = document.getElementById('chiefList');
+    if (dl) {
+      Object.values(idToNameMap).forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        dl.appendChild(opt);
+      });
+    }
+
+    // Attach global functions to window so inline onclick can see them
+    window.addBeartrapRow = () => {
+      const cont = document.getElementById('beartrapEntries');
+      const div = document.createElement('div');
+      div.className = 'beartrap-row';
+      div.style.cssText = 'display:flex; gap:10px; margin-bottom:10px;';
+      div.innerHTML = `
+        <input type="text" class="bt-name" list="chiefList" placeholder="Player Name..." style="flex:2; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+        <input type="number" class="bt-amount" placeholder="Amount..." style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+        <button onclick="this.parentElement.remove()" style="background:var(--danger); color:#fff; border:none; width:40px; border-radius:6px; cursor:pointer; font-weight:bold;">X</button>
+      `;
+      cont.appendChild(div);
+      div.querySelector('.bt-name').focus();
+    };
+
+    window.doBeartrapLookup = async () => {
+      const name = document.getElementById('beartrapLookup').value.trim();
+      const resDiv = document.getElementById('beartrapLookupResult');
+      if (!name) return;
+      resDiv.innerHTML = '<span style="color:var(--text-muted)">Searching...</span>';
+      try {
+        const res = await fetch(`${API_BASE_URL}?api=lookup&name=${encodeURIComponent(name)}`).then(r => r.json());
+        if (res.success) {
+          resDiv.innerHTML = `<span style="color:var(--success)">${res.name} Total: ${res.total}</span>`;
+        } else {
+          resDiv.innerHTML = `<span style="color:var(--danger)">${res.message}</span>`;
+        }
+      } catch(e) {
+        resDiv.innerHTML = `<span style="color:var(--danger)">Network error.</span>`;
+      }
+    };
+
+    window.loadBeartrapLog = async () => {
+      const logDiv = document.getElementById('beartrapLog');
+      logDiv.innerHTML = '<span style="color:var(--text-muted)">Loading...</span>';
+      try {
+        const res = await fetch(`${API_BASE_URL}?api=adminLog`).then(r => r.json());
+        if (res.success && res.data.length > 0) {
+          let html = '';
+          res.data.forEach(log => {
+            html += `
+              <div style="padding:8px 0; border-bottom:1px solid var(--border);">
+                <div style="color:var(--text-main);">${log.name} <span style="color:var(--success); font-weight:bold;">+${log.amount}</span> (Total: ${log.newTotal})</div>
+                <div style="font-size:11px;">${log.timestamp} • By ${log.email}</div>
+              </div>
+            `;
+          });
+          logDiv.innerHTML = html;
+        } else {
+          logDiv.innerHTML = '<span style="color:var(--text-muted)">No activity found.</span>';
+        }
+      } catch(e) {
+        logDiv.innerHTML = `<span style="color:var(--danger)">Network error.</span>`;
+      }
+    };
+
+    window.submitBeartrapDonations = async () => {
+      const rows = document.querySelectorAll('.beartrap-row');
+      const entries = [];
+      rows.forEach(r => {
+        const name = r.querySelector('.bt-name').value.trim();
+        const amt = r.querySelector('.bt-amount').value.trim();
+        if (name && amt) entries.push({name, amount: amt});
+      });
+      
+      const statusDiv = document.getElementById('beartrapStatus');
+      const submitBtn = document.getElementById('submitBeartrapBtn');
+      if (entries.length === 0) {
+         statusDiv.innerHTML = '<span style="color:var(--danger)">No entries to submit.</span>';
+         return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+      statusDiv.innerHTML = `<span style="color:var(--text-muted)">Processing ${entries.length} entries...</span>`;
+      
+      const adminName = idToNameMap[currentUser.gameId] || "Admin";
+      
+      let completed = 0;
+      let resultsHTML = "<div style='text-align:left; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:10px; border-radius:6px; color:var(--success); font-size:13px;'><strong>Results:</strong><br>";
+      
+      for (const entry of entries) {
+         try {
+           const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(entry.name)}&amount=${encodeURIComponent(entry.amount)}&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+           if (res && res.success) {
+             resultsHTML += `✅ <b>${res.name}</b>: +${res.amount} (New Total: ${res.newTotal})<br>`;
+           } else if (res && res.message) {
+             resultsHTML += `❌ ${res.message}<br>`;
+           } else {
+             resultsHTML += `✅ <b>${entry.name}</b>: +${entry.amount} added.<br>`;
+           }
+         } catch(e) {
+           resultsHTML += `❌ <b>${entry.name}</b>: Network error.<br>`;
+         }
+         completed++;
+         statusDiv.innerHTML = `<span style="color:var(--text-muted)">Processed ${completed} of ${entries.length}...</span>`;
+      }
+      
+      resultsHTML += "</div>";
+      statusDiv.innerHTML = resultsHTML;
+      
+      // Reset form
+      const cont = document.getElementById('beartrapEntries');
+      cont.innerHTML = `
+        <div class="beartrap-row" style="display:flex; gap:10px; margin-bottom:10px;">
+          <input type="text" class="bt-name" list="chiefList" placeholder="Player Name..." style="flex:2; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+          <input type="number" class="bt-amount" placeholder="Amount..." style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+          <button onclick="this.parentElement.remove()" style="background:var(--danger); color:#fff; border:none; width:40px; border-radius:6px; cursor:pointer; font-weight:bold;">X</button>
+        </div>
+      `;
+      
+      window.loadBeartrapLog();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit All';
+    };
+
+    window.loadBeartrapLog();
   },
   
   account: async () => {
