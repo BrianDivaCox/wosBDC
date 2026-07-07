@@ -2,6 +2,22 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.0.1] - 2026-07-07
+
+### Added
+- **Version Badge**: Added a dynamic version badge to the top navigation bar.
+
+### Changed
+- **Bear Trap UI**: Decoupled "Quick Lookup" from the Bear Trap dashboard and moved it into a sleek modal overlay.
+- **Theme Engine UI**: Redesigned the theme engine in the Dashboard Hub into a compact, horizontal grid of color circles to save vertical space.
+- **Mobile Navigation**: Improved the mobile menu (`.mobile-menu`) layout to function better on small screens.
+
+### Fixed
+- **Mobile Scrolling**: Fixed an issue where overflowing content in the mobile menu and settings sidebar could not be scrolled.
+- **Schedule Strikethrough**: Fixed a bug where "Today's" events were crossed out prematurely at midnight, regardless of the actual UTC event time.
+- **Polar Terrors Auto-Reset**: Patched the backend logic in Google Apps Script (`Resets.js`) so Polar Terrors correctly auto-schedule their next run instead of failing.
+- **Bear Trap Admin Log**: Fixed the API router in Google Apps Script so the Admin Log feed populates correctly in the Bear Trap screen.
+
 ## [1.0.0] - 2026-07-05
 
 ### Added
