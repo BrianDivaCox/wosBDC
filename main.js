@@ -521,7 +521,16 @@ const renderError = (err) => {
 const fetchSheet = async (sheetName) => {
   try {
     const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
-    const json = await res.json();
+    const text = await res.text();
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      if (text.trim().startsWith('<')) {
+         throw new Error("Database API is currently unavailable (Google Apps Script Error or Rate Limit). Please wait a few minutes and refresh.");
+      }
+      throw new Error("Invalid JSON response from Database API.");
+    }
     if (json.error) throw new Error(json.error);
     return json.data;
   } catch(err) {
