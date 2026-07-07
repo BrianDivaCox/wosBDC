@@ -275,6 +275,7 @@ body {
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .settings-sidebar.open {
@@ -453,6 +454,8 @@ tr:hover td {
     margin-left: 0;
     gap: 20px;
     display: none; /* hidden by default on mobile */
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
   }
   
   .mobile-menu.open {
