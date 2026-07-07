@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, onDisconnect, set, push, runTransaction, get } from "firebase/database";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuw51XRkUz5sbr-i8DKiGUgMpAPSiR-vs",
@@ -14,13 +13,9 @@ const firebaseConfig = {
   measurementId: "G-8SZCNHML68"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-const storage = getStorage(app);
-
-export { app, db, auth, storage };
 
 export function initPresence() {
   const onlineEl = document.getElementById('online-counter');
@@ -57,36 +52,17 @@ export function initPresence() {
   });
 }
 
-// --- Auth & Profile Functions ---
-export async function loginUser(email, password) {
-  return signInWithEmailAndPassword(auth, email, password);
-}
-
-export async function registerUser(email, password, gameId) {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  
-  // Link their Game ID in Realtime Database
-  await set(ref(db, `users/${user.uid}`), {
-    gameId: Number(gameId),
-    email: email
-  });
-  
-  return user;
-}
-
-export async function logoutUser() {
-  return signOut(auth);
-}
-
+// Authentication
 export function listenToAuth(callback) {
-  return onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, (user) => {
     if (user) {
-      // Get their Game ID
-      onValue(ref(db, `users/${user.uid}`), (snap) => {
-        const data = snap.val();
-        if (data) user.gameId = data.gameId;
-        callback(user);
+      const usersRef = ref(db, `users/${user.uid}`);
+      onValue(usersRef, (snapshot) => {
+        if (snapshot.exists()) {
+          callback(snapshot.val());
+        } else {
+          callback(null);
+        }
       }, { onlyOnce: true });
     } else {
       callback(null);
@@ -94,49 +70,42 @@ export function listenToAuth(callback) {
   });
 }
 
-export function uploadAvatar(gameId, file, onProgress) {
-  return new Promise((resolve, reject) => {
-    if (!gameId) return reject(new Error("Game ID is required to upload an avatar"));
-    
-    // Upload to Firebase Storage
-    const avatarRef = storageRef(storage, `avatars/${gameId}.png`);
-    const uploadTask = uploadBytesResumable(avatarRef, file);
-    
-    // Failsafe timeout in case Firebase Storage is completely unconfigured and hangs
-    const failsafeTimeout = setTimeout(() => {
-      reject(new Error("Upload timed out. Is Firebase Storage enabled in your Console?"));
-      uploadTask.cancel();
-    }, 15000); // 15 seconds
-    
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        if (progress > 0) clearTimeout(failsafeTimeout); // Once it starts moving, clear the timeout
-        if (onProgress) onProgress(progress);
-      }, 
-      (error) => {
-        clearTimeout(failsafeTimeout);
-        reject(error);
-      }, 
-      async () => {
-        clearTimeout(failsafeTimeout);
-        try {
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
-          await set(ref(db, `avatars/${gameId}`), url);
-          resolve(url);
-        } catch (err) {
-          reject(err);
-        }
-      }
-    );
+export async function registerUser(email, password, gameId) {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+  
+  // Save user profile in Realtime Database mapped by UID
+  await set(ref(db, `users/${user.uid}`), {
+    email: user.email,
+    gameId: gameId,
+    createdAt: new Date().toISOString()
   });
+  
+  return user;
+}
+
+export async function loginUser(email, password) {
+  return signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function logoutUser() {
+  return signOut(auth);
+}
+
+// Avatar Management using Base64 String
+export async function uploadAvatar(gameId, base64String) {
+  if (!gameId) throw new Error("Game ID is required to upload an avatar");
+  if (!base64String) throw new Error("Image data is missing");
+  
+  // Save Base64 string directly to Realtime Database
+  await set(ref(db, `avatars/${gameId}`), base64String);
+  return base64String;
 }
 
 export async function deleteAvatar(gameId) {
   if (!gameId) return;
   // Remove from Realtime DB
   await set(ref(db, `avatars/${gameId}`), null);
-  // Optional: We don't necessarily have to delete from Storage, just unlinking it in DB is enough.
 }
 
-export { get, set, ref };
+export { get, set, ref, db };

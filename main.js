@@ -445,15 +445,54 @@ const views = {
       if (!file) return;
       
       try {
-        uploadBtn.textContent = 'Uploading... 0%';
+        uploadBtn.textContent = 'Compressing...';
         uploadBtn.disabled = true;
         statusMsg.style.color = 'var(--text-muted)';
-        statusMsg.textContent = 'Preparing upload...';
+        statusMsg.textContent = 'Processing image...';
         
-        await uploadAvatar(currentUser.gameId, file, (progress) => {
-          const percent = Math.round(progress);
-          uploadBtn.textContent = `Uploading... ${percent}%`;
-          statusMsg.textContent = `Uploading: ${percent}%`;
+        // 1. Read file as Data URL
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        
+        await new Promise((resolve, reject) => {
+          reader.onload = (event) => {
+            // 2. Load into Image object
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+              // 3. Draw to canvas and resize (e.g. max 150x150)
+              const canvas = document.createElement('canvas');
+              const MAX_SIZE = 150;
+              let width = img.width;
+              let height = img.height;
+              
+              if (width > height) {
+                if (width > MAX_SIZE) {
+                  height *= MAX_SIZE / width;
+                  width = MAX_SIZE;
+                }
+              } else {
+                if (height > MAX_SIZE) {
+                  width *= MAX_SIZE / height;
+                  height = MAX_SIZE;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              // 4. Get highly compressed JPEG base64 string
+              const base64String = canvas.toDataURL('image/jpeg', 0.7);
+              resolve(base64String);
+            };
+            img.onerror = () => reject(new Error("Failed to read image file"));
+          };
+          reader.onerror = () => reject(new Error("Failed to read file"));
+        }).then(async (base64String) => {
+           uploadBtn.textContent = 'Uploading...';
+           await uploadAvatar(currentUser.gameId, base64String);
         });
         
         statusMsg.style.color = 'var(--success)';
