@@ -418,14 +418,21 @@ const views = {
     }
     
     app.innerHTML = `
-      <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
+      <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease; position:relative;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">
-          <h2 style="color:var(--accent); margin:0;">🐻 Bear Trap Donations</h2>
+          <h2 style="color:var(--accent); margin:0; display:flex; align-items:center; gap:10px;">
+            🐻 Bear Trap
+            <button onclick="document.getElementById('btLookupModal').style.display='block'" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--accent); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:12px; margin-left:10px;">🔍 Lookup</button>
+          </h2>
           <button onclick="views.admin()" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); padding:5px 12px; border-radius:6px; cursor:pointer;">Back to Admin</button>
         </div>
         
-        <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
-          <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">🔍 Quick Lookup</h3>
+        <!-- Quick Lookup Modal (Hidden by default) -->
+        <div id="btLookupModal" style="display:none; position:absolute; top:50px; left:0; width:100%; background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:10; box-sizing:border-box;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0; color:var(--text-main); font-size:16px;">🔍 Quick Lookup</h3>
+            <button onclick="document.getElementById('btLookupModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:20px;">&times;</button>
+          </div>
           <div style="display:flex; gap:10px;">
             <input type="text" id="beartrapLookup" list="chiefList" placeholder="Player Name..." style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
             <button onclick="window.doBeartrapLookup()" style="background:var(--accent); color:#fff; border:none; padding:0 20px; border-radius:6px; cursor:pointer; font-weight:bold;">Check</button>
