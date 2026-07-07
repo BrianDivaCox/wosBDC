@@ -520,19 +520,26 @@ const renderError = (err) => {
 // Data Fetcher
 const fetchSheet = async (sheetName) => {
   try {
-    const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
-    const text = await res.text();
-    let json;
-    try {
-      json = JSON.parse(text);
-    } catch (e) {
-      if (text.trim().startsWith('<')) {
-         throw new Error("Database API is currently unavailable (Google Apps Script Error or Rate Limit). Please wait a few minutes and refresh.");
+    const snapshot = await get(ref(db, `sheets/${sheetName}`));
+    if (snapshot.exists()) {
+      return snapshot.val();
+    } else {
+      // If Firebase misses the cache, fallback to Google Apps Script
+      console.warn(`Cache miss for ${sheetName}, falling back to GAS`);
+      const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        if (text.trim().startsWith('<')) {
+           throw new Error("Database API is currently unavailable (Google Apps Script Error or Rate Limit).");
+        }
+        throw new Error("Invalid JSON response from Database API.");
       }
-      throw new Error("Invalid JSON response from Database API.");
+      if (json.error) throw new Error(json.error);
+      return json.data;
     }
-    if (json.error) throw new Error(json.error);
-    return json.data;
   } catch(err) {
     throw err;
   }
