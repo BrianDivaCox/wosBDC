@@ -615,39 +615,15 @@ const checkDeploymentStatus = async () => {
   }
 };
 
-if (devModeToggle) {
-  const isDevMode = localStorage.getItem('devMode') === 'true';
-  devModeToggle.checked = isDevMode;
-  if (isDevMode && devModeSlider) {
-    devModeSlider.style.transform = 'translateX(20px)';
-  }
-  
-  if (isDevMode) {
+
+// Auto start polling if dev mode is enabled on load
+if (localStorage.getItem('devMode') === 'true') {
     checkDeploymentStatus();
     devModePollingInterval = setInterval(checkDeploymentStatus, 10000);
-  }
-  
-  devModeToggle.addEventListener('change', (e) => {
-    const enabled = e.target.checked;
-    localStorage.setItem('devMode', enabled);
-    if (devModeSlider) {
-      devModeSlider.style.transform = enabled ? 'translateX(20px)' : 'translateX(0)';
-    }
-    
-    if (enabled) {
-      checkDeploymentStatus();
-      devModePollingInterval = setInterval(checkDeploymentStatus, 10000);
-    } else {
-      if (devModePollingInterval) clearInterval(devModePollingInterval);
-      if (devDeployBanner) devDeployBanner.style.display = 'none';
-    }
-  });
-}
-
-// Check once on load if not dev mode (dev mode already checks)
-if (localStorage.getItem('devMode') !== 'true') {
+} else {
     checkDeploymentStatus();
 }
+
 // Also check when the user opens the sidebar
 const settingsBtnEl = document.getElementById('settingsBtn');
 if (settingsBtnEl) settingsBtnEl.addEventListener('click', checkDeploymentStatus);
@@ -704,6 +680,20 @@ const views = {
             </button>
           </div>
           
+
+          <!-- Developer Settings (Dev Mode Tracker) -->
+          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h3 style="margin:0; color:var(--text-main);">Dev Mode (Track Deployment)</h3>
+              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and auto-refreshes the page.</p>
+            </div>
+            <label style="position:relative; display:inline-block; width:40px; height:20px; flex-shrink:0;">
+              <input type="checkbox" id="devModeToggleAdmin" style="opacity:0; width:0; height:0;">
+              <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:var(--border); transition:.4s; border-radius:20px;">
+                <span id="devModeSliderAdmin" style="position:absolute; content:''; height:14px; width:14px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%;"></span>
+              </span>
+            </label>
+          </div>
           <!-- Universal Player Editor -->
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
             <div style="margin-bottom:15px;">
@@ -761,6 +751,36 @@ const views = {
       
       html += `</tbody></table></div></div></div>`;
       app.innerHTML = html;
+      
+      
+      // Bind Dev Mode toggle in Admin Panel
+      const devModeToggleAdmin = document.getElementById('devModeToggleAdmin');
+      const devModeSliderAdmin = document.getElementById('devModeSliderAdmin');
+      if (devModeToggleAdmin) {
+        const isDevMode = localStorage.getItem('devMode') === 'true';
+        devModeToggleAdmin.checked = isDevMode;
+        if (isDevMode && devModeSliderAdmin) {
+          devModeSliderAdmin.style.transform = 'translateX(20px)';
+        }
+        
+        devModeToggleAdmin.addEventListener('change', (e) => {
+          const enabled = e.target.checked;
+          localStorage.setItem('devMode', enabled);
+          if (devModeSliderAdmin) {
+            devModeSliderAdmin.style.transform = enabled ? 'translateX(20px)' : 'translateX(0)';
+          }
+          
+          if (enabled) {
+            checkDeploymentStatus();
+            if (devModePollingInterval) clearInterval(devModePollingInterval);
+            devModePollingInterval = setInterval(checkDeploymentStatus, 10000);
+          } else {
+            if (devModePollingInterval) clearInterval(devModePollingInterval);
+            const banner = document.getElementById('devDeployBanner');
+            if (banner) banner.style.display = 'none';
+          }
+        });
+      }
       
       // Bind delete avatar buttons
       document.querySelectorAll('.delete-avatar-btn').forEach(btn => {
