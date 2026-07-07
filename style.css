@@ -426,6 +426,7 @@ tr:hover td {
     top: 100%;
     left: 0;
     width: 100%;
+    box-sizing: border-box;
     background: var(--card-bg);
     flex-direction: column;
     align-items: flex-start;
@@ -435,8 +436,11 @@ tr:hover td {
     margin-left: 0;
     gap: 20px;
     display: none; /* hidden by default on mobile */
-    max-height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px); /* fallback */
+    max-height: calc(100dvh - 60px);
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   
   .mobile-menu.open {
