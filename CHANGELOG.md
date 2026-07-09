@@ -1,3 +1,6 @@
+### v1.4.3 (2026-07-09)
+- **Added**: 12hr / 24hr clock format toggle in the Global Timers settings section. Both UTC and Local clocks now display AM/PM in 12hr mode. Preference is saved to localStorage.
+
 ### v1.4.2 (2026-07-09)
 - **Removed**: Removed the Google Translate language translator widget from the navbar and the Language picker from the settings sidebar. The `formatPlayerName` translation-guard utility was also removed.
 

@@ -2165,22 +2165,59 @@ const views = {
 };
 
 // --- GLOBAL TIMERS ---
+// Clock format preference (12 or 24)
+let clockFormat = localStorage.getItem('clockFormat') || '12';
+
+// Highlight active clock format button
+function updateClockFormatUI() {
+  document.querySelectorAll('.clock-fmt-btn').forEach(btn => {
+    if (btn.getAttribute('data-format') === clockFormat) {
+      btn.style.background = 'var(--accent)';
+      btn.style.color = '#fff';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-muted)';
+    }
+  });
+}
+
+// Clock format toggle click handler
+document.querySelectorAll('.clock-fmt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    clockFormat = btn.getAttribute('data-format');
+    localStorage.setItem('clockFormat', clockFormat);
+    updateClockFormatUI();
+    updateGlobalTimers();
+  });
+});
+
+updateClockFormatUI();
+
+function formatClockTime(hours, minutes, seconds, use12hr) {
+  if (use12hr) {
+    const period = hours >= 12 ? 'PM' : 'AM';
+    let h12 = hours % 12;
+    if (h12 === 0) h12 = 12;
+    return `${h12}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${period}`;
+  } else {
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+}
+
 function updateGlobalTimers() {
   const now = new Date();
+  const is12 = clockFormat === '12';
   
   // UTC Clock
   const utcClockEl = document.getElementById('utc-clock');
   if (utcClockEl) {
-    let h = now.getUTCHours().toString().padStart(2, '0');
-    let m = now.getUTCMinutes().toString().padStart(2, '0');
-    let s = now.getUTCSeconds().toString().padStart(2, '0');
-    utcClockEl.textContent = `${h}:${m}:${s}`;
+    utcClockEl.textContent = formatClockTime(now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), is12);
   }
   
   // Local Clock
   const localClockEl = document.getElementById('local-clock');
   if (localClockEl) {
-    localClockEl.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+    localClockEl.textContent = formatClockTime(now.getHours(), now.getMinutes(), now.getSeconds(), is12);
   }
   
   // Reset Timer (Reset is at 00:00 UTC)
