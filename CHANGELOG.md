@@ -1,3 +1,6 @@
+### v1.4.5 (2026-07-09)
+- **Fixed**: Schedule (Calendar View) and Today's Schedule pages now handle missing or null data gracefully instead of crashing with "Cannot read properties of null (reading 'length')".
+
 ### v1.4.4 (2026-07-09)
 - **Changed**: Redesigned the Theme Engine in the settings sidebar from unlabeled color circles to labeled mini-cards in a 2-column grid. Theme names are now always visible, including on mobile.
 - **Removed**: Removed the "Deep Ocean" theme. Removed obsolete Google Translate CSS overrides.

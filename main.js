@@ -1826,6 +1826,11 @@ const views = {
     try {
       const data = await fetchSheet("schedule");
       
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        app.innerHTML = `<div class="card"><div class="loading">⚠️ Schedule data is currently unavailable. Please try again later.</div></div>`;
+        return;
+      }
+      
       // Find the row that contains the dates
       let dateRowIdx = -1;
       for (let r = 0; r < data.length; r++) {
@@ -1915,6 +1920,11 @@ const views = {
     renderLoading("Loading Today's Events");
     try {
       const data = await fetchSheet("WhiteOut Survival");
+      
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        app.innerHTML = `<div class="card"><div class="loading">⚠️ Today's schedule data is currently unavailable. Please try again later.</div></div>`;
+        return;
+      }
       
       let todayHtml = "";
       let upcomingHtml = "";
