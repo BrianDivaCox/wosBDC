@@ -106,19 +106,6 @@ onValue(ref(db, 'avatars'), (snap) => {
 
 const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 
-// --- Translation Support Utility ---
-// Wraps player names in a 'notranslate' class ONLY if they consist entirely of English characters.
-// This prevents names like "Hunter" from being translated to "Cazador" in Spanish, while allowing
-// Japanese/Russian/etc. names to be translated if the user wishes.
-window.formatPlayerName = (name) => {
-  if (!name) return "";
-  const safeName = name.toString().trim();
-  // Regex matches typical English characters, numbers, and basic punctuation
-  if (/^[\x20-\x7E]*$/.test(safeName)) {
-    return `<span class="notranslate">${safeName}</span>`;
-  }
-  return `<span>${safeName}</span>`;
-};
 
 // --- Maintenance Mode State ---
 let maintenanceMode = false;
@@ -1369,8 +1356,6 @@ const views = {
             // Ensure strings that look like numbers are also formatted, but carefully
             else if (typeof cell === 'string' && !isNaN(cell) && cell.trim() !== "" && idx > 0) {
               cell = Number(cell).toLocaleString();
-            } else if (typeof cell === 'string' && board.headers[idx] && (board.headers[idx].toLowerCase().includes('name') || board.headers[idx].toLowerCase().includes('chief'))) {
-              cell = window.formatPlayerName(cell);
             }
             
             let formattedCell = formatCell(cell);
@@ -2409,9 +2394,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   
   let avatarImgHtml = '<img src="'+tryUrl+'" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"><div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">' + chiefName.charAt(0).toUpperCase() + '</div>';
   
-  const formattedChiefName = window.formatPlayerName(chiefName);
-  
-  let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1);">' + avatarImgHtml + '</div><div style="flex:1;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px;">' + formattedChiefName + '</h2>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
+  let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1);">' + avatarImgHtml + '</div><div style="flex:1;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px;">' + chiefName + '</h2>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
   return html;
 };
 

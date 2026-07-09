@@ -1,3 +1,9 @@
+### v1.4.2 (2026-07-09)
+- **Removed**: Removed the Google Translate language translator widget from the navbar and the Language picker from the settings sidebar. The `formatPlayerName` translation-guard utility was also removed.
+
+### v1.4.1 (2026-07-09)
+- **Added**: `formatPlayerName` utility to protect English player names from being auto-translated.
+
 ### v1.4.0 (2026-07-07)
 - **Infrastructure**: Migrated the primary database read architecture to Firebase Realtime Database to eliminate rate limits and HTML parsing crashes.
 - **Performance**: Reduced data fetching times from 2-3 seconds down to ~50 milliseconds.

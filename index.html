@@ -57,8 +57,6 @@
               </div>
             </div>
             <a href="#" class="nav-link mobile-only-link" id="mobileSettingsBtn">⚙️ Settings</a>
-            <!-- Google Translate Element -->
-            <div id="google_translate_element" style="display:flex; align-items:center; margin-left:10px;"></div>
           </div>
 
         </div>
@@ -122,18 +120,7 @@
         </div>
       </div>
 
-        <div class="sidebar-section" style="margin-bottom:20px; background:var(--bg-main); padding:15px; border-radius:8px; border:1px solid var(--border);">
-          <h3 style="margin-top:0; margin-bottom:10px; font-size:16px; color:var(--text-main); border-bottom:1px solid var(--border); padding-bottom:5px;">Language</h3>
-          <select id="languagePicker" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-main);">
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="ja">日本語</option>
-            <option value="ru">Русский</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="zh-CN">中文 (简体)</option>
-          </select>
-        </div>
+
     </div>
     
     <!-- Toast Notifications -->
@@ -192,12 +179,7 @@
       <!-- Dynamic Content Injection -->
     </div>
     
-    <script type="text/javascript">
-      function googleTranslateElementInit() {
-        new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
-      }
-    </script>
-    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
     <script type="module" src="/main.js"></script>
   </body>
 </html>
