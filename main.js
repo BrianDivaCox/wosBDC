@@ -2256,17 +2256,17 @@ allLinks.forEach(link => {
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
     
     // If it's a sub-link in a dropdown, highlight the parent nav-link
-    if (e.target.classList.contains('sub-link')) {
-      e.target.closest('.dropdown').querySelector('.nav-link').classList.add('active');
+    if (targetEl.classList.contains('sub-link')) {
+      targetEl.closest('.dropdown').querySelector('.nav-link').classList.add('active');
     } else {
-      e.target.classList.add('active');
+      targetEl.classList.add('active');
     }
     
     // Auto-close the hamburger menu if it's open
     if (mobileMenu) mobileMenu.classList.remove('open');
     
-    const target = e.target.getAttribute('data-target');
-    const filter = e.target.getAttribute('data-filter');
+    const target = targetEl.getAttribute('data-target');
+    const filter = targetEl.getAttribute('data-filter');
     if (views[target]) {
       if (target === 'admin') window.activeViewFunc = null;
       else window.activeViewFunc = () => views[target](filter);
