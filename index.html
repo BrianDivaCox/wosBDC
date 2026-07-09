@@ -115,15 +115,35 @@
 
       <div class="sidebar-section" style="background:var(--bg-main); padding:15px; border-radius:8px; border:1px solid var(--border);">
         <h3 style="margin-top:0; margin-bottom:10px; font-size:16px; color:var(--text-main); border-bottom:1px solid var(--border); padding-bottom:5px;">Theme Engine</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 5px;">
-          <div class="theme-circle" data-theme="light" title="Light Mode" style="background: #ffffff; border:1px solid #ccc;"></div>
-          <div class="theme-circle" data-theme="midnight" title="Midnight" style="background: #0f172a;"></div>
-          <div class="theme-circle" data-theme="oled" title="OLED Black" style="background: #000000;"></div>
-          <div class="theme-circle" data-theme="ombre" title="Diva" style="background: linear-gradient(135deg, #ec4899, #22d3ee);"></div>
-          <div class="theme-circle" data-theme="ocean" title="Deep Ocean" style="background: #0f766e;"></div>
-          <div class="theme-circle" data-theme="mermaid" title="Mermaid" style="background: linear-gradient(135deg, #2dd4bf, #d946ef);"></div>
-          <div class="theme-circle" data-theme="forest" title="Forest Canopy" style="background: #14532d;"></div>
-          <div class="theme-circle" data-theme="beta" title="Beta" style="background: linear-gradient(135deg, #ef4444, #3b82f6, #22c55e);"></div>
+        <div class="theme-grid">
+          <div class="theme-card" data-theme="light">
+            <div class="theme-swatch" style="background: #ffffff; border:1px solid #ccc;"></div>
+            <span class="theme-label">Light</span>
+          </div>
+          <div class="theme-card" data-theme="midnight">
+            <div class="theme-swatch" style="background: #0f172a;"></div>
+            <span class="theme-label">Midnight</span>
+          </div>
+          <div class="theme-card" data-theme="oled">
+            <div class="theme-swatch" style="background: #000000;"></div>
+            <span class="theme-label">OLED</span>
+          </div>
+          <div class="theme-card" data-theme="ombre">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #ec4899, #22d3ee);"></div>
+            <span class="theme-label">Diva</span>
+          </div>
+          <div class="theme-card" data-theme="mermaid">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #2dd4bf, #d946ef);"></div>
+            <span class="theme-label">Mermaid</span>
+          </div>
+          <div class="theme-card" data-theme="forest">
+            <div class="theme-swatch" style="background: #14532d;"></div>
+            <span class="theme-label">Forest</span>
+          </div>
+          <div class="theme-card" data-theme="beta">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #ef4444, #3b82f6, #22c55e);"></div>
+            <span class="theme-label">Beta</span>
+          </div>
         </div>
       </div>
 

@@ -1,3 +1,7 @@
+### v1.4.4 (2026-07-09)
+- **Changed**: Redesigned the Theme Engine in the settings sidebar from unlabeled color circles to labeled mini-cards in a 2-column grid. Theme names are now always visible, including on mobile.
+- **Removed**: Removed the "Deep Ocean" theme. Removed obsolete Google Translate CSS overrides.
+
 ### v1.4.3 (2026-07-09)
 - **Added**: 12hr / 24hr clock format toggle in the Global Timers settings section. Both UTC and Local clocks now display AM/PM in 12hr mode. Preference is saved to localStorage.
 

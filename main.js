@@ -46,27 +46,27 @@ const initTheme = () => {
   const savedTheme = localStorage.getItem('theme') || 'midnight';
   document.documentElement.setAttribute('data-theme', savedTheme);
   
-  // Highlight the active circle
-  document.querySelectorAll('.theme-circle').forEach(circle => {
-    if (circle.getAttribute('data-theme') === savedTheme) {
-      circle.classList.add('active');
+  // Highlight the active card
+  document.querySelectorAll('.theme-card').forEach(card => {
+    if (card.getAttribute('data-theme') === savedTheme) {
+      card.classList.add('active');
     } else {
-      circle.classList.remove('active');
+      card.classList.remove('active');
     }
   });
 };
 
-document.querySelectorAll('.theme-circle').forEach(circle => {
-  circle.addEventListener('click', () => {
-    if(!circle) return;
+document.querySelectorAll('.theme-card').forEach(card => {
+  card.addEventListener('click', () => {
+    if(!card) return;
     
-    const theme = circle.getAttribute('data-theme');
+    const theme = card.getAttribute('data-theme');
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     
-    // Update active circle
-    document.querySelectorAll('.theme-circle').forEach(c => c.classList.remove('active'));
-    circle.classList.add('active');
+    // Update active card
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
     
     // Auto-close sidebar to see changes
     closeSidebarFunc();
