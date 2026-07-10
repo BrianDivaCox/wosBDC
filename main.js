@@ -2435,6 +2435,9 @@ const views = {
       
       // -- TODAY HTML --
       let todayHtml = "";
+      todayHtml += `<div class="card">`;
+      todayHtml += `<div class="card-title" style="color:var(--accent); font-size:18px;">🕒 Today's Schedule</div>`;
+      
       if (todayEvents.length > 0) {
           let eventRows = todayEvents.map(ev => `
             <tr>
@@ -2445,8 +2448,7 @@ const views = {
           `).join("");
           
           todayHtml += `
-            <div class="card" style="overflow-x:auto;">
-              <div class="card-title" style="color:var(--accent);">🕒 Today's Schedule</div>
+            <div style="overflow-x:auto; margin-bottom: 20px;">
               <table style="min-width:max-content; width:100%;">
                 <thead><tr><th>Event</th><th>UTC</th><th>Your Time</th></tr></thead>
                 <tbody>${eventRows}</tbody>
@@ -2455,26 +2457,23 @@ const views = {
           `;
       } else {
           todayHtml += `
-            <div class="card">
-              <div class="card-title">🕒 Today's Schedule</div>
-              <div style="padding: 20px; text-align: center; color: var(--text-muted);">No events scheduled for today.</div>
-            </div>
+            <div style="padding: 20px; text-align: center; color: var(--text-muted); margin-bottom: 20px;">No events scheduled for today.</div>
           `;
       }
       
       if (todayRewards.length > 0) {
           let uniqueRewards = [...new Set(todayRewards)];
-          let badgesHtml = uniqueRewards.map(r => `<span style="background:linear-gradient(135deg, rgba(234,179,8,0.2), rgba(234,179,8,0.05)); color:#eab308; border:1px solid rgba(234,179,8,0.4); padding:8px 16px; border-radius:20px; font-weight:bold; font-size:14px; box-shadow: 0 4px 10px rgba(234,179,8,0.1);">🎁 ${r}</span>`).join("");
+          let badgesHtml = uniqueRewards.map(r => `<span style="background:linear-gradient(135deg, rgba(234,179,8,0.2), rgba(234,179,8,0.05)); color:#eab308; border:1px solid rgba(234,179,8,0.4); padding:6px 14px; border-radius:20px; font-weight:bold; font-size:13px; box-shadow: 0 4px 10px rgba(234,179,8,0.1);">🎁 ${r}</span>`).join("");
           
           todayHtml += `
-            <div class="card">
-              <div class="card-title" style="color:#eab308;">💎 Today's Active Rewards</div>
-              <div style="display:flex; flex-wrap:wrap; gap:10px; padding-top:5px;">
-                ${badgesHtml}
-              </div>
+            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:15px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid rgba(234,179,8,0.2);">
+              <span style="font-size:13px; color:#eab308; text-transform:uppercase; letter-spacing:1px; font-weight:bold;">💎 Active Rewards:</span>
+              ${badgesHtml}
             </div>
           `;
       }
+      
+      todayHtml += `</div>`;
       
       finalHtml += todayHtml;
       
