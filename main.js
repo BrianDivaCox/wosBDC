@@ -252,7 +252,7 @@ onValue(ref(db, 'config/maintenanceEndTime'), (snapshot) => {
 window._executeLogBearTrapWinner = async (name, trap) => {
     window.showToast("Crowning Winner...", "accent");
     try {
-        const adminName = window.idToNameMap[window.currentUser.gameId] || "Admin";
+        const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
         const url = `${API_BASE_URL}?api=addBearTrapEventWin&name=${encodeURIComponent(name)}&trap=${encodeURIComponent(trap)}&admin=${encodeURIComponent(adminName)}`;
         const res = await fetch(url).then(r => r.json());
         
