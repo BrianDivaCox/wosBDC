@@ -249,55 +249,35 @@ onValue(ref(db, 'config/maintenanceEndTime'), (snapshot) => {
   if (maintenanceMode) startMaintenanceCountdown();
 });
 
-// --- Toggle Maintenance with Duration Picker ---
-
-window.logBearTrapWinner = async () => {
-    const sel = document.getElementById('bearTrapWinnerSelect');
-    const name = sel.value;
-    const trap = document.querySelector('input[name="btWinnerTrap"]:checked').value;
-    const btn = document.getElementById('logBtWinnerBtn');
-    const status = document.getElementById('btWinnerStatus');
-    
-    if (!name) {
-        status.innerHTML = `<span style="color:var(--danger)">Please select a player.</span>`;
-        return;
-    }
-    
-    btn.disabled = true;
-    btn.textContent = 'Processing...';
-    status.innerHTML = `<span style="color:var(--text-muted)">Sending to Google Sheets...</span>`;
-    
+window._executeLogBearTrapWinner = async (name, trap) => {
+    window.showToast("Crowning Winner...", "accent");
     try {
         const adminName = window.idToNameMap[window.currentUser.gameId] || "Admin";
         const url = `${API_BASE_URL}?api=addBearTrapEventWin&name=${encodeURIComponent(name)}&trap=${encodeURIComponent(trap)}&admin=${encodeURIComponent(adminName)}`;
         const res = await fetch(url).then(r => r.json());
         
         if (res && res.success) {
-            status.innerHTML = `<span style="color:var(--success)">✅ Successfully added +1 win for ${name} (New Total: ${res.newTotal}). Saving to Firebase...</span>`;
-            
-            // Save to Firebase
             await set(ref(db, `config/bearTrapWinners/${trap}`), {
                 name: name,
                 score: res.newTotal,
                 timestamp: Date.now()
             });
-            
-            status.innerHTML = `<span style="color:var(--success)">🏆 Successfully crowned ${name} as Champion!</span>`;
-            setTimeout(() => {
-                status.innerHTML = '';
-                sel.value = '';
-                btn.disabled = false;
-                btn.textContent = '👑 Crown Winner & Add Win';
-            }, 3000);
+            window.showToast(`✅ Successfully crowned ${name} as Champion! (New Total: ${res.newTotal})`, "success");
+            window.searchPlayerFull(name); // Refresh UI
         } else {
-            status.innerHTML = `<span style="color:var(--danger)">❌ Error: ${res ? res.message : 'Unknown backend error'}</span>`;
-            btn.disabled = false;
-            btn.textContent = '👑 Crown Winner & Add Win';
+            alert(`Error: ${res ? res.message : 'Unknown backend error'}`);
         }
     } catch (e) {
-        status.innerHTML = `<span style="color:var(--danger)">❌ Network Error.</span>`;
-        btn.disabled = false;
-        btn.textContent = '👑 Crown Winner & Add Win';
+        alert(`Network Error: ${e.message}`);
+    }
+};
+
+window.promptLogBearTrapWinner = (name) => {
+    let trapNum = prompt(`Log Bear Trap Win for ${name}!\n\nWhich event did they win?\nEnter '1' for Bear Trap 1, or '2' for Bear Trap 2:`);
+    if (trapNum === '1' || trapNum === '2') {
+        window._executeLogBearTrapWinner(name, trapNum);
+    } else if (trapNum !== null && trapNum.trim() !== "") {
+        alert("Invalid input. Please enter 1 or 2.");
     }
 };
 
@@ -1026,26 +1006,6 @@ const views = {
               
               <div id="uniEditorRes" style="display:none; flex-direction:column; gap:12px; border-top:1px solid var(--border); padding-top:15px;">
                  <!-- Populated by JS -->
-              </div>
-            </div>
-            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
-              <div style="margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--accent);">🏆 Log Bear Trap Event Winner</h3>
-                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select the winner to add +1 to their sheet score and instantly crown them Champion on the Leaderboards.</p>
-              </div>
-              
-              <div style="display:flex; flex-direction:column; gap:12px;">
-                <select id="bearTrapWinnerSelect" style="padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
-                  ${playerOptions}
-                </select>
-                
-                <div style="display:flex; gap:15px;">
-                  <label style="color:var(--text-main); font-weight:bold;"><input type="radio" name="btWinnerTrap" value="1" checked> 🐻 Bear Trap 1</label>
-                  <label style="color:var(--text-main); font-weight:bold;"><input type="radio" name="btWinnerTrap" value="2"> 🐻 Bear Trap 2</label>
-                </div>
-                
-                <button onclick="window.logBearTrapWinner()" id="logBtWinnerBtn" style="background:var(--success); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:16px;">👑 Crown Winner & Add Win</button>
-                <div id="btWinnerStatus" style="font-size:13px; font-weight:bold; margin-top:5px;"></div>
               </div>
             </div>
           </div>
@@ -2910,6 +2870,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     adminBarHtml = `
       <div style="display:flex; gap:10px; align-items:center;">
         ${adminActionBtn}
+        <button onclick="window.promptLogBearTrapWinner('${chiefName}')" style="background:#FFD700; color:#000; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">👑 Crown Winner</button>
         <button onclick="window.promptBearTrap('${chiefName}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">🥩 + Bear Donation</button>
         <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">📝 Edit Events</button>
       </div>
