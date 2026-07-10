@@ -249,7 +249,8 @@ window.toggleMaintenance = async () => {
       
       <p style="margin:0 0 5px 0; color:var(--text-main); font-size:13px; font-weight:bold;">Or set an exact date & time:</p>
       <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
-        <input type="datetime-local" id="customMaintDate" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
+        <input type="date" id="customMaintDateOnly" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
+        <input type="time" id="customMaintTimeOnly" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
         <button id="customMaintDateBtn" style="padding:10px 16px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; font-weight:bold; font-size:14px;">Set</button>
       </div>
       
@@ -293,11 +294,15 @@ window.toggleMaintenance = async () => {
   
   // Custom date
   document.getElementById('customMaintDateBtn').addEventListener('click', () => {
-    const val = document.getElementById('customMaintDate').value;
-    if (!val) { alert('Please select a date and time.'); return; }
-    const targetDate = new Date(val).getTime();
+    const dateVal = document.getElementById('customMaintDateOnly').value;
+    const timeVal = document.getElementById('customMaintTimeOnly').value;
+    if (!dateVal || !timeVal) { alert('Please select both a date and a time.'); return; }
+    
+    // Combine date and time strings (e.g. "2023-10-15T14:30")
+    const combinedStr = dateVal + 'T' + timeVal;
+    const targetDate = new Date(combinedStr).getTime();
     if (targetDate <= Date.now()) { alert('Please select a future date and time.'); return; }
-    activateMaintenance(targetDate, 'countdown set to ' + new Date(val).toLocaleString());
+    activateMaintenance(targetDate, 'countdown set to ' + new Date(combinedStr).toLocaleString());
   });
   
   document.getElementById('noCountdownBtn').addEventListener('click', () => activateMaintenance(null, 'No countdown'));
