@@ -1,3 +1,7 @@
+### v1.4.6 (2026-07-10)
+- **Added**: Maintenance Countdown System — when enabling maintenance mode, admins now see a duration picker with preset options (15m, 30m, 1hr, 2hr) or custom minutes. A live countdown is displayed on the maintenance lockout page for all users. When the countdown expires, it shows "Should be back any moment..." (manual mode).
+- **Added**: "No Countdown" option for maintenance without a timer.
+
 ### v1.4.5 (2026-07-09)
 - **Fixed**: Schedule (Calendar View) and Today's Schedule pages now handle missing or null data gracefully instead of crashing with "Cannot read properties of null (reading 'length')".
 

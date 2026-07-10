@@ -109,6 +109,8 @@ const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 
 // --- Maintenance Mode State ---
 let maintenanceMode = false;
+let maintenanceEndTime = null;
+let maintenanceCountdownInterval = null;
 const maintenanceOverlay = document.getElementById('maintenanceOverlay');
 
 const checkMaintenanceAccess = () => {
@@ -122,21 +124,170 @@ const checkMaintenanceAccess = () => {
     } else {
       maintenanceOverlay.style.display = 'flex';
       if(adminBanner) adminBanner.style.display = 'none';
+      startMaintenanceCountdown();
     }
   } else {
     maintenanceOverlay.style.display = 'none';
     if(adminBanner) adminBanner.style.display = 'none';
+    stopMaintenanceCountdown();
   }
 };
 
-window.toggleMaintenance = async () => {
-  try {
-    await set(ref(db, 'config/maintenanceMode'), !maintenanceMode);
-    window.showToast(`Maintenance mode is now ${!maintenanceMode ? 'ON' : 'OFF'}`, !maintenanceMode ? 'error' : 'success');
-    if (app.querySelector('#adminHubView')) views.admin();
-  } catch (err) {
-    alert(err.message);
+// --- Maintenance Countdown Logic ---
+function startMaintenanceCountdown() {
+  const countdownEl = document.getElementById('maintenanceCountdown');
+  const timerEl = document.getElementById('maintenanceTimer');
+  const expiredEl = document.getElementById('maintenanceExpired');
+  const noTimerEl = document.getElementById('maintenanceNoTimer');
+  
+  if (!maintenanceEndTime) {
+    // No countdown set — show generic message
+    if(countdownEl) countdownEl.style.display = 'none';
+    if(expiredEl) expiredEl.style.display = 'none';
+    if(noTimerEl) noTimerEl.style.display = 'block';
+    return;
   }
+  
+  if(noTimerEl) noTimerEl.style.display = 'none';
+  
+  // Clear any existing interval
+  if (maintenanceCountdownInterval) clearInterval(maintenanceCountdownInterval);
+  
+  const tick = () => {
+    const now = Date.now();
+    const diff = maintenanceEndTime - now;
+    
+    if (diff <= 0) {
+      // Countdown expired — show "back any moment" message
+      if(countdownEl) countdownEl.style.display = 'none';
+      if(expiredEl) expiredEl.style.display = 'block';
+      clearInterval(maintenanceCountdownInterval);
+      maintenanceCountdownInterval = null;
+      return;
+    }
+    
+    // Show countdown
+    if(countdownEl) countdownEl.style.display = 'block';
+    if(expiredEl) expiredEl.style.display = 'none';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    let timeStr = '';
+    if (hours > 0) {
+      timeStr = `${hours}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+    } else {
+      timeStr = `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+    }
+    
+    if(timerEl) timerEl.textContent = timeStr;
+  };
+  
+  tick(); // Run immediately
+  maintenanceCountdownInterval = setInterval(tick, 1000);
+}
+
+function stopMaintenanceCountdown() {
+  if (maintenanceCountdownInterval) {
+    clearInterval(maintenanceCountdownInterval);
+    maintenanceCountdownInterval = null;
+  }
+  const countdownEl = document.getElementById('maintenanceCountdown');
+  const expiredEl = document.getElementById('maintenanceExpired');
+  const noTimerEl = document.getElementById('maintenanceNoTimer');
+  if(countdownEl) countdownEl.style.display = 'none';
+  if(expiredEl) expiredEl.style.display = 'none';
+  if(noTimerEl) noTimerEl.style.display = 'block';
+}
+
+// Listen for maintenanceEndTime changes
+onValue(ref(db, 'config/maintenanceEndTime'), (snapshot) => {
+  maintenanceEndTime = snapshot.val() || null;
+  if (maintenanceMode) startMaintenanceCountdown();
+});
+
+// --- Toggle Maintenance with Duration Picker ---
+window.toggleMaintenance = async () => {
+  if (maintenanceMode) {
+    // Turning OFF — just disable it
+    try {
+      await set(ref(db, 'config/maintenanceMode'), false);
+      await set(ref(db, 'config/maintenanceEndTime'), null);
+      window.showToast('Maintenance mode is now OFF', 'success');
+      if (app.querySelector('#adminHubView')) views.admin();
+    } catch (err) {
+      alert(err.message);
+    }
+    return;
+  }
+  
+  // Turning ON — show duration picker
+  const modal = document.createElement('div');
+  modal.id = 'maintenanceDurationModal';
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10001; display:flex; justify-content:center; align-items:center;';
+  
+  modal.innerHTML = `
+    <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:30px; max-width:400px; width:90%; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <h2 style="margin:0 0 5px 0; color:var(--danger); font-size:20px;">🚧 Enable Maintenance Mode</h2>
+      <p style="margin:0 0 20px 0; color:var(--text-muted); font-size:13px;">How long will maintenance take? This countdown will be shown to all users.</p>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+        <button class="maint-dur-btn" data-minutes="15" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">15 min</button>
+        <button class="maint-dur-btn" data-minutes="30" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">30 min</button>
+        <button class="maint-dur-btn" data-minutes="60" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">1 hour</button>
+        <button class="maint-dur-btn" data-minutes="120" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">2 hours</button>
+      </div>
+      
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
+        <input type="number" id="customMaintMinutes" placeholder="Custom (minutes)" min="1" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
+        <button id="customMaintBtn" style="padding:10px 16px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; font-weight:bold; font-size:14px;">Go</button>
+      </div>
+      
+      <div style="display:flex; gap:10px;">
+        <button id="noCountdownBtn" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-muted); cursor:pointer; font-weight:bold; font-size:13px;">No Countdown</button>
+        <button id="cancelMaintBtn" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-muted); cursor:pointer; font-weight:bold; font-size:13px;">Cancel</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  const activateMaintenance = async (minutes) => {
+    modal.remove();
+    try {
+      const endTime = minutes ? Date.now() + (minutes * 60 * 1000) : null;
+      await set(ref(db, 'config/maintenanceMode'), true);
+      await set(ref(db, 'config/maintenanceEndTime'), endTime);
+      window.showToast(`Maintenance mode ON${minutes ? ' — ' + minutes + ' min countdown' : ''}`, 'error');
+      if (app.querySelector('#adminHubView')) views.admin();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+  
+  // Preset buttons
+  modal.querySelectorAll('.maint-dur-btn').forEach(btn => {
+    btn.addEventListener('mouseover', () => { btn.style.borderColor = 'var(--danger)'; btn.style.color = 'var(--danger)'; });
+    btn.addEventListener('mouseout', () => { btn.style.borderColor = 'var(--border)'; btn.style.color = 'var(--text-main)'; });
+    btn.addEventListener('click', () => activateMaintenance(parseInt(btn.getAttribute('data-minutes'))));
+  });
+  
+  // Custom minutes
+  document.getElementById('customMaintBtn').addEventListener('click', () => {
+    const val = parseInt(document.getElementById('customMaintMinutes').value);
+    if (!val || val < 1) { alert('Please enter a valid number of minutes.'); return; }
+    activateMaintenance(val);
+  });
+  
+  // No countdown
+  document.getElementById('noCountdownBtn').addEventListener('click', () => activateMaintenance(null));
+  
+  // Cancel
+  document.getElementById('cancelMaintBtn').addEventListener('click', () => modal.remove());
+  
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 };
 
 window.searchPlayerFull = async (name) => {

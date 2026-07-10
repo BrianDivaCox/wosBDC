@@ -198,7 +198,17 @@
     <div id="maintenanceOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-main); z-index:10000; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box;">
       <div style="font-size:70px; margin-bottom:20px;">🚧</div>
       <h1 style="color:var(--text-main); margin-bottom:15px; font-size:28px;">Site Under Maintenance</h1>
-      <p style="color:var(--text-muted); font-size:16px; max-width:400px; line-height:1.5;">We are currently performing scheduled maintenance on the dashboard. We will be back online ASAP!</p>
+      <p style="color:var(--text-muted); font-size:16px; max-width:400px; line-height:1.5;">We are currently performing scheduled maintenance on the dashboard.</p>
+      <div id="maintenanceCountdown" style="margin-top:30px; display:none;">
+        <p style="color:var(--text-muted); font-size:14px; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:1px;">Estimated time remaining</p>
+        <div id="maintenanceTimer" style="font-size:42px; font-weight:bold; color:var(--accent); font-family:'Segoe UI', monospace; letter-spacing:2px;">--:--</div>
+      </div>
+      <div id="maintenanceExpired" style="margin-top:30px; display:none;">
+        <p style="color:var(--success); font-size:18px; font-weight:bold; animation: fadeIn 0.5s ease;">✨ Should be back any moment...</p>
+      </div>
+      <div id="maintenanceNoTimer" style="margin-top:20px;">
+        <p style="color:var(--text-muted); font-size:14px;">We'll be back online ASAP!</p>
+      </div>
     </div>
 
     <!-- Account Hub View Template (Injected into App) -->
