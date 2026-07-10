@@ -986,15 +986,15 @@ const views = {
               </div>
               ${Object.keys(window.systemAdmins).map(gid => {
                  let n = idToNameMap[gid] || "Unknown Player";
-                 return \`
+                 return `
                  <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
-                   <div style="font-weight:bold; color:var(--text-main);">\${n}</div>
+                   <div style="font-weight:bold; color:var(--text-main);">${n}</div>
                    <div style="display:flex; gap:10px; align-items:center;">
-                     <div style="color:var(--text-muted); font-size:12px;">\${gid}</div>
-                     <button onclick="window.revokeAdmin('\${gid}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
+                     <div style="color:var(--text-muted); font-size:12px;">${gid}</div>
+                     <button onclick="window.revokeAdmin('${gid}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
                    </div>
                  </div>
-                 \`;
+                 `;
               }).join('')}
             </div>
           </div>
@@ -2719,19 +2719,19 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     let adminActionBtn = '';
     if (playerGameId) {
         if (window.isAdminUser({gameId: parseInt(playerGameId)})) {
-            adminActionBtn = \`<button onclick="window.revokeAdmin('\${playerGameId}')" style="background:transparent; color:var(--danger); border:1px solid var(--danger); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--danger)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--danger)';">❌ Revoke Admin</button>\`;
+            adminActionBtn = `<button onclick="window.revokeAdmin('${playerGameId}')" style="background:transparent; color:var(--danger); border:1px solid var(--danger); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--danger)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--danger)';">❌ Revoke Admin</button>`;
         } else {
-            adminActionBtn = \`<button onclick="window.grantAdmin('\${playerGameId}')" style="background:transparent; color:var(--accent); border:1px solid var(--accent); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">🛡️ Grant Admin</button>\`;
+            adminActionBtn = `<button onclick="window.grantAdmin('${playerGameId}')" style="background:transparent; color:var(--accent); border:1px solid var(--accent); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">🛡️ Grant Admin</button>`;
         }
     }
     
-    adminBarHtml = \`
+    adminBarHtml = `
       <div style="display:flex; gap:10px; align-items:center;">
-        \${adminActionBtn}
-        <button onclick="window.promptBearTrap('\${chiefName}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">🥩 + Bear Donation</button>
-        <button onclick="window.promptEditEvents('\${chiefName}', decodeURIComponent('\${missedJson}'))" style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">📝 Edit Events</button>
+        ${adminActionBtn}
+        <button onclick="window.promptBearTrap('${chiefName}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">🥩 + Bear Donation</button>
+        <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">📝 Edit Events</button>
       </div>
-    \`;
+    `;
   }
   
   let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1);">' + avatarImgHtml + '</div><div style="flex:1;"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px;">' + chiefName + '</h2>' + adminBarHtml + '</div>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
