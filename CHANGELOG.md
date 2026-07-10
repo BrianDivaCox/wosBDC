@@ -1,3 +1,9 @@
+### v1.4.10 (2026-07-10)
+- **Changed**: Restructured admin controls on player profiles. Added a new "Admin Action Bar" at the top right of the card.
+- **Added**: New "Edit Events" modal for admins. Clicking it opens a popup with checkboxes to mark multiple missed events as Participated at once.
+- **Changed**: Removed the `+ Add Donation` button from the badges list and moved it to the new Admin Action Bar.
+- **Changed**: Event metric boxes in the checklist are no longer clickable for admins to prevent accidental clicks. Use the "Edit Events" button instead.
+
 ### v1.4.9 (2026-07-10)
 - **Changed**: Simplified Bear Trap Wins format to display as `#1 (65) All-Time | (T1: #1 (50) | T2: #2 (15))`.
 

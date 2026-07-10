@@ -2547,7 +2547,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     }
     
     if (isAdmin) {
-       headerBadgesHtml += '<button onclick="window.promptBearTrap(\'' + chiefName + '\')" style="background:var(--success); color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px;">+ Add Donation</button>';
+       // Buttons moved to top admin bar
     }
     
     otherLbs.forEach(lb => {
@@ -2559,9 +2559,10 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   
   let metricsHtml = '<div style="margin-top: 25px;">';
   metricsHtml += '<h3 style="margin: 0 0 5px 0; color:var(--text-main); font-size:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">📅 Events Checklist</h3>';
-  metricsHtml += '<p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming' + (isAdmin ? ' <span style="color:var(--danger); font-weight:bold; margin-left:10px;">(Click ❌ to edit)</span>' : '') + '</p>';
+  metricsHtml += '<p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming</p>';
   metricsHtml += '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">';
   
+  let missedEvents = [];
   const supportedEvents = ["Championship", "Polar Terrors", "Mercenary Prestige", "Voter"];
   
   for (let col = 1; col < headers.length; col++) {
@@ -2588,15 +2589,11 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     let boxContent = '<div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:bold;">'+header+'</div>';
     boxContent += '<div style="font-size:18px; font-weight:bold; color:var(--text-main);">'+val+'</div>';
     
-    let isSupported = supportedEvents.some(s => header.toLowerCase().includes(s.toLowerCase()));
-    
-    if (isAdmin && isX && isSupported) {
-       metricsHtml += '<div onclick="window.promptEventUpdate(\''+chiefName+'\', \''+header+'\')" style="cursor:pointer; border-color:var(--danger); '+boxStyle+'" onmouseover="this.style.transform=\'scale(1.05)\'; this.style.background=\'color-mix(in srgb, var(--danger) 10%, var(--bg-main))\';" onmouseout="this.style.transform=\'none\'; this.style.background=\'var(--bg-main)\';">' + boxContent + '</div>';
-    } else if (isAdmin && isX) {
-       metricsHtml += '<div title="This event is not supported for editing yet." style="'+boxStyle+'">' + boxContent + '</div>';
-    } else {
-       metricsHtml += '<div style="'+boxStyle+'">' + boxContent + '</div>';
+    if (isX && supportedEvents.some(s => header.toLowerCase().includes(s.toLowerCase()))) {
+       missedEvents.push(header);
     }
+    
+    metricsHtml += '<div style="'+boxStyle+'">' + boxContent + '</div>';
   }
   metricsHtml += '</div></div>';
   
@@ -2605,35 +2602,101 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   
   let avatarImgHtml = '<img src="'+tryUrl+'" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"><div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">' + chiefName.charAt(0).toUpperCase() + '</div>';
   
-  let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1);">' + avatarImgHtml + '</div><div style="flex:1;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px;">' + chiefName + '</h2>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
+  let adminBarHtml = '';
+  if (isAdmin) {
+    let missedJson = encodeURIComponent(JSON.stringify(missedEvents));
+    adminBarHtml = `
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button onclick="window.promptBearTrap('${chiefName}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">🥩 + Bear Donation</button>
+        <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">📝 Edit Events</button>
+      </div>
+    `;
+  }
+  
+  let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1);">' + avatarImgHtml + '</div><div style="flex:1;"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px;">' + chiefName + '</h2>' + adminBarHtml + '</div>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
   return html;
 };
 
-window.promptEventUpdate = async (name, eventHeader) => {
-  if (!confirm("Mark " + eventHeader + " as Participated (✅) for " + name + "?")) return;
+window.promptEditEvents = (name, missedEventsStr) => {
+  let missedEvents = [];
+  try { missedEvents = JSON.parse(missedEventsStr); } catch (e) {}
   
-  let eventSheetName = eventHeader;
-  if (eventHeader.toLowerCase().includes('championship')) eventSheetName = "Alliance Championship ";
-  
-  window.showToast("Updating "+eventHeader+"...", "success");
-  
-  const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
-  try {
-    const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=yes&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
-    if (res.success) {
-      window.showToast("Successfully updated!", "success");
-      window.sheetCache = {}; 
-      if (document.getElementById('uniSearchInput')) {
-        window.searchPlayerFull(name); 
-      } else {
-        views.roster();
-      }
-    } else {
-      alert("Error: " + res.message);
-    }
-  } catch (err) {
-    alert("Network Error: " + err.message);
+  if (missedEvents.length === 0) {
+    alert("This player has no supported missing events this week.");
+    return;
   }
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10001; display:flex; justify-content:center; align-items:center;';
+  
+  let checkboxHtml = missedEvents.map((ev, i) => `
+    <label style="display:flex; align-items:center; gap:10px; background:var(--bg-main); padding:12px; border-radius:8px; border:1px solid var(--border); cursor:pointer;">
+      <input type="checkbox" id="evCheck${i}" value="${ev}" style="width:18px; height:18px; cursor:pointer;">
+      <span style="font-weight:bold; color:var(--text-main);">${ev}</span>
+    </label>
+  `).join('');
+  
+  modal.innerHTML = `
+    <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:30px; max-width:400px; width:90%; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <h2 style="margin:0 0 5px 0; color:var(--text-main); font-size:20px;">📝 Edit Events for ${name}</h2>
+      <p style="margin:0 0 20px 0; color:var(--text-muted); font-size:13px;">Select the events below to mark them as Participated (✅).</p>
+      
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px; max-height:300px; overflow-y:auto;">
+        ${checkboxHtml}
+      </div>
+      
+      <div style="display:flex; gap:10px;">
+        <button id="cancelEvBtn" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-muted); cursor:pointer; font-weight:bold; font-size:13px;">Cancel</button>
+        <button id="submitEvBtn" style="flex:2; padding:10px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; font-weight:bold; font-size:13px;">Submit Updates</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  
+  modal.querySelector('#cancelEvBtn').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  
+  modal.querySelector('#submitEvBtn').addEventListener('click', async () => {
+    let checked = [];
+    for (let i = 0; i < missedEvents.length; i++) {
+      if (document.getElementById(`evCheck${i}`).checked) checked.push(missedEvents[i]);
+    }
+    
+    if (checked.length === 0) {
+      alert("No events selected.");
+      return;
+    }
+    
+    modal.remove();
+    const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
+    
+    for (let i = 0; i < checked.length; i++) {
+      let ev = checked[i];
+      window.showToast(`Updating ${ev} (${i+1}/${checked.length})...`, "success");
+      
+      let eventSheetName = ev;
+      if (ev.toLowerCase().includes('championship')) eventSheetName = "Alliance Championship ";
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=yes&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+        if (!res.success) {
+          alert(`Error updating ${ev}: ${res.message}`);
+          break; // stop on error
+        }
+      } catch (err) {
+        alert(`Network Error on ${ev}: ${err.message}`);
+        break; // stop on error
+      }
+    }
+    
+    window.showToast("Updates complete!", "success");
+    window.sheetCache = {}; 
+    if (document.getElementById('uniSearchInput')) {
+      window.searchPlayerFull(name); 
+    } else {
+      views.roster();
+    }
+  });
 };
 
 window.promptBearTrap = async (name) => {
