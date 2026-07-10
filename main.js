@@ -1710,13 +1710,26 @@ const views = {
         
         // Champion Banner Logic
         let trapNum = null;
+        let isAllTime = false;
         if (board.title.toLowerCase().includes('bear trap 1')) trapNum = '1';
         else if (board.title.toLowerCase().includes('bear trap 2')) trapNum = '2';
+        else if (board.title.toLowerCase().includes('all-time bear trap')) isAllTime = true;
+        
+        let champName = null;
+        let champScore = null;
+        let bannerTitle = "👑 Reigning Champion";
         
         if (trapNum && btWinners[trapNum]) {
-           const champ = btWinners[trapNum];
-           const champName = champ.name;
-           
+           champName = btWinners[trapNum].name;
+           champScore = btWinners[trapNum].score;
+        } else if (isAllTime && board.rows.length > 0) {
+           let firstRow = board.rows[0];
+           champName = firstRow[1] ? firstRow[1].toString() : null;
+           champScore = firstRow[2] !== undefined ? firstRow[2] : null;
+           bannerTitle = "👑 All-Time Champion";
+        }
+        
+        if (champName) {
            // Look up their gameId to get the avatar
            let champId = null;
            for (const [gid, name] of Object.entries(idToNameMap)) {
@@ -1733,12 +1746,12 @@ const views = {
                  <img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='images/default.png';">
                </div>
                <div style="flex: 1;">
-                 <div style="color: #FFD700; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">👑 Reigning Champion</div>
+                 <div style="color: #FFD700; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">${bannerTitle}</div>
                  <div style="color: var(--text-main); font-size: 18px; font-weight: bold;">${champName}</div>
                </div>
                <div style="text-align: right;">
                  <div style="color: var(--text-muted); font-size: 11px;">Total Wins</div>
-                 <div style="color: var(--accent); font-size: 20px; font-weight: bold;">${champ.score}</div>
+                 <div style="color: var(--accent); font-size: 20px; font-weight: bold;">${champScore}</div>
                </div>
              </div>
            `;

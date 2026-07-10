@@ -1,3 +1,6 @@
+### v1.7.1 (2026-07-10)
+- **Feature**: Added a dynamic "👑 All-Time Champion" banner to the All-Time Bear Trap Leaderboard. The system automatically reads the Rank 1 player and showcases their avatar and total lifetime wins at the top of the card.
+
 ### v1.7.0 (2026-07-10)
 - **Feature**: Added a new Admin tool to log Bear Trap Event Winners directly from the dashboard.
 - **Enhanced**: The dashboard now syncs directly with the hidden `data` sheet in Google Sheets to update win totals in real-time.
