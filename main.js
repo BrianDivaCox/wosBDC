@@ -169,16 +169,18 @@ function startMaintenanceCountdown() {
     // Show countdown
     if(countdownEl) countdownEl.style.display = 'block';
     if(expiredEl) expiredEl.style.display = 'none';
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
     let timeStr = '';
-    if (hours > 0) {
+    if (days > 0) {
+      timeStr = `${days}d ${hours}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+    } else if (hours > 0) {
       timeStr = `${hours}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
     } else {
-      timeStr = `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+      timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     
     if(timerEl) timerEl.textContent = timeStr;
@@ -233,15 +235,22 @@ window.toggleMaintenance = async () => {
       <p style="margin:0 0 20px 0; color:var(--text-muted); font-size:13px;">How long will maintenance take? This countdown will be shown to all users.</p>
       
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-        <button class="maint-dur-btn" data-minutes="15" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">15 min</button>
-        <button class="maint-dur-btn" data-minutes="30" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">30 min</button>
         <button class="maint-dur-btn" data-minutes="60" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">1 hour</button>
         <button class="maint-dur-btn" data-minutes="120" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">2 hours</button>
+        <button class="maint-dur-btn" data-minutes="1440" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">24 hours</button>
+        <button class="maint-dur-btn" data-minutes="2880" style="padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); cursor:pointer; font-weight:bold; font-size:14px; transition:0.2s;">48 hours</button>
       </div>
       
-      <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
-        <input type="number" id="customMaintMinutes" placeholder="Custom (minutes)" min="1" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
+      <p style="margin:0 0 5px 0; color:var(--text-main); font-size:13px; font-weight:bold;">Or set a custom duration:</p>
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
+        <input type="number" id="customMaintHours" placeholder="Hours" min="0.5" step="0.5" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
         <button id="customMaintBtn" style="padding:10px 16px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; font-weight:bold; font-size:14px;">Go</button>
+      </div>
+      
+      <p style="margin:0 0 5px 0; color:var(--text-main); font-size:13px; font-weight:bold;">Or set an exact date & time:</p>
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px;">
+        <input type="datetime-local" id="customMaintDate" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
+        <button id="customMaintDateBtn" style="padding:10px 16px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; font-weight:bold; font-size:14px;">Set</button>
       </div>
       
       <div style="display:flex; gap:10px;">
@@ -253,13 +262,12 @@ window.toggleMaintenance = async () => {
   
   document.body.appendChild(modal);
   
-  const activateMaintenance = async (minutes) => {
+  const activateMaintenance = async (endTime, label) => {
     modal.remove();
     try {
-      const endTime = minutes ? Date.now() + (minutes * 60 * 1000) : null;
       await set(ref(db, 'config/maintenanceMode'), true);
       await set(ref(db, 'config/maintenanceEndTime'), endTime);
-      window.showToast(`Maintenance mode ON${minutes ? ' — ' + minutes + ' min countdown' : ''}`, 'error');
+      window.showToast(`Maintenance mode ON${label ? ' — ' + label : ''}`, 'error');
       if (app.querySelector('#adminHubView')) views.admin();
     } catch (err) {
       alert(err.message);
@@ -270,20 +278,29 @@ window.toggleMaintenance = async () => {
   modal.querySelectorAll('.maint-dur-btn').forEach(btn => {
     btn.addEventListener('mouseover', () => { btn.style.borderColor = 'var(--danger)'; btn.style.color = 'var(--danger)'; });
     btn.addEventListener('mouseout', () => { btn.style.borderColor = 'var(--border)'; btn.style.color = 'var(--text-main)'; });
-    btn.addEventListener('click', () => activateMaintenance(parseInt(btn.getAttribute('data-minutes'))));
+    btn.addEventListener('click', () => {
+      let minutes = parseInt(btn.getAttribute('data-minutes'));
+      activateMaintenance(Date.now() + (minutes * 60 * 1000), minutes >= 60 ? (minutes/60) + ' hr countdown' : minutes + ' min countdown');
+    });
   });
   
-  // Custom minutes
+  // Custom hours
   document.getElementById('customMaintBtn').addEventListener('click', () => {
-    const val = parseInt(document.getElementById('customMaintMinutes').value);
-    if (!val || val < 1) { alert('Please enter a valid number of minutes.'); return; }
-    activateMaintenance(val);
+    const val = parseFloat(document.getElementById('customMaintHours').value);
+    if (!val || val <= 0) { alert('Please enter a valid number of hours.'); return; }
+    activateMaintenance(Date.now() + (val * 60 * 60 * 1000), val + ' hr countdown');
   });
   
-  // No countdown
-  document.getElementById('noCountdownBtn').addEventListener('click', () => activateMaintenance(null));
+  // Custom date
+  document.getElementById('customMaintDateBtn').addEventListener('click', () => {
+    const val = document.getElementById('customMaintDate').value;
+    if (!val) { alert('Please select a date and time.'); return; }
+    const targetDate = new Date(val).getTime();
+    if (targetDate <= Date.now()) { alert('Please select a future date and time.'); return; }
+    activateMaintenance(targetDate, 'countdown set to ' + new Date(val).toLocaleString());
+  });
   
-  // Cancel
+  document.getElementById('noCountdownBtn').addEventListener('click', () => activateMaintenance(null, 'No countdown'));
   document.getElementById('cancelMaintBtn').addEventListener('click', () => modal.remove());
   
   // Close on backdrop click

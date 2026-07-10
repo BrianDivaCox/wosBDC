@@ -1,3 +1,7 @@
+### v1.4.12 (2026-07-10)
+- **Enhanced**: Improved the Maintenance Mode duration picker. Admins can now input a custom duration in hours (instead of minutes) and use a Date/Time picker to set an exact maintenance end time.
+- **Enhanced**: The maintenance countdown timer shown to users now properly calculates and displays remaining days (e.g., `1d 2h 30m 10s`) for durations longer than 24 hours.
+
 ### v1.4.11 (2026-07-10)
 - **Changed**: Renamed "Bear Trap Donations" admin panel button and page title to "Multi-BT Donations".
 - **Fixed**: Admin panel "Multi-BT Donations" datalist dropdown now fetches and syncs with the entire Chief's List roster from Google Sheets, ensuring all players (like Dwarf) are available for quick selection, even if they haven't registered an account yet.
