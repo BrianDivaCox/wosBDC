@@ -882,7 +882,7 @@ const views = {
         <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h2 style="color:var(--danger); margin:0;">🛠️ Admin Control Panel</h2>
-            <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Bear Trap Donations</button>
+            <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Multi-BT Donations</button>
           </div>
           
           <!-- Maintenance Mode Toggle -->
@@ -1025,11 +1025,19 @@ const views = {
       return;
     }
     
+    // Fetch roster so datalist has everyone, not just registered users
+    let rosterRawData = null;
+    try {
+      rosterRawData = await fetchSheet("Chief's List");
+    } catch (e) {
+      console.error("Failed to load roster for datalist", e);
+    }
+    
     app.innerHTML = `
       <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease; position:relative;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">
           <h2 style="color:var(--accent); margin:0; display:flex; align-items:center; gap:10px;">
-            🐻 Bear Trap
+            🐻 Multi-BT Donations
             <button onclick="document.getElementById('btLookupModal').style.display='block'" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--accent); padding:4px 8px; border-radius:6px; cursor:pointer; font-size:12px; margin-left:10px;">🔍 Lookup</button>
           </h2>
           <button onclick="views.admin()" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); padding:5px 12px; border-radius:6px; cursor:pointer;">Back to Admin</button>
@@ -1078,9 +1086,23 @@ const views = {
       <datalist id="chiefList"></datalist>
     `;
     
-    // Populate datalist from idToNameMap
+    // Populate datalist from roster
     const dl = document.getElementById('chiefList');
-    if (dl) {
+    if (dl && rosterRawData && rosterRawData.length > 0) {
+      const players = [];
+      for (let i = 1; i < rosterRawData.length; i++) {
+        if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim() !== "") {
+          players.push(rosterRawData[i][0].toString().trim());
+        }
+      }
+      players.sort((a, b) => a.localeCompare(b));
+      players.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        dl.appendChild(opt);
+      });
+    } else if (dl) {
+      // Fallback to idToNameMap if sheet fetch failed
       Object.values(idToNameMap).forEach(name => {
         const opt = document.createElement('option');
         opt.value = name;

@@ -1,3 +1,7 @@
+### v1.4.11 (2026-07-10)
+- **Changed**: Renamed "Bear Trap Donations" admin panel button and page title to "Multi-BT Donations".
+- **Fixed**: Admin panel "Multi-BT Donations" datalist dropdown now fetches and syncs with the entire Chief's List roster from Google Sheets, ensuring all players (like Dwarf) are available for quick selection, even if they haven't registered an account yet.
+
 ### v1.4.10 (2026-07-10)
 - **Changed**: Restructured admin controls on player profiles. Added a new "Admin Action Bar" at the top right of the card.
 - **Added**: New "Edit Events" modal for admins. Clicking it opens a popup with checkboxes to mark multiple missed events as Participated at once.
