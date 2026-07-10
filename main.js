@@ -2518,20 +2518,20 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     if (bear1 || bear2 || bearBoth || bearAllTime) {
        let allTimeStr = bearAllTime ? '#' + bearAllTime.rank + ' (' + bearAllTime.score + ') All-Time' : '0 All-Time';
        
-       let currentStr = "";
-       if (bearBoth) currentStr = '#' + bearBoth.rank + ' (' + bearBoth.score + ') Current';
-       else if (bear1) currentStr = '#' + bear1.rank + ' (' + bear1.score + ') Current';
-       else if (bear2) currentStr = '#' + bear2.rank + ' (' + bear2.score + ') Current';
-       else currentStr = '0 Current';
+       let currentParts = [];
+       if (bear1) currentParts.push('T1: #' + bear1.rank + ' (' + bear1.score + ')');
+       if (bear2) currentParts.push('T2: #' + bear2.rank + ' (' + bear2.score + ')');
        
        let subStr = "";
-       if (bearBoth && bear1 && bear2) subStr = '(T1: ' + bear1.score + ' | T2: ' + bear2.score + ')';
-       else if (bear1 && bear2) subStr = '(T1: ' + bear1.score + ' | T2: ' + bear2.score + ')';
-       else if (bearBoth) subStr = '';
-       else if (bear1) subStr = '(T1: ' + bear1.score + ')';
-       else if (bear2) subStr = '(T2: ' + bear2.score + ')';
+       if (currentParts.length > 0) {
+           subStr = '(' + currentParts.join(' | ') + ')';
+       } else if (bearBoth) {
+           subStr = '(Total: #' + bearBoth.rank + ' (' + bearBoth.score + '))';
+       } else {
+           subStr = '0 Current';
+       }
        
-       let innerText = allTimeStr + ' | ' + currentStr + (subStr ? ' ' + subStr : '');
+       let innerText = allTimeStr + ' | ' + subStr;
        
        headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap Wins: <span style="color:var(--text-main);">'+innerText+'</span></span>';
     }

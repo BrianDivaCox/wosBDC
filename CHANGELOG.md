@@ -1,3 +1,6 @@
+### v1.4.9 (2026-07-10)
+- **Changed**: Simplified Bear Trap Wins format to display as `#1 (65) All-Time | (T1: #1 (50) | T2: #2 (15))`.
+
 ### v1.4.8 (2026-07-10)
 - **Changed**: Merged "All-Time Bear Trap Wins" and current Bear Trap Wins into a single styled tag on the player profile. The combined tag now displays leaderboard rankings alongside scores for both all-time and current data.
 
