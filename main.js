@@ -844,12 +844,11 @@ const formatCell = (cell) => {
 const devModeToggle = document.getElementById('devModeToggle');
 const devDeployBanner = document.getElementById('devDeployBanner');
 const devModeSlider = document.getElementById('devModeSlider');
-const statusEl = document.getElementById('github-deploy-status');
 let devModePollingInterval = null;
 let lastDeployStatus = null;
 
 const checkDeploymentStatus = async () => {
-  if (!statusEl) return;
+  const statusEl = document.getElementById('github-deploy-status');
   try {
     const res = await fetch('https://api.github.com/repos/BrianDivaCox/wosBDC/actions/runs?branch=main&per_page=1');
     const data = await res.json();
@@ -861,7 +860,7 @@ const checkDeploymentStatus = async () => {
       const isDevMode = localStorage.getItem('devMode') === 'true';
       
       if (status === 'in_progress' || status === 'queued') {
-        statusEl.innerHTML = `<span style="color:#eab308; display:flex; align-items:center; gap:5px;"><span style="display:inline-block; animation: spin 2s linear infinite;">⏳</span> Building & Deploying...</span>`;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#eab308; display:flex; align-items:center; gap:5px;"><span style="display:inline-block; animation: spin 2s linear infinite;">⏳</span> Building & Deploying...</span>`;
         if (isDevMode && devDeployBanner) {
             devDeployBanner.style.display = 'block';
             devDeployBanner.style.backgroundColor = '#f59e0b';
@@ -870,7 +869,7 @@ const checkDeploymentStatus = async () => {
             lastDeployStatus = 'in_progress';
         }
       } else if (status === 'completed' && conclusion === 'success') {
-        statusEl.innerHTML = `<span style="color:var(--success);">✅ Live & Up to Date</span>`;
+        if (statusEl) statusEl.innerHTML = `<span style="color:var(--success);">✅ Live & Up to Date</span>`;
         if (isDevMode && lastDeployStatus === 'in_progress') {
             window.location.reload(true);
         } else if (isDevMode && devDeployBanner) {
@@ -881,15 +880,15 @@ const checkDeploymentStatus = async () => {
             lastDeployStatus = 'completed';
         }
       } else if (status === 'completed' && conclusion === 'failure') {
-        statusEl.innerHTML = `<span style="color:var(--danger);">❌ Deployment Failed</span>`;
+        if (statusEl) statusEl.innerHTML = `<span style="color:var(--danger);">❌ Deployment Failed</span>`;
       } else {
-        statusEl.innerHTML = `<span style="color:var(--text-muted);">Status: ${status}</span>`;
+        if (statusEl) statusEl.innerHTML = `<span style="color:var(--text-muted);">Status: ${status}</span>`;
       }
     } else if (data && data.message && data.message.includes('rate limit')) {
-      statusEl.innerHTML = `<span style="color:var(--danger);">⚠️ GitHub API Rate Limited. Please wait.</span>`;
+      if (statusEl) statusEl.innerHTML = `<span style="color:var(--danger);">⚠️ GitHub API Rate Limited. Please wait.</span>`;
     }
   } catch (err) {
-    statusEl.innerHTML = `<span style="color:var(--danger);">Error fetching status</span>`;
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--danger);">Error fetching status</span>`;
   }
 };
 
@@ -1063,6 +1062,9 @@ const views = {
               <div>
                 <h3 style="margin:0; color:var(--text-main);">Dev Mode (Track Deployment)</h3>
                 <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and auto-refreshes the page.</p>
+                <div id="github-deploy-status" style="margin-top:8px; font-weight:bold; font-size:13px; color:var(--text-muted);">
+                  ⏳ Fetching status...
+                </div>
               </div>
               <label style="position:relative; display:inline-block; width:40px; height:20px; flex-shrink:0;">
                 <input type="checkbox" id="devModeToggleAdmin" style="opacity:0; width:0; height:0;">

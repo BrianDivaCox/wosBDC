@@ -1,3 +1,6 @@
+### v1.5.2 (2026-07-10)
+- **Changed**: Moved the detailed "Deployment Status" tracker out of the public settings sidebar and properly integrated it into the Admin Panel's Settings tab, directly beneath the Dev Mode toggle.
+
 ### v1.5.1 (2026-07-10)
 - **Feature**: Refactored the Admin Dashboard into a Tabbed Layout (Daily Tools, Users, Settings) to improve organization and reduce clutter on mobile devices.
 
