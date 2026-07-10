@@ -1,3 +1,6 @@
+### v1.4.8 (2026-07-10)
+- **Changed**: Merged "All-Time Bear Trap Wins" and current Bear Trap Wins into a single styled tag on the player profile. The combined tag now displays leaderboard rankings alongside scores for both all-time and current data.
+
 ### v1.4.7 (2026-07-10)
 - **Fixed**: "+ Add Donation" button in the Player Database Editor now properly shows up for admins on all player cards, even if the player has 0 previous Bear Trap donations.
 
