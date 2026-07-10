@@ -2874,18 +2874,23 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     let adminActionBtn = '';
     if (playerGameId) {
         if (window.isAdminUser({gameId: parseInt(playerGameId)})) {
-            adminActionBtn = `<button onclick="window.revokeAdmin('${playerGameId}')" style="background:transparent; color:var(--danger); border:1px solid var(--danger); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--danger)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--danger)';">❌ Revoke Admin</button>`;
+            adminActionBtn = `<button onclick="window.revokeAdmin('${playerGameId}')" style="background:rgba(231,76,60,0.1); color:var(--danger); border:1px solid rgba(231,76,60,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; width:100%; transition: 0.2s;" onmouseover="this.style.background='rgba(231,76,60,0.2)'" onmouseout="this.style.background='rgba(231,76,60,0.1)'">❌ Revoke Admin</button>`;
         } else {
-            adminActionBtn = `<button onclick="window.grantAdmin('${playerGameId}')" style="background:transparent; color:var(--accent); border:1px solid var(--accent); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">🛡️ Grant Admin</button>`;
+            adminActionBtn = `<button onclick="window.grantAdmin('${playerGameId}')" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; width:100%; transition: 0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">🛡️ Grant Admin</button>`;
         }
     }
     
     adminBarHtml = `
-      <div style="display:flex; gap:10px; align-items:center;">
-        ${adminActionBtn}
-        <button onclick="window.promptLogBearTrapWinner('${chiefName}')" style="background:#FFD700; color:#000; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">👑 Crown Winner</button>
-        <button onclick="window.promptBearTrap('${chiefName}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">🥩 + Bear Donation</button>
-        <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">📝 Edit Events</button>
+      <div style="position:relative; display:inline-block;">
+        <button onclick="const m = this.nextElementSibling; if(m.style.display==='flex'){m.style.display='none';}else{document.querySelectorAll('.admin-dropdown-menu').forEach(d=>d.style.display='none'); m.style.display='flex';} event.stopPropagation();" style="background:var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+          ⚙️ Actions ▾
+        </button>
+        <div class="admin-dropdown-menu" style="display:none; flex-direction:column; gap:8px; position:absolute; top:100%; right:0; margin-top:8px; background:var(--card-bg); border:1px solid var(--border); border-radius:8px; padding:10px; min-width:180px; box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:100;" onclick="event.stopPropagation();">
+          ${adminActionBtn ? adminActionBtn : ''}
+          <button onclick="window.promptLogBearTrapWinner('${chiefName}')" style="background:rgba(255,215,0,0.1); color:#FFD700; border:1px solid rgba(255,215,0,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(255,215,0,0.2)'" onmouseout="this.style.background='rgba(255,215,0,0.1)'">👑 Crown Winner</button>
+          <button onclick="window.promptBearTrap('${chiefName}')" style="background:rgba(46,204,113,0.1); color:var(--success); border:1px solid rgba(46,204,113,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(46,204,113,0.2)'" onmouseout="this.style.background='rgba(46,204,113,0.1)'">🥩 + Bear Donation</button>
+          <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">📝 Edit Events</button>
+        </div>
       </div>
     `;
   }
@@ -3001,3 +3006,9 @@ window.promptBearTrap = async (name) => {
   }
 };
 
+// Close all admin dropdowns when clicking anywhere outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.admin-dropdown-menu') && !e.target.closest('button[onclick*="admin-dropdown-menu"]')) {
+      document.querySelectorAll('.admin-dropdown-menu').forEach(d => d.style.display = 'none');
+  }
+});
