@@ -1400,85 +1400,115 @@ const views = {
     
     uploadBtn.addEventListener('click', () => uploadInput.click());
     
-    uploadInput.addEventListener('change', async (e) => {
+    uploadInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
       
-      try {
-        uploadBtn.textContent = 'Compressing...';
-        uploadBtn.disabled = true;
-        statusMsg.style.color = 'var(--text-muted)';
-        statusMsg.textContent = 'Processing image...';
-        
-        // 1. Read file as Data URL
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        
-        await new Promise((resolve, reject) => {
-          reader.onload = (event) => {
-            // 2. Load into Image object
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-              // 3. Draw to canvas and resize (e.g. max 150x150)
-              const canvas = document.createElement('canvas');
-              const MAX_SIZE = 150;
-              let width = img.width;
-              let height = img.height;
-              
-              if (width > height) {
-                if (width > MAX_SIZE) {
-                  height *= MAX_SIZE / width;
-                  width = MAX_SIZE;
-                }
-              } else {
-                if (height > MAX_SIZE) {
-                  width *= MAX_SIZE / height;
-                  height = MAX_SIZE;
-                }
-              }
-              
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, width, height);
-              
-              // 4. Get highly compressed JPEG base64 string
-              const base64String = canvas.toDataURL('image/jpeg', 0.7);
-              resolve(base64String);
-            };
-            img.onerror = () => reject(new Error("Failed to read image file"));
-          };
-          reader.onerror = () => reject(new Error("Failed to read file"));
-        }).then(async (base64String) => {
-           uploadBtn.textContent = 'Uploading...';
-           await uploadAvatar(currentUser.gameId, base64String);
-           
-           // Update DOM immediately
-           const imgEl = document.getElementById('accountHubAvatarImg');
-           if (imgEl) {
-             imgEl.src = base64String;
-             imgEl.style.display = 'block';
-             if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'none';
-           }
-        });
-        
-        statusMsg.style.color = 'var(--success)';
-        statusMsg.textContent = '✅ Profile picture updated successfully!';
-        uploadBtn.textContent = 'Choose Image';
-        uploadBtn.disabled = false;
-        
-        // Refresh mapping so UI updates immediately globally
-        if (idToNameMap[currentUser.gameId]) {
-           avatarMap[currentUser.gameId] = await get(ref(db, `avatars/${currentUser.gameId}`)).then(s => s.val());
-        }
-      } catch (err) {
-        statusMsg.style.color = 'var(--danger)';
-        statusMsg.textContent = `❌ Upload failed: ${err.message}`;
-        uploadBtn.textContent = 'Try Again';
-        uploadBtn.disabled = false;
+      // Basic size check (optional but good practice to prevent massive uploads crashing browser)
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+          window.showToast("Image too large. Max 10MB.", "error");
+          return;
       }
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        // Minimum size check logic
+        const img = new Image();
+        img.onload = () => {
+           if (img.width < 100 || img.height < 100) {
+               window.showToast("Image must be at least 100x100 pixels.", "error");
+               return;
+           }
+           
+           // Show Modal
+           const modal = document.getElementById('cropperModal');
+           const cropperImage = document.getElementById('cropperImage');
+           const cancelBtn = document.getElementById('cropperCancelBtn');
+           const saveBtn = document.getElementById('cropperSaveBtn');
+           
+           cropperImage.src = event.target.result;
+           modal.style.display = 'flex';
+           
+           // Initialize Cropper
+           let cropper = new Cropper(cropperImage, {
+               aspectRatio: 1,
+               viewMode: 1,
+               preview: '.img-preview',
+               dragMode: 'move',
+               autoCropArea: 1,
+               restore: false,
+               guides: false,
+               center: false,
+               highlight: false,
+               cropBoxMovable: true,
+               cropBoxResizable: true,
+               toggleDragModeOnDblclick: false,
+           });
+           
+           // Cancel Event
+           cancelBtn.onclick = () => {
+               cropper.destroy();
+               modal.style.display = 'none';
+               uploadInput.value = '';
+           };
+           
+           // Save Event
+           saveBtn.onclick = async () => {
+               uploadBtn.textContent = 'Uploading...';
+               uploadBtn.disabled = true;
+               saveBtn.textContent = 'Saving...';
+               saveBtn.disabled = true;
+               
+               // Get perfectly cropped 150x150 canvas
+               const canvas = cropper.getCroppedCanvas({
+                   width: 150,
+                   height: 150,
+                   imageSmoothingEnabled: true,
+                   imageSmoothingQuality: 'high'
+               });
+               
+               // Compress to JPEG
+               const base64String = canvas.toDataURL('image/jpeg', 0.8);
+               
+               try {
+                   await uploadAvatar(currentUser.gameId, base64String);
+                   
+                   // Update DOM immediately
+                   const imgEl = document.getElementById('accountHubAvatarImg');
+                   if (imgEl) {
+                     imgEl.src = base64String;
+                     imgEl.style.display = 'block';
+                     if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'none';
+                   }
+                   
+                   statusMsg.style.color = 'var(--success)';
+                   statusMsg.textContent = '✅ Profile picture updated successfully!';
+                   
+                   // Refresh mapping so UI updates immediately globally
+                   if (idToNameMap[currentUser.gameId]) {
+                      avatarMap[currentUser.gameId] = await get(ref(db, `avatars/${currentUser.gameId}`)).then(s => s.val());
+                   }
+               } catch (err) {
+                   console.error(err);
+                   statusMsg.style.color = 'var(--danger)';
+                   statusMsg.textContent = '❌ Upload failed. Please try again.';
+               }
+               
+               // Cleanup
+               cropper.destroy();
+               modal.style.display = 'none';
+               uploadInput.value = '';
+               uploadBtn.textContent = 'Choose Image';
+               uploadBtn.disabled = false;
+               saveBtn.textContent = 'Save';
+               saveBtn.disabled = false;
+           };
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
     });
+
   },
 
   home: async () => {
