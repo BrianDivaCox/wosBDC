@@ -2504,8 +2504,8 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
      headerBadgesHtml += '<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">' + activityBadges + '</div>';
   }
   
-  if ((lbData && lbData.length > 0) || dynamicSD) {
-    headerBadgesHtml += '<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">';
+  if ((lbData && lbData.length > 0) || dynamicSD || bear1 || bear2 || bearBoth || isAdmin) {
+    headerBadgesHtml += '<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; align-items:center;">';
     
     if (dynamicSD) {
        let scoreStr = Number(dynamicSD.score).toLocaleString();
@@ -2531,10 +2531,10 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
        let currentStr = currentScoreStr + ' Current';
        let innerText = allTimeStr + ' | ' + currentStr;
        headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🥩 BT Donations: <span style="color:var(--text-main);">'+innerText+'</span></span>';
-       
-       if (isAdmin) {
-          headerBadgesHtml += '<button onclick="window.promptBearTrap(\'' + chiefName + '\')" style="margin-left:10px; background:var(--success); color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px;">+ Add Donation</button>';
-       }
+    }
+    
+    if (isAdmin) {
+       headerBadgesHtml += '<button onclick="window.promptBearTrap(\'' + chiefName + '\')" style="background:var(--success); color:#fff; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px;">+ Add Donation</button>';
     }
     
     otherLbs.forEach(lb => {

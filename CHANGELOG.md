@@ -1,3 +1,6 @@
+### v1.4.7 (2026-07-10)
+- **Fixed**: "+ Add Donation" button in the Player Database Editor now properly shows up for admins on all player cards, even if the player has 0 previous Bear Trap donations.
+
 ### v1.4.6 (2026-07-10)
 - **Added**: Maintenance Countdown System — when enabling maintenance mode, admins now see a duration picker with preset options (15m, 30m, 1hr, 2hr) or custom minutes. A live countdown is displayed on the maintenance lockout page for all users. When the countdown expires, it shows "Should be back any moment..." (manual mode).
 - **Added**: "No Countdown" option for maintenance without a timer.
