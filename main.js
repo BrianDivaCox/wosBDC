@@ -250,6 +250,57 @@ onValue(ref(db, 'config/maintenanceEndTime'), (snapshot) => {
 });
 
 // --- Toggle Maintenance with Duration Picker ---
+
+window.logBearTrapWinner = async () => {
+    const sel = document.getElementById('bearTrapWinnerSelect');
+    const name = sel.value;
+    const trap = document.querySelector('input[name="btWinnerTrap"]:checked').value;
+    const btn = document.getElementById('logBtWinnerBtn');
+    const status = document.getElementById('btWinnerStatus');
+    
+    if (!name) {
+        status.innerHTML = `<span style="color:var(--danger)">Please select a player.</span>`;
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    status.innerHTML = `<span style="color:var(--text-muted)">Sending to Google Sheets...</span>`;
+    
+    try {
+        const adminName = window.idToNameMap[window.currentUser.gameId] || "Admin";
+        const url = `${API_BASE_URL}?api=addBearTrapEventWin&name=${encodeURIComponent(name)}&trap=${encodeURIComponent(trap)}&admin=${encodeURIComponent(adminName)}`;
+        const res = await fetch(url).then(r => r.json());
+        
+        if (res && res.success) {
+            status.innerHTML = `<span style="color:var(--success)">✅ Successfully added +1 win for ${name} (New Total: ${res.newTotal}). Saving to Firebase...</span>`;
+            
+            // Save to Firebase
+            await set(ref(db, `config/bearTrapWinners/${trap}`), {
+                name: name,
+                score: res.newTotal,
+                timestamp: Date.now()
+            });
+            
+            status.innerHTML = `<span style="color:var(--success)">🏆 Successfully crowned ${name} as Champion!</span>`;
+            setTimeout(() => {
+                status.innerHTML = '';
+                sel.value = '';
+                btn.disabled = false;
+                btn.textContent = '👑 Crown Winner & Add Win';
+            }, 3000);
+        } else {
+            status.innerHTML = `<span style="color:var(--danger)">❌ Error: ${res ? res.message : 'Unknown backend error'}</span>`;
+            btn.disabled = false;
+            btn.textContent = '👑 Crown Winner & Add Win';
+        }
+    } catch (e) {
+        status.innerHTML = `<span style="color:var(--danger)">❌ Network Error.</span>`;
+        btn.disabled = false;
+        btn.textContent = '👑 Crown Winner & Add Win';
+    }
+};
+
 window.toggleMaintenance = async () => {
   if (maintenanceMode) {
     // Turning OFF — just disable it
@@ -977,6 +1028,26 @@ const views = {
                  <!-- Populated by JS -->
               </div>
             </div>
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
+              <div style="margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--accent);">🏆 Log Bear Trap Event Winner</h3>
+                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select the winner to add +1 to their sheet score and instantly crown them Champion on the Leaderboards.</p>
+              </div>
+              
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <select id="bearTrapWinnerSelect" style="padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
+                  ${playerOptions}
+                </select>
+                
+                <div style="display:flex; gap:15px;">
+                  <label style="color:var(--text-main); font-weight:bold;"><input type="radio" name="btWinnerTrap" value="1" checked> 🐻 Bear Trap 1</label>
+                  <label style="color:var(--text-main); font-weight:bold;"><input type="radio" name="btWinnerTrap" value="2"> 🐻 Bear Trap 2</label>
+                </div>
+                
+                <button onclick="window.logBearTrapWinner()" id="logBtWinnerBtn" style="background:var(--success); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:16px;">👑 Crown Winner & Add Win</button>
+                <div id="btWinnerStatus" style="font-size:13px; font-weight:bold; margin-top:5px;"></div>
+              </div>
+            </div>
           </div>
           
           <!-- Tab 2: Users -->
@@ -1661,10 +1732,57 @@ const views = {
         }
       }
 
+      // Fetch champions config once
+      let btWinners = {};
+      try {
+         const snap = await get(ref(db, 'config/bearTrapWinners'));
+         if (snap.exists()) {
+            btWinners = snap.val();
+         }
+      } catch (e) {
+         console.warn("Could not fetch bt winners", e);
+      }
+
       html += `<div style="display:flex; flex-wrap:wrap; gap:20px;">`;
       
       boards.forEach(board => {
         html += `<div class="card" style="flex: 1; min-width: 320px;"><div class="card-title">🏆 ${board.title}</div>`;
+        
+        // Champion Banner Logic
+        let trapNum = null;
+        if (board.title.toLowerCase().includes('bear trap 1')) trapNum = '1';
+        else if (board.title.toLowerCase().includes('bear trap 2')) trapNum = '2';
+        
+        if (trapNum && btWinners[trapNum]) {
+           const champ = btWinners[trapNum];
+           const champName = champ.name;
+           
+           // Look up their gameId to get the avatar
+           let champId = null;
+           for (const [gid, name] of Object.entries(idToNameMap)) {
+               if (name.toLowerCase() === champName.toLowerCase()) {
+                   champId = gid; break;
+               }
+           }
+           
+           const avatarSrc = (champId && avatarMap[champId]) ? avatarMap[champId] : `images/${champName}.png`;
+           
+           html += `
+             <div style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.02) 100%); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(255,215,0,0.05);">
+               <div style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #FFD700; overflow: hidden; flex-shrink: 0; box-shadow: 0 0 10px rgba(255,215,0,0.2);">
+                 <img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='images/default.png';">
+               </div>
+               <div style="flex: 1;">
+                 <div style="color: #FFD700; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">👑 Reigning Champion</div>
+                 <div style="color: var(--text-main); font-size: 18px; font-weight: bold;">${champName}</div>
+               </div>
+               <div style="text-align: right;">
+                 <div style="color: var(--text-muted); font-size: 11px;">Total Wins</div>
+                 <div style="color: var(--accent); font-size: 20px; font-weight: bold;">${champ.score}</div>
+               </div>
+             </div>
+           `;
+        }
         html += `<table><thead><tr>`;
         board.headers.forEach(h => html += `<th>${h}</th>`);
         html += `</tr></thead><tbody>`;

@@ -1,3 +1,8 @@
+### v1.7.0 (2026-07-10)
+- **Feature**: Added a new Admin tool to log Bear Trap Event Winners directly from the dashboard.
+- **Enhanced**: The dashboard now syncs directly with the hidden `data` sheet in Google Sheets to update win totals in real-time.
+- **Design**: Implemented a dynamic "👑 Reigning Champion" banner on the Leaderboards page that automatically displays the custom profile picture, name, and total wins of the most recent Bear Trap event winner.
+
 ### v1.6.0 (2026-07-10)
 - **Feature**: Integrated `Cropper.js` for an interactive Profile Picture upload experience. Users can now zoom, pan, and precisely crop their avatars to a perfect 1:1 square before saving.
 - **Enhanced**: Added dynamic image size checking to prevent uploads of images smaller than 100x100px or larger than 10MB to maintain dashboard quality and performance.
