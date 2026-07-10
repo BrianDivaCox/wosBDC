@@ -104,6 +104,46 @@ onValue(ref(db, 'avatars'), (snap) => {
   }
 });
 
+// Admin System
+window.systemAdmins = {};
+onValue(ref(db, 'config/admins'), (snap) => {
+  window.systemAdmins = snap.val() || {};
+  if (typeof checkMaintenanceAccess === 'function') checkMaintenanceAccess();
+});
+
+window.isAdminUser = (user) => {
+  if (!user) return false;
+  if (user.gameId === 318843189) return true;
+  return window.systemAdmins[user.gameId] === true;
+};
+
+window.grantAdmin = async (gameId) => {
+  if (!window.isAdminUser(currentUser)) return;
+  if (!confirm(`Are you sure you want to GRANT admin access to Game ID ${gameId}?`)) return;
+  try {
+    await set(ref(db, `config/admins/${gameId}`), true);
+    window.showToast('Admin access granted', 'success');
+    if (document.getElementById('adminHubView')) views.admin(); // refresh admin panel if open
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
+window.revokeAdmin = async (gameId) => {
+  if (!window.isAdminUser(currentUser)) return;
+  if (gameId == 318843189) { alert("Cannot revoke Root Admin."); return; }
+  if (!confirm(`Are you sure you want to REVOKE admin access for Game ID ${gameId}?`)) return;
+  try {
+    const updates = {};
+    updates[`config/admins/${gameId}`] = null;
+    await update(ref(db), updates);
+    window.showToast('Admin access revoked', 'error');
+    if (document.getElementById('adminHubView')) views.admin();
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
 const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 
 
@@ -114,7 +154,7 @@ let maintenanceCountdownInterval = null;
 const maintenanceOverlay = document.getElementById('maintenanceOverlay');
 
 const checkMaintenanceAccess = () => {
-  const isAdmin = currentUser && currentUser.gameId === 318843189;
+  const isAdmin = window.isAdminUser(currentUser);
   const adminBanner = document.getElementById('adminMaintenanceBanner');
   
   if (maintenanceMode) {
@@ -499,7 +539,7 @@ listenToAuth((user) => {
   if (user) {
     let name = idToNameMap[user.gameId] || 'Account';
     if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${name}`;
-    if(adminSidebarBtn && user.gameId === 318843189) {
+    if(adminSidebarBtn && window.isAdminUser(user)) {
       adminSidebarBtn.style.display = 'block';
     } else if (adminSidebarBtn) {
       adminSidebarBtn.style.display = 'none';
@@ -874,7 +914,7 @@ document.head.appendChild(style);
 // View renderers
 const views = {
   admin: async () => {
-    if (!currentUser || currentUser.gameId !== 318843189) {
+    if (!window.isAdminUser(currentUser)) {
       views.home();
       return;
     }
@@ -932,6 +972,33 @@ const views = {
               </span>
             </label>
           </div>
+          
+          <!-- Staff Roles (Admin Management) -->
+          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
+            <div style="margin-bottom:15px;">
+              <h3 style="margin:0; color:var(--accent);">🛡️ Staff Roles (Admins)</h3>
+              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">List of players who currently have Admin Dashboard access. You can grant admin access directly from a player's profile card.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                <div style="font-weight:bold; color:var(--text-main);">Diva (Root Admin)</div>
+                <div style="color:var(--text-muted); font-size:12px;">318843189</div>
+              </div>
+              ${Object.keys(window.systemAdmins).map(gid => {
+                 let n = idToNameMap[gid] || "Unknown Player";
+                 return \`
+                 <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                   <div style="font-weight:bold; color:var(--text-main);">\${n}</div>
+                   <div style="display:flex; gap:10px; align-items:center;">
+                     <div style="color:var(--text-muted); font-size:12px;">\${gid}</div>
+                     <button onclick="window.revokeAdmin('\${gid}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
+                   </div>
+                 </div>
+                 \`;
+              }).join('')}
+            </div>
+          </div>
+          
           <!-- Universal Player Editor -->
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
             <div style="margin-bottom:15px;">
@@ -1042,7 +1109,7 @@ const views = {
   },
   
   beartrap: async () => {
-    if (!currentUser || currentUser.gameId !== 318843189) {
+    if (!window.isAdminUser(currentUser)) {
       views.home();
       return;
     }
@@ -2649,12 +2716,22 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   let adminBarHtml = '';
   if (isAdmin) {
     let missedJson = encodeURIComponent(JSON.stringify(missedEvents));
-    adminBarHtml = `
+    let adminActionBtn = '';
+    if (playerGameId) {
+        if (window.isAdminUser({gameId: parseInt(playerGameId)})) {
+            adminActionBtn = \`<button onclick="window.revokeAdmin('\${playerGameId}')" style="background:transparent; color:var(--danger); border:1px solid var(--danger); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--danger)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--danger)';">❌ Revoke Admin</button>\`;
+        } else {
+            adminActionBtn = \`<button onclick="window.grantAdmin('\${playerGameId}')" style="background:transparent; color:var(--accent); border:1px solid var(--accent); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: 0.2s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">🛡️ Grant Admin</button>\`;
+        }
+    }
+    
+    adminBarHtml = \`
       <div style="display:flex; gap:10px; align-items:center;">
-        <button onclick="window.promptBearTrap('${chiefName}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">🥩 + Bear Donation</button>
-        <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">📝 Edit Events</button>
+        \${adminActionBtn}
+        <button onclick="window.promptBearTrap('\${chiefName}')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">🥩 + Bear Donation</button>
+        <button onclick="window.promptEditEvents('\${chiefName}', decodeURIComponent('\${missedJson}'))" style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">📝 Edit Events</button>
       </div>
-    `;
+    \`;
   }
   
   let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1);">' + avatarImgHtml + '</div><div style="flex:1;"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px;">' + chiefName + '</h2>' + adminBarHtml + '</div>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';

@@ -1,3 +1,7 @@
+### v1.5.0 (2026-07-10)
+- **Feature**: Introduced Dynamic Admin Management system. Admins can now grant or revoke admin access to other players directly from their profile cards.
+- **Feature**: Added "Staff Roles" management section to the Admin Dashboard to track and revoke access for all current admins.
+
 ### v1.4.13 (2026-07-10)
 - **Fixed**: Maintenance mode Date & Time picker not opening calendar popups on certain browsers. Replaced unified datetime input with separate native Date and Time inputs for maximum cross-browser compatibility.
 
