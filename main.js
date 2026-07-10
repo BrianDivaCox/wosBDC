@@ -1756,7 +1756,7 @@ const views = {
              </div>
            `;
         }
-        html += `<table><thead><tr>`;
+        html += `<div style="overflow-x: auto; width: 100%;"><table style="min-width: max-content;"><thead><tr>`;
         board.headers.forEach(h => html += `<th>${h}</th>`);
         html += `</tr></thead><tbody>`;
         
@@ -1784,7 +1784,7 @@ const views = {
           html += `</tr>`;
         });
         
-        html += `</tbody></table></div>`;
+        html += `</tbody></table></div></div>`;
       });
       
       html += `</div>`;
