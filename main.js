@@ -944,79 +944,68 @@ const views = {
         <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h2 style="color:var(--danger); margin:0;">🛠️ Admin Control Panel</h2>
-            <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Multi-BT Donations</button>
           </div>
           
-          <!-- Maintenance Mode Toggle -->
-          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--danger); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <h3 style="margin:0; color:var(--danger);">Maintenance Mode</h3>
-              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Lock out all non-admin users and display a maintenance screen.</p>
-            </div>
-            <button onclick="window.toggleMaintenance()" style="background:${maintenanceMode ? 'var(--bg-main)' : 'var(--danger)'}; color:${maintenanceMode ? 'var(--success)' : '#fff'}; border:1px solid ${maintenanceMode ? 'var(--success)' : 'transparent'}; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; min-width:100px;">
-              ${maintenanceMode ? '🟢 Turn OFF' : '🔴 Turn ON'}
-            </button>
+          <!-- Tab Navigation -->
+          <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+            <button class="admin-tab-btn active" data-tab="tab-tools" style="background:none; border:none; color:var(--accent); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid var(--accent);">🛠️ Daily Tools</button>
+            <button class="admin-tab-btn" data-tab="tab-users" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">👥 Users</button>
+            <button class="admin-tab-btn" data-tab="tab-settings" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">⚙️ Settings</button>
           </div>
           
-
-          <!-- Developer Settings (Dev Mode Tracker) -->
-          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <h3 style="margin:0; color:var(--text-main);">Dev Mode (Track Deployment)</h3>
-              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and auto-refreshes the page.</p>
+          <!-- Tab 1: Daily Tools -->
+          <div id="tab-tools" class="admin-tab-content" style="display:block;">
+            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; text-align:center;">
+              <h3 style="margin:0 0 10px 0; color:var(--text-main);">Bear Trap Automation</h3>
+              <p style="margin:0 0 15px 0; font-size:13px; color:var(--text-muted);">Quickly process multiple Bear Trap donations at once.</p>
+              <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; width:100%; max-width:300px;">🥩 Open Multi-BT Donations</button>
             </div>
-            <label style="position:relative; display:inline-block; width:40px; height:20px; flex-shrink:0;">
-              <input type="checkbox" id="devModeToggleAdmin" style="opacity:0; width:0; height:0;">
-              <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:var(--border); transition:.4s; border-radius:20px;">
-                <span id="devModeSliderAdmin" style="position:absolute; content:''; height:14px; width:14px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%;"></span>
-              </span>
-            </label>
-          </div>
-          
-          <!-- Staff Roles (Admin Management) -->
-          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
-            <div style="margin-bottom:15px;">
-              <h3 style="margin:0; color:var(--accent);">🛡️ Staff Roles (Admins)</h3>
-              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">List of players who currently have Admin Dashboard access. You can grant admin access directly from a player's profile card.</p>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
-                <div style="font-weight:bold; color:var(--text-main);">Diva (Root Admin)</div>
-                <div style="color:var(--text-muted); font-size:12px;">318843189</div>
+            
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
+              <div style="margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--accent);">Player Database Editor</h3>
+                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select a chief and click their red "Missed" metrics below to instantly mark them as Participated for Alliance Championship, Polar Terrors, Mercenary Prestige, or Voter. Use the green button to add Bear Donations.</p>
               </div>
-              ${Object.keys(window.systemAdmins).map(gid => {
-                 let n = idToNameMap[gid] || "Unknown Player";
-                 return `
-                 <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
-                   <div style="font-weight:bold; color:var(--text-main);">${n}</div>
-                   <div style="display:flex; gap:10px; align-items:center;">
-                     <div style="color:var(--text-muted); font-size:12px;">${gid}</div>
-                     <button onclick="window.revokeAdmin('${gid}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
-                   </div>
-                 </div>
-                 `;
-              }).join('')}
+              
+              <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <select id="uniSearchInput" style="flex:1; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
+                  ${playerOptions}
+                </select>
+                <button onclick="window.searchPlayerFull(document.getElementById('uniSearchInput').value)" style="background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:16px;">Search</button>
+              </div>
+              
+              <div id="uniEditorRes" style="display:none; flex-direction:column; gap:12px; border-top:1px solid var(--border); padding-top:15px;">
+                 <!-- Populated by JS -->
+              </div>
             </div>
           </div>
           
-          <!-- Universal Player Editor -->
-          <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
-            <div style="margin-bottom:15px;">
-              <h3 style="margin:0; color:var(--accent);">Player Database Editor</h3>
-              <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select a chief and click their red "Missed" metrics below to instantly mark them as Participated for Alliance Championship, Polar Terrors, Mercenary Prestige, or Voter. Use the green button to add Bear Donations.</p>
+          <!-- Tab 2: Users -->
+          <div id="tab-users" class="admin-tab-content" style="display:none;">
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
+              <div style="margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--accent);">🛡️ Staff Roles (Admins)</h3>
+                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">List of players who currently have Admin Dashboard access. You can grant admin access directly from a player's profile card.</p>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                  <div style="font-weight:bold; color:var(--text-main);">Diva (Root Admin)</div>
+                  <div style="color:var(--text-muted); font-size:12px;">318843189</div>
+                </div>
+                ${Object.keys(window.systemAdmins).map(gid => {
+                   let n = idToNameMap[gid] || "Unknown Player";
+                   return `
+                   <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                     <div style="font-weight:bold; color:var(--text-main);">${n}</div>
+                     <div style="display:flex; gap:10px; align-items:center;">
+                       <div style="color:var(--text-muted); font-size:12px;">${gid}</div>
+                       <button onclick="window.revokeAdmin('${gid}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
+                     </div>
+                   </div>
+                   `;
+                }).join('')}
+              </div>
             </div>
-            
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-              <select id="uniSearchInput" style="flex:1; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
-                ${playerOptions}
-              </select>
-              <button onclick="window.searchPlayerFull(document.getElementById('uniSearchInput').value)" style="background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:16px;">Search</button>
-            </div>
-            
-            <div id="uniEditorRes" style="display:none; flex-direction:column; gap:12px; border-top:1px solid var(--border); padding-top:15px;">
-               <!-- Populated by JS -->
-            </div>
-          </div>
           
           <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border);">
             <div style="overflow-x:auto;">
@@ -1055,8 +1044,51 @@ const views = {
         `;
       }
       
-      html += `</tbody></table></div></div></div>`;
+      html += `</tbody></table></div></div>
+          </div>
+          
+          <!-- Tab 3: Settings -->
+          <div id="tab-settings" class="admin-tab-content" style="display:none;">
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--danger); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h3 style="margin:0; color:var(--danger);">Maintenance Mode</h3>
+                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Lock out all non-admin users and display a maintenance screen.</p>
+              </div>
+              <button onclick="window.toggleMaintenance()" style="background:${maintenanceMode ? 'var(--bg-main)' : 'var(--danger)'}; color:${maintenanceMode ? 'var(--success)' : '#fff'}; border:1px solid ${maintenanceMode ? 'var(--success)' : 'transparent'}; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; min-width:100px;">
+                ${maintenanceMode ? '🟢 Turn OFF' : '🔴 Turn ON'}
+              </button>
+            </div>
+            
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h3 style="margin:0; color:var(--text-main);">Dev Mode (Track Deployment)</h3>
+                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and auto-refreshes the page.</p>
+              </div>
+              <label style="position:relative; display:inline-block; width:40px; height:20px; flex-shrink:0;">
+                <input type="checkbox" id="devModeToggleAdmin" style="opacity:0; width:0; height:0;">
+                <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:var(--border); transition:.4s; border-radius:20px;">
+                  <span id="devModeSliderAdmin" style="position:absolute; content:''; height:14px; width:14px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%;"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>`;
       app.innerHTML = html;
+      
+      // Bind Admin Tabs
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.admin-tab-btn').forEach(b => {
+            b.style.color = 'var(--text-muted)';
+            b.style.borderBottomColor = 'transparent';
+          });
+          document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
+          
+          e.target.style.color = 'var(--accent)';
+          e.target.style.borderBottomColor = 'var(--accent)';
+          document.getElementById(e.target.getAttribute('data-tab')).style.display = 'block';
+        });
+      });
       
       
       // Bind Dev Mode toggle in Admin Panel

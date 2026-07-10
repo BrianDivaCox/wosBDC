@@ -1,3 +1,6 @@
+### v1.5.1 (2026-07-10)
+- **Feature**: Refactored the Admin Dashboard into a Tabbed Layout (Daily Tools, Users, Settings) to improve organization and reduce clutter on mobile devices.
+
 ### v1.5.0 (2026-07-10)
 - **Feature**: Introduced Dynamic Admin Management system. Admins can now grant or revoke admin access to other players directly from their profile cards.
 - **Feature**: Added "Staff Roles" management section to the Admin Dashboard to track and revoke access for all current admins.
