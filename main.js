@@ -2479,6 +2479,9 @@ const views = {
       
       // -- UPCOMING HTML --
       let upcomingHtml = "";
+      let hasUpcoming = false;
+      let upcomingContentHtml = "";
+      
       for (let uCol of upcomingColIndices) {
           let dateObj = dateMap.find(d => d.colIndex === uCol).dateObj;
           let dateStr = (dateObj.getMonth()+1) + '/' + dateObj.getDate();
@@ -2487,8 +2490,9 @@ const views = {
           let rews = upcomingRewardsMap[uCol] || [];
           
           if (evs.length > 0 || rews.length > 0) {
-              upcomingHtml += `<div class="card" style="margin-bottom:15px;">`;
-              upcomingHtml += `<div class="card-title" style="border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px; font-size:16px;">📅 Upcoming: ${dateStr}</div>`;
+              hasUpcoming = true;
+              upcomingContentHtml += `<div style="margin-bottom:25px;">`;
+              upcomingContentHtml += `<div style="border-bottom:1px solid var(--border); padding-bottom:5px; margin-bottom:15px; font-size:16px; font-weight:bold; color:var(--text-main);">📅 ${dateStr}</div>`;
               
               if (evs.length > 0) {
                   let evRows = evs.map(ev => `
@@ -2498,7 +2502,7 @@ const views = {
                       <td style="color:var(--text-muted);">${ev.localTime}</td>
                     </tr>
                   `).join("");
-                  upcomingHtml += `
+                  upcomingContentHtml += `
                     <div style="overflow-x:auto; margin-bottom:15px;">
                       <table style="min-width:max-content; width:100%;">
                         <thead><tr><th>Event</th><th>UTC</th><th>Your Time</th></tr></thead>
@@ -2511,22 +2515,25 @@ const views = {
               if (rews.length > 0) {
                   let uniqueRewards = [...new Set(rews)];
                   let badgesHtml = uniqueRewards.map(r => `<span style="background:var(--bg-main); color:var(--text-muted); border:1px solid var(--border); padding:6px 12px; border-radius:15px; font-size:12px; font-weight:bold;">🎁 ${r}</span>`).join("");
-                  upcomingHtml += `
+                  upcomingContentHtml += `
                     <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:10px; background:var(--bg-card); border-radius:8px;">
                       <span style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:bold;">Rewards:</span>
                       ${badgesHtml}
                     </div>
                   `;
               }
-              
-              upcomingHtml += `</div>`;
+              upcomingContentHtml += `</div>`;
           }
       }
       
-      if (upcomingHtml !== "") {
-          finalHtml += `<h2 style="color:var(--text-main); margin:10px 0 0 0; font-size:20px;">🗓️ Looking Ahead</h2>`;
-          finalHtml += upcomingHtml;
+      if (hasUpcoming) {
+          upcomingHtml += `<div class="card">`;
+          upcomingHtml += `<div class="card-title" style="font-size:18px;">🗓️ Looking Ahead</div>`;
+          upcomingHtml += upcomingContentHtml;
+          upcomingHtml += `</div>`;
       }
+      
+      finalHtml += upcomingHtml;
       
       finalHtml += `</div>`;
       app.innerHTML = finalHtml;

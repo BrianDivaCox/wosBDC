@@ -109,7 +109,11 @@ All notable changes to the WhiteOut Survival BDC Dashboard will be documented in
 ### Fixed
 - **Mobile Menu Scrolling**: Fixed a critical CSS issue where the main mobile navigation menu (hamburger menu) failed to trigger a scrollbar on smartphones due to box-sizing and dynamic viewport height clipping.
 
-## [1.0.2] - 2026-07-07
+## [1.7.3] - 2026-07-10
+### Changed
+- UI: Merged all upcoming dates into a single "Looking Ahead" card instead of creating a separate card per date to reduce visual clutter.
+
+## [1.7.2] - 2026-07-107
 
 ### Changed
 - **Dashboard Hub Renamed**: Changed the "Dashboard Hub" menu to "Settings" (with a ⚙️ icon) to improve usability and reduce confusion.
