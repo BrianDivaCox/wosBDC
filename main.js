@@ -725,6 +725,9 @@ const changelogModalOverlay = document.getElementById('changelogModalOverlay');
 const closeChangelogBtn = document.getElementById('closeChangelogBtn');
 const changelogContent = document.getElementById('changelogContent');
 
+import pkg from './package.json';
+if (versionBadge) versionBadge.innerHTML = `v${pkg.version}`;
+
 const closeChangelogModal = () => {
   if (changelogModal) changelogModal.style.display = 'none';
   if (changelogModalOverlay) changelogModalOverlay.classList.remove('active');
@@ -739,7 +742,7 @@ if (versionBadge) versionBadge.addEventListener('click', async () => {
   
   try {
     changelogContent.innerHTML = '<span style="color:var(--text-muted)">Loading changelog...</span>';
-    const response = await fetch('https://raw.githubusercontent.com/BrianDivaCox/wosBDC/main/CHANGELOG.md');
+    const response = await fetch(`https://raw.githubusercontent.com/BrianDivaCox/wosBDC/main/CHANGELOG.md?t=${Date.now()}`);
     if (!response.ok) throw new Error('Failed to fetch changelog from repository');
     let md = await response.text();
     
