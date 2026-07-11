@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxEvDJ70QXglpzophYUarN1gJWcLClmwya6kyOSjk1OxdM4qWcTTCAIDQYfz_4_vF8/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbz0MmQtoInSRKpsaRoGpVilA__xHv2BFEjwXtKiLVahRFLua5vFbZDsQwsemAisb9I/exec';
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
