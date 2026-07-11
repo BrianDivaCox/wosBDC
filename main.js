@@ -1549,8 +1549,6 @@ const views = {
     try {
       const data = await fetchSheet('News');
       
-      let currentMode = 'cards'; // Default to cards
-      
       const renderNewsContent = () => {
         let contentHtml = "";
         
@@ -1580,30 +1578,11 @@ const views = {
         if(newsItems.length === 0) {
           contentHtml = `<div class="loading">No news found.</div>`;
         } else {
-          if (currentMode === 'table') {
-            contentHtml += `<table style="table-layout:fixed; width:100%;"><thead><tr><th>Announcement</th></tr></thead><tbody>`;
-            for(let i=0; i<newsItems.length; i++){
-              contentHtml += `<tr><td style="white-space:normal; word-wrap:break-word;">${newsItems[i]}</td></tr>`;
-            }
-            contentHtml += `</tbody></table>`;
-          } else {
-            // Card mode
-            contentHtml += `<div style="display:flex; flex-direction:column; gap:15px; animation: fadeIn 0.3s ease;">`;
-            for(let i=0; i<newsItems.length; i++){
-              contentHtml += `
-                <div style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; padding:20px; display:flex; gap:20px; align-items:flex-start; box-shadow:0 4px 6px rgba(0,0,0,0.05); transition:transform 0.2s;">
-                  <div style="background:rgba(168,85,247,0.1); color:var(--accent); width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
-                    📢
-                  </div>
-                  <div style="width:100%; overflow:hidden;">
-                    <div style="font-weight:bold; color:var(--text-main); font-size:18px; margin-bottom:8px;">Alliance Notice</div>
-                    <div style="color:var(--text-muted); font-size:15px; line-height:1.6; white-space:pre-wrap; word-break:break-word;">${newsItems[i]}</div>
-                  </div>
-                </div>
-              `;
-            }
-            contentHtml += `</div>`;
+          contentHtml += `<table style="table-layout:fixed; width:100%;"><thead><tr><th>Announcement</th></tr></thead><tbody>`;
+          for(let i=0; i<newsItems.length; i++){
+            contentHtml += `<tr><td style="white-space:normal; word-wrap:break-word;">${newsItems[i]}</td></tr>`;
           }
+          contentHtml += `</tbody></table>`;
         }
         return contentHtml;
       };
@@ -1618,21 +1597,12 @@ const views = {
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
             <div class="card-title" style="margin:0;">Recent Updates</div>
-            <button id="newsToggleBtn" style="background:var(--bg-main); border:1px solid var(--accent); color:var(--accent); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; font-weight:bold; transition:all 0.2s; display:flex; align-items:center; gap:8px;">
-              ${currentMode === 'table' ? '🎴 Switch to Card View' : '📊 Switch to Table View'}
-            </button>
           </div>
           <div id="newsContentContainer">
             ${renderNewsContent()}
           </div>
         </div>
       `;
-      
-      document.getElementById('newsToggleBtn').addEventListener('click', (e) => {
-        currentMode = currentMode === 'table' ? 'cards' : 'table';
-        e.target.innerHTML = currentMode === 'table' ? '🎴 Switch to Card View' : '📊 Switch to Table View';
-        document.getElementById('newsContentContainer').innerHTML = renderNewsContent();
-      });
       
     } catch(e) { renderError(e.message); }
   },
