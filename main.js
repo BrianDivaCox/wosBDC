@@ -2461,7 +2461,7 @@ const views = {
             <span style="font-size:24px;">💬</span>
             <h2 style="margin:0; font-size:20px; color:var(--text-main);">Support & Feedback</h2>
           </div>
-          <a href="https://discord.gg/wos" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:#5865F2; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:13px; transition:0.2s;">
+          <a href="https://tiny.cc/BrianDivaCox" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:#5865F2; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:13px; transition:0.2s;">
             <span style="font-size:16px;">👾</span> Join Discord
           </a>
         </div>

@@ -2,6 +2,10 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.8.5] - 2026-07-10
+### Changed
+- **Content**: Updated the "Join Discord" button on the Contact Support page to point to the official BDC Alliance Discord server link.
+
 ## [1.8.4] - 2026-07-10
 ### Changed
 - **UI**: Removed the dynamic Card View and Table View toggle from the Home page News section. Announcements will now permanently display in Table View format.
