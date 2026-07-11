@@ -3038,3 +3038,15 @@ document.addEventListener('click', (e) => {
       document.querySelectorAll('.admin-dropdown-menu').forEach(d => d.style.display = 'none');
   }
 });
+
+const contactSidebarBtn = document.getElementById('contactSidebarBtn');
+if (contactSidebarBtn) {
+  contactSidebarBtn.addEventListener('click', () => {
+    closeSidebarFunc();
+    document.querySelectorAll('.nav-link, .sub-link').forEach(l => l.classList.remove('active'));
+    if (views.contact) {
+      window.activeViewFunc = () => views.contact();
+      views.contact();
+    }
+  });
+}
