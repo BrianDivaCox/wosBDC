@@ -109,7 +109,11 @@ All notable changes to the WhiteOut Survival BDC Dashboard will be documented in
 ### Fixed
 - **Mobile Menu Scrolling**: Fixed a critical CSS issue where the main mobile navigation menu (hamburger menu) failed to trigger a scrollbar on smartphones due to box-sizing and dynamic viewport height clipping.
 
-## [1.7.3] - 2026-07-10
+## [1.8.0] - 2026-07-10
+### Added
+- Feature: Added a dedicated "Contact Support" page containing a direct invite link to the BDC Alliance Discord server and an embedded Google Form for submitting bug reports, feature requests, and support tickets directly from the dashboard.
+
+## [1.7.4] - 2026-07-10
 ### Changed
 - UI: Merged all upcoming dates into a single "Looking Ahead" card instead of creating a separate card per date to reduce visual clutter.
 

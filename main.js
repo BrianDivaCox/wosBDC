@@ -2481,6 +2481,36 @@ const views = {
     } catch(e) { renderError(e.message); }
   },
   
+  contact: async () => {
+    app.innerHTML = `
+      <div style="animation: fadeIn 0.4s ease;">
+        <div class="card" style="margin-bottom:20px; text-align:center;">
+          <div class="card-title" style="color:var(--accent); font-size:22px; margin-bottom:10px;">💬 Connect With Us</div>
+          <p style="color:var(--text-muted); font-size:15px; margin-bottom:20px; line-height:1.5;">Join the BDC Alliance Discord to connect with other chiefs, participate in voice chats during events, and stay up to date!</p>
+          <a href="#" onclick="alert('Update with actual Discord link'); return false;" style="display:inline-block; background:#5865F2; color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:16px; box-shadow:0 4px 15px rgba(88,101,242,0.4); transition:0.2s;">
+            <span style="font-size:20px; vertical-align:middle; margin-right:8px;">👾</span> Join BDC Discord
+          </a>
+        </div>
+        
+        <div class="card" style="padding:0; overflow:hidden; border-radius:12px;">
+          <div style="background:var(--bg-main); padding:15px 20px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:18px; color:var(--text-main);">📝 Support & Feedback</h3>
+            <p style="margin:5px 0 0 0; font-size:13px; color:var(--text-muted);">Report a bug, request a feature, or get help.</p>
+          </div>
+          <iframe 
+            src="https://docs.google.com/forms/d/e/1FAIpQLSdL6uJrUBV05I3NIfwTVyGd0Bx6osn2ZEBGeyp2RnwJZxujXA/viewform?embedded=true" 
+            width="100%" 
+            height="800" 
+            frameborder="0" 
+            marginheight="0" 
+            marginwidth="0"
+            style="background:var(--bg-card); display:block;"
+          >Loading…</iframe>
+        </div>
+      </div>
+    `;
+  },
+  
   analytics: async () => {
     renderLoading("Loading Analytics");
     try {
