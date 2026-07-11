@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbz0MmQtoInSRKpsaRoGpVilA__xHv2BFEjwXtKiLVahRFLua5vFbZDsQwsemAisb9I/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzm-idHYAOSkdqbOxvgv6XgiG9P04OkPaqGIXhgrNsfxprHCYE9c-hEwFOnD1NwknM/exec';
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -1964,13 +1964,67 @@ const views = {
           html += `</tr>`;
         });
         
+        if (board.title.toLowerCase().includes('bear donations')) {
+           // We'll append the widget placeholder specifically under the Bear Donations board
+           html += `<div id="bearTrapActivityWidget-${board.title.replace(/\s+/g, '')}" class="bear-trap-activity-widget" style="margin-top: 15px;"></div>`;
+        }
+        
         html += `</tbody></table></div></div>`;
       });
       
       html += `</div>`;
       app.innerHTML = html;
+      
+      // Initialize Firebase Listeners for any Bear Trap widgets rendered
+      document.querySelectorAll('.bear-trap-activity-widget').forEach(widget => {
+        widget.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:10px;">Loading today's activity...</div>`;
+        
+        const logRef = ref(db, 'bearTrapLog');
+        onValue(logRef, (snapshot) => {
+          if (!document.contains(widget)) return; // Exit if user navigated away
+          
+          let logs = snapshot.val();
+          if (!logs || !Array.isArray(logs)) {
+             widget.innerHTML = '';
+             return;
+          }
+          
+          const todayStr = new Date().toDateString();
+          let todaysLogs = logs.filter(log => new Date(log.timestamp).toDateString() === todayStr);
+          
+          if (todaysLogs.length === 0) {
+             widget.innerHTML = '';
+             return;
+          }
+          
+          todaysLogs.reverse(); // Newest first
+          
+          let logHtml = `<div style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+            <button onclick="this.nextElementSibling.classList.toggle('hidden')" style="width:100%; background:transparent; border:none; padding:12px 15px; color:var(--text-main); font-weight:bold; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+              <span>📅 View Today's Activity (${todaysLogs.length} Update${todaysLogs.length > 1 ? 's' : ''})</span>
+              <span style="color:var(--text-muted);">▼</span>
+            </button>
+            <div class="hidden" style="padding:0 15px 15px 15px; border-top:1px solid var(--border);">
+              <ul style="list-style:none; padding:0; margin:0; margin-top:10px;">`;
+              
+          todaysLogs.forEach(log => {
+             let d = new Date(log.timestamp);
+             let timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+             logHtml += `<li style="padding:8px 0; border-bottom:1px dashed var(--border); font-size:13px; color:var(--text-muted);">
+                <span style="color:var(--accent); font-weight:bold;">${timeStr}</span>: 
+                <span style="color:var(--text-main); font-weight:bold;">${log.name}</span> donated 
+                <span style="color:var(--success); font-weight:bold;">+${log.amount}</span> trap${log.amount !== 1 ? 's' : ''}
+             </li>`;
+          });
+          
+          logHtml += `</ul></div></div>`;
+          widget.innerHTML = logHtml;
+        });
+      });
+      
     } catch(e) { renderError(e.message); }
   },
+
   
   showdown: async () => {
     renderLoading("Loading Showdown Data");

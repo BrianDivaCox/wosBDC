@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.12.0] - 2026-07-11
+### Added
+- **Feature**: Live Bear Trap Activity Log. A sleek, collapsible "Daily Digest" banner now appears under the Bear Trap Donations leaderboards, dynamically displaying all donations made today in real-time.
+- **Backend**: Integrated `bearTrapLog` Firebase endpoint to maintain a rolling list of the last 20 donations for instantaneous frontend updates.
+
 ## [1.11.1] - 2026-07-11
 ### Fixed
 - **UI**: Removed the thick pink left border on the Upcoming Event countdown widget to match the standard card styling across the dashboard.
