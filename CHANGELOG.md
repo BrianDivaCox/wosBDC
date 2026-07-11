@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.10.0] - 2026-07-11
+### Added
+- **Feature**: Browser Push Notifications. Users can now opt-in to receive push alerts directly to their device using Firebase Cloud Messaging.
+- **UI**: Added a "Push Alerts" toggle to the Settings Sidebar.
+
 ## [1.9.0] - 2026-07-11
 ### Added
 - **Feature**: Live Event Countdowns on the Home page. A dynamic widget now calculates the exact start time of the next upcoming event from the Google Sheets schedule and displays a live, ticking clock.

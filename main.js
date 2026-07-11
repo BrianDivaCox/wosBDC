@@ -1,5 +1,5 @@
 import './style.css'
-import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db } from './src/firebase.js'
+import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwbObjYWg_zXNTyf-3vTBYjqH2R6UqcDm0iO7s-hQOVPSY8N19bX2RFURkHYwCdqWI/exec';
@@ -73,6 +73,40 @@ document.querySelectorAll('.theme-card').forEach(card => {
 });
 
 initTheme();
+
+// --- Push Notifications Logic ---
+const enablePushBtn = document.getElementById('enablePushBtn');
+const pushStatus = document.getElementById('pushStatus');
+if (enablePushBtn) {
+  enablePushBtn.addEventListener('click', async () => {
+    try {
+      enablePushBtn.textContent = 'Enabling...';
+      enablePushBtn.disabled = true;
+      const token = await requestPushPermission(currentUser ? currentUser.uid : null);
+      if (token) {
+        enablePushBtn.style.display = 'none';
+        pushStatus.style.display = 'block';
+        pushStatus.style.color = 'var(--success)';
+        pushStatus.textContent = 'Subscribed to alerts!';
+      }
+    } catch(e) {
+      console.error(e);
+      enablePushBtn.textContent = 'Failed (Try Again)';
+      enablePushBtn.disabled = false;
+      pushStatus.style.display = 'block';
+      pushStatus.style.color = '#ef4444';
+      pushStatus.textContent = 'Failed to enable notifications. Ensure they are allowed in your browser settings.';
+    }
+  });
+}
+
+// Setup foreground message listener
+listenForForegroundMessages((payload) => {
+  const title = payload.notification?.title || 'New Alert';
+  const body = payload.notification?.body || '';
+  alert(`🔔 ${title}\n${body}`);
+});
+
 
 // --- Auth State & UI Logic ---
 let currentUser = null;

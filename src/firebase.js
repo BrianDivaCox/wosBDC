@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, onDisconnect, set, push, runTransaction, get } from "firebase/database";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 const firebaseConfig = {
   apiKey: "AIzaSyBuw51XRkUz5sbr-i8DKiGUgMpAPSiR-vs",
   authDomain: "wos-dashboard-38d4c.firebaseapp.com",
@@ -109,3 +109,40 @@ export async function deleteAvatar(gameId) {
 }
 
 export { get, set, ref, db };
+
+// Push Notifications Setup
+let messaging = null;
+try {
+  messaging = getMessaging(app);
+} catch(e) {
+  console.warn("Firebase Messaging not supported in this browser.", e);
+}
+
+export async function requestPushPermission(uid) {
+  if (!messaging) throw new Error("Push notifications are not supported in your browser.");
+  
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    const token = await getToken(messaging, { 
+      vapidKey: 'BPb1AoYfDZ396gJao3kuPtnBZqvV8KB6ufRGukiCW5INPh4oIyYno-3Noovj8ExY25wb-BXYgNHTP6sL9iESIpM' 
+    });
+    
+    if (token) {
+      // Save token securely
+      await set(ref(db, `fcmTokens/${token}`), {
+        createdAt: new Date().toISOString(),
+        uid: uid || 'anonymous'
+      });
+      return token;
+    }
+  }
+  throw new Error("Permission denied or failed to get token.");
+}
+
+export function listenForForegroundMessages(callback) {
+  if (messaging) {
+    onMessage(messaging, (payload) => {
+      callback(payload);
+    });
+  }
+}
