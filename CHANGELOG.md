@@ -109,6 +109,10 @@ All notable changes to the WhiteOut Survival BDC Dashboard will be documented in
 ### Fixed
 - **Mobile Menu Scrolling**: Fixed a critical CSS issue where the main mobile navigation menu (hamburger menu) failed to trigger a scrollbar on smartphones due to box-sizing and dynamic viewport height clipping.
 
+## [1.8.1] - 2026-07-10
+### Changed
+- UX: Moved the Contact Support page out of the main navigation menu and embedded it directly into a popup modal that launches from the Settings Sidebar to reduce navigation clutter.
+
 ## [1.8.0] - 2026-07-10
 ### Added
 - Feature: Added a dedicated "Contact Support" page containing a direct invite link to the BDC Alliance Discord server and an embedded Google Form for submitting bug reports, feature requests, and support tickets directly from the dashboard.
