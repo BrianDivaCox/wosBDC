@@ -2422,6 +2422,14 @@ const views = {
   
 
   schedule: async () => {
+    window.refreshSchedule = async () => {
+      const icon = document.getElementById('schRefreshIcon');
+      if(icon) icon.style.animation = 'spin 1s linear infinite';
+      localStorage.removeItem('cache_schedule');
+      localStorage.removeItem('cacheTime_schedule');
+      await views.schedule();
+    };
+
     renderLoading("Loading Schedule");
     try {
       const data = await fetchSheet("schedule");
@@ -2461,10 +2469,10 @@ const views = {
       for (let r = dateRowIdx + 1; r < data.length; r++) {
         if (data[r].every(cell => cell === "")) continue;
         
-        // Detect category headers (e.g. "Events", "Rewards Events")
+        // Detect category headers: A row with exactly one non-empty cell located in Column B (index 1)
         let nonEmptyCells = data[r].filter(c => c !== "");
-        if (nonEmptyCells.length === 1 && typeof nonEmptyCells[0] === 'string' && nonEmptyCells[0].toLowerCase().includes('event')) {
-          currentCategory = nonEmptyCells[0];
+        if (nonEmptyCells.length === 1 && typeof data[r][1] === 'string' && data[r][1].trim() !== "") {
+          currentCategory = data[r][1].trim();
           continue;
         }
         
@@ -2479,7 +2487,12 @@ const views = {
       
       // Render the timeline as Daily Cards
       let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
-                    <h2 style="color:var(--text-main); margin:0;">📅 Event Schedule</h2>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                      <h2 style="color:var(--text-main); margin:0;">📅 Event Schedule</h2>
+                      <button onclick="window.refreshSchedule()" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                        <span id="schRefreshIcon">🔄</span> Refresh
+                      </button>
+                    </div>
                     <a href="https://www.google.com/url?q=https://calendar.google.com/calendar/u/0?cid%3DMWZkOTI2ZjdkNzVhYWIyMzM1N2IxYjE1NTc5MzE2YTRlYTRjMDI3NjA4NDlmOTRkZjg2MDRlZWY5YjdiMTI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&sa=D&source=editors&ust=1783297509664500&usg=AOvVaw3Nu5FI78rflI7vvCvxd5MS" target="_blank" style="background:#0ea5e9; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:14px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">➕ Add to Google Calendar</a>
                   </div>`;
       html += `<div style="display:flex; flex-wrap:wrap; gap:20px;">`;
