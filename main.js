@@ -2339,201 +2339,141 @@ const views = {
   todays_schedule: async () => {
     renderLoading("Loading Today's Events");
     try {
-      const data = await fetchSheet("schedule");
+      const data = await fetchSheet("WhiteOut Survival");
       
-      if (!data || !Array.isArray(data) || data.length < 3) {
+      if (!data || !Array.isArray(data) || data.length === 0) {
         app.innerHTML = `<div class="card"><div class="loading">⚠️ Today's schedule data is currently unavailable. Please try again later.</div></div>`;
         return;
       }
       
-      let todayColIndex = -1;
-      let upcomingColIndices = [];
-      let now = new Date();
-      
-      let dateMap = [];
-      for (let c = 2; c < data[2].length; c++) {
-          let dateHeader = data[2][c];
-          if (!dateHeader) continue;
-          
-          let d = new Date(dateHeader);
-          let isToday = (d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear());
-          let isPast = false;
-          if (!isToday) {
-             let startOfToday = new Date();
-             startOfToday.setHours(0,0,0,0);
-             if (d < startOfToday) isPast = true;
-          }
-          
-          dateMap.push({ colIndex: c, dateObj: d, isToday: isToday, isPast: isPast });
-          if (isToday) todayColIndex = c;
-          if (!isPast && !isToday) upcomingColIndices.push(c);
-      }
-      
-      let currentCategory = "Events";
-      let todayEvents = [];
-      let upcomingEventsMap = {};
-      let todayRewards = [];
-      let upcomingRewardsMap = {};
-      
-      for (let r = 3; r < data.length; r++) {
-          let rowLabel = data[r][1]; // Column B
-          
-          if (rowLabel === "Rewards Events") {
-              currentCategory = "Rewards";
-              continue;
-          }
-          if (rowLabel === "Events") {
-              currentCategory = "Events";
-              continue;
-          }
-          
-          const processCell = (cIndex, isTodayFlag) => {
-              let cellVal = data[r][cIndex];
-              if (!cellVal || cellVal.trim() === "") return;
-              
-              if (currentCategory === "Events") {
-                  let localTimeStr = "";
-                  let utcTimeStr = "";
-                  if (typeof rowLabel === 'string' && rowLabel.match(/^\d{4}-\d{2}-\d{2}T/)) {
-                      let gasDate = new Date(rowLabel);
-                      gasDate.setUTCHours(gasDate.getUTCHours() - 8);
-                      let trueUtcHour = gasDate.getUTCHours();
-                      let trueUtcMinute = gasDate.getUTCMinutes();
-                      
-                      let h24 = trueUtcHour.toString().padStart(2, '0');
-                      let mStr = trueUtcMinute.toString().padStart(2, '0');
-                      utcTimeStr = `${h24}:${mStr}`;
-                      
-                      let todayLocal = new Date();
-                      todayLocal.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
-                      localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                  } else if (rowLabel) {
-                      localTimeStr = rowLabel;
-                      utcTimeStr = rowLabel;
-                  }
-                  
-                  let evObj = { name: cellVal, localTime: localTimeStr, utcTime: utcTimeStr };
-                  if (isTodayFlag) todayEvents.push(evObj);
-                  else {
-                      if (!upcomingEventsMap[cIndex]) upcomingEventsMap[cIndex] = [];
-                      upcomingEventsMap[cIndex].push(evObj);
-                  }
-              } else if (currentCategory === "Rewards") {
-                  if (isTodayFlag) todayRewards.push(cellVal);
-                  else {
-                      if (!upcomingRewardsMap[cIndex]) upcomingRewardsMap[cIndex] = [];
-                      upcomingRewardsMap[cIndex].push(cellVal);
-                  }
-              }
-          };
-          
-          if (todayColIndex !== -1) processCell(todayColIndex, true);
-          for (let uCol of upcomingColIndices) processCell(uCol, false);
-      }
-      
-      let finalHtml = `<div style="display:flex; flex-direction:column; gap:20px; animation: fadeIn 0.4s ease;">`;
-      
-      // -- TODAY HTML --
       let todayHtml = "";
-      todayHtml += `<div class="card">`;
-      todayHtml += `<div class="card-title" style="color:var(--accent); font-size:18px;">🕒 Today's Schedule</div>`;
-      
-      if (todayEvents.length > 0) {
-          let eventRows = todayEvents.map(ev => `
-            <tr>
-              <td style="font-weight:bold;">${ev.name.includes('Bear Trap') ? '🪤' : '✨'} ${ev.name}</td>
-              <td style="color:var(--text-muted); font-weight:bold;">${ev.utcTime}</td>
-              <td style="color:var(--accent); font-weight:bold;">${ev.localTime}</td>
-            </tr>
-          `).join("");
-          
-          todayHtml += `
-            <div style="overflow-x:auto; margin-bottom: 20px;">
-              <table style="min-width:max-content; width:100%;">
-                <thead><tr><th>Event</th><th>UTC</th><th>Your Time</th></tr></thead>
-                <tbody>${eventRows}</tbody>
-              </table>
-            </div>
-          `;
-      } else {
-          todayHtml += `
-            <div style="padding: 20px; text-align: center; color: var(--text-muted); margin-bottom: 20px;">No events scheduled for today.</div>
-          `;
-      }
-      
-      if (todayRewards.length > 0) {
-          let uniqueRewards = [...new Set(todayRewards)];
-          let badgesHtml = uniqueRewards.map(r => `<span style="background:linear-gradient(135deg, rgba(234,179,8,0.2), rgba(234,179,8,0.05)); color:#eab308; border:1px solid rgba(234,179,8,0.4); padding:6px 14px; border-radius:20px; font-weight:bold; font-size:13px; box-shadow: 0 4px 10px rgba(234,179,8,0.1);">🎁 ${r}</span>`).join("");
-          
-          todayHtml += `
-            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:15px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid rgba(234,179,8,0.2);">
-              <span style="font-size:13px; color:#eab308; text-transform:uppercase; letter-spacing:1px; font-weight:bold;">💎 Active Rewards:</span>
-              ${badgesHtml}
-            </div>
-          `;
-      }
-      
-      todayHtml += `</div>`;
-      
-      finalHtml += todayHtml;
-      
-      // -- UPCOMING HTML --
       let upcomingHtml = "";
-      let hasUpcoming = false;
-      let upcomingContentHtml = "";
+      let currentCategory = "today";
       
-      for (let uCol of upcomingColIndices) {
-          let dateObj = dateMap.find(d => d.colIndex === uCol).dateObj;
-          let dateStr = (dateObj.getMonth()+1) + '/' + dateObj.getDate();
+      for (let i = 1; i < Math.min(34, data.length); i++) {
+        let row = data[i];
+        let eventName = row[5];
+        let originalDateVal = row[6];
+        let originalUtcVal = row[7];
+        let pdtVal = row[8];
+        
+        let dateVal = originalDateVal;
+        let utcVal = originalUtcVal;
+        
+        if (!eventName || eventName.toString().trim() === "" || eventName.includes("Event's")) continue;
+        
+        let isPast = false;
+        let localTimeStr = "";
+        let hasDate = (typeof originalDateVal === 'string' && originalDateVal.match(/^\d{4}-\d{2}-\d{2}T/));
+        
+        if (hasDate) {
+          let eventDate = new Date(originalDateVal);
+          let now = new Date();
           
-          let evs = upcomingEventsMap[uCol] || [];
-          let rews = upcomingRewardsMap[uCol] || [];
-          
-          if (evs.length > 0 || rews.length > 0) {
-              hasUpcoming = true;
-              upcomingContentHtml += `<div style="margin-bottom:25px;">`;
-              upcomingContentHtml += `<div style="border-bottom:1px solid var(--border); padding-bottom:5px; margin-bottom:15px; font-size:16px; font-weight:bold; color:var(--text-main);">📅 ${dateStr}</div>`;
-              
-              if (evs.length > 0) {
-                  let evRows = evs.map(ev => `
-                    <tr>
-                      <td style="font-weight:bold;">${ev.name.includes('Bear Trap') ? '🪤' : '✨'} ${ev.name}</td>
-                      <td style="color:var(--text-muted); font-weight:bold;">${ev.utcTime}</td>
-                      <td style="color:var(--text-muted);">${ev.localTime}</td>
-                    </tr>
-                  `).join("");
-                  upcomingContentHtml += `
-                    <div style="overflow-x:auto; margin-bottom:15px;">
-                      <table style="min-width:max-content; width:100%;">
-                        <thead><tr><th>Event</th><th>UTC</th><th>Your Time</th></tr></thead>
-                        <tbody>${evRows}</tbody>
-                      </table>
-                    </div>
-                  `;
-              }
-              
-              if (rews.length > 0) {
-                  let uniqueRewards = [...new Set(rews)];
-                  let badgesHtml = uniqueRewards.map(r => `<span style="background:var(--bg-main); color:var(--text-muted); border:1px solid var(--border); padding:6px 12px; border-radius:15px; font-size:12px; font-weight:bold;">🎁 ${r}</span>`).join("");
-                  upcomingContentHtml += `
-                    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:10px; background:var(--bg-card); border-radius:8px;">
-                      <span style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:bold;">Rewards:</span>
-                      ${badgesHtml}
-                    </div>
-                  `;
-              }
-              upcomingContentHtml += `</div>`;
+          let isToday = (eventDate.getDate() === now.getDate() && eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear());
+          if (isToday) {
+            currentCategory = "today";
+          } else {
+            currentCategory = "upcoming";
           }
+          
+          dateVal = (eventDate.getMonth()+1) + '/' + eventDate.getDate();
+          
+          if (typeof utcVal === 'string' && utcVal.match(/^\d{4}-\d{2}-\d{2}T/)) {
+            let gasDate = new Date(utcVal);
+            
+            // Google Apps Script reads plain times as 1899-12-30 in the script's timezone (PST = UTC-8).
+            // So it added 8 hours to whatever the user typed. We subtract 8 hours to get the EXACT time the user typed.
+            gasDate.setUTCHours(gasDate.getUTCHours() - 8);
+            
+            let trueUtcHour = gasDate.getUTCHours();
+            let trueUtcMinute = gasDate.getUTCMinutes();
+            
+            // Format the True UTC time for the table in 24-hour standard format (e.g. 16:00)
+            let h24 = trueUtcHour.toString().padStart(2, '0');
+            let mStr = trueUtcMinute.toString().padStart(2, '0');
+            utcVal = `${h24}:${mStr}`;
+            
+            // Calculate the visitor's local time by treating that time as UTC!
+            let todayLocal = new Date();
+            todayLocal.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
+            localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Check if exact event time is in the past
+            let exactEventDate = new Date(eventDate);
+            exactEventDate.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
+            if (exactEventDate < now) {
+              isPast = true;
+            }
+          } else {
+            if (utcVal === undefined) utcVal = "";
+            // For all-day events or events with no time, strike if it's strictly before today
+            if (!isToday && eventDate < now) {
+              isPast = true;
+            }
+          }
+        } else {
+          if (dateVal === undefined) dateVal = "";
+          if (utcVal === undefined) utcVal = "";
+        }
+        
+        let rowHtml = "";
+        
+        // Handle Headers
+        if (eventName === "Rewards" || eventName === "TimeZones" || eventName === "Date") {
+          let titleColor = eventName === "Rewards" ? "#eab308" : "#10b981"; // Gold for Rewards, Green for others
+          let col4Text = eventName === "Rewards" ? pdtVal : "Your Time";
+          
+          rowHtml += `<tr style="height:30px;"></tr>
+                   <tr>
+                     <td style="font-weight:bold; color:${titleColor}; font-size:16px; padding-top:20px; text-transform:uppercase; border-bottom:2px solid var(--border);">${eventName}</td>
+                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${dateVal}</td>
+                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${utcVal}</td>
+                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${col4Text}</td>
+                   </tr>`;
+        } else {
+          let styleStr = isPast ? `text-decoration:line-through; opacity:0.5;` : `font-weight:500;`;
+          
+          // Display the original PDT value if no local time was calculated (e.g. text like "No Events")
+          let finalCol4Text = localTimeStr || pdtVal || "";
+          
+          rowHtml += `<tr style="${styleStr}">
+                     <td>${eventName.toString().includes('Bear Trap') ? '🪤' : '✨'} ${eventName}</td>
+                     <td>${dateVal}</td>
+                     <td>${utcVal}</td>
+                     <td>${finalCol4Text}</td>
+                   </tr>`;
+        }
+        
+        if (currentCategory === "today") {
+          todayHtml += rowHtml;
+        } else {
+          upcomingHtml += rowHtml;
+        }
       }
       
-      if (hasUpcoming) {
-          upcomingHtml += `<div class="card">`;
-          upcomingHtml += `<div class="card-title" style="font-size:18px;">🗓️ Looking Ahead</div>`;
-          upcomingHtml += upcomingContentHtml;
-          upcomingHtml += `</div>`;
+      let finalHtml = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+      
+      if (todayHtml !== "") {
+        finalHtml += `<div class="card" style="overflow-x:auto;">
+                        <div class="card-title">🕒 Today's Schedule</div>
+                        <table><thead><tr>
+                          <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
+                        </tr></thead><tbody>${todayHtml}</tbody></table></div>`;
+      } else {
+        finalHtml += `<div class="card" style="overflow-x:auto;">
+                        <div class="card-title">🕒 Today's Schedule</div>
+                        <div style="padding: 20px; text-align: center; color: var(--text-muted);">No events scheduled for today.</div>
+                      </div>`;
       }
       
-      finalHtml += upcomingHtml;
+      if (upcomingHtml !== "") {
+        finalHtml += `<div class="card" style="overflow-x:auto;">
+                        <div class="card-title">📅 Upcoming Schedule</div>
+                        <table><thead><tr>
+                          <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
+                        </tr></thead><tbody>${upcomingHtml}</tbody></table></div>`;
+      }
       
       finalHtml += `</div>`;
       app.innerHTML = finalHtml;
