@@ -1549,6 +1549,56 @@ const views = {
     try {
       const data = await fetchSheet('News');
       
+      let scheduleData = null;
+      try {
+        scheduleData = await fetchSheet('WhiteOut Survival');
+      } catch(e) { console.error('Failed to load schedule for countdown', e); }
+      
+      let nextEvents = [];
+      let nextEventTime = null;
+      
+      if (scheduleData && Array.isArray(scheduleData) && scheduleData.length > 0) {
+        let upcomingEvents = [];
+        let now = new Date();
+        
+        for (let i = 1; i < Math.min(34, scheduleData.length); i++) {
+          let row = scheduleData[i];
+          let eventName = row[5];
+          let originalDateVal = row[6];
+          let utcVal = row[7];
+          
+          if (!eventName || eventName.toString().trim() === "" || eventName.includes("Event's")) continue;
+          if (typeof originalDateVal !== 'string' || !originalDateVal.match(/^\d{4}-\d{2}-\d{2}T/)) continue;
+          if (typeof utcVal !== 'string' || !utcVal.match(/^\d{4}-\d{2}-\d{2}T/)) continue;
+          
+          let eventDate = new Date(originalDateVal);
+          let gasDate = new Date(utcVal);
+          gasDate.setUTCHours(gasDate.getUTCHours() - 8); // Undo Google Sheets time offset
+          
+          // Combine Date and Time into a single exact Date object
+          let exactEventDate = new Date(eventDate);
+          exactEventDate.setUTCHours(gasDate.getUTCHours(), gasDate.getUTCMinutes(), 0, 0);
+          
+          if (exactEventDate > now) {
+            upcomingEvents.push({
+              name: eventName,
+              exactDate: exactEventDate
+            });
+          }
+        }
+        
+        // Sort by closest date
+        if (upcomingEvents.length > 0) {
+          upcomingEvents.sort((a, b) => a.exactDate - b.exactDate);
+          
+          // Get the very next time slot
+          nextEventTime = upcomingEvents[0].exactDate;
+          
+          // Get ALL events that happen at that exact same time
+          nextEvents = upcomingEvents.filter(e => e.exactDate.getTime() === nextEventTime.getTime());
+        }
+      }
+      
       const renderNewsContent = () => {
         let contentHtml = "";
         
@@ -1587,13 +1637,40 @@ const views = {
         return contentHtml;
       };
 
+      let countdownHtml = '';
+      if (nextEvents.length > 0) {
+        countdownHtml = `
+          <div class="card" style="margin-bottom: 25px; border-left: 4px solid var(--accent); position: relative; overflow: hidden; animation: fadeIn 0.5s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+              <div style="display:flex; align-items:center; gap:15px;">
+                <div style="background:rgba(168,85,247,0.1); color:var(--accent); width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">
+                  ⏱️
+                </div>
+                <div>
+                  <div style="font-weight:bold; color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Next Upcoming Event</div>
+                  <div id="liveCountdownEventName" style="font-weight:bold; color:var(--text-main); font-size:18px; transition: opacity 0.3s ease;">
+                    ${nextEvents[0].name.includes('Bear Trap') ? '🪤' : '✨'} ${nextEvents[0].name}
+                  </div>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:bold; color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Starts In</div>
+                <div id="liveCountdownTimer" style="font-weight:bold; color:var(--accent); font-size:24px; font-family:monospace; background:var(--bg-main); padding:6px 12px; border-radius:8px; border:1px solid var(--border);">
+                  --h --m --s
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       let headerHtml = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
           <h2 style="margin:0; color:var(--text-main); font-size:24px;">📰 Alliance News</h2>
         </div>
       `;
       
-      app.innerHTML = headerHtml + `
+      app.innerHTML = countdownHtml + headerHtml + `
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
             <div class="card-title" style="margin:0;">Recent Updates</div>
@@ -1603,6 +1680,53 @@ const views = {
           </div>
         </div>
       `;
+
+      if (nextEvents.length > 0 && nextEventTime) {
+        // Rotation Interval
+        let eventIdx = 0;
+        let eventNameEl = document.getElementById('liveCountdownEventName');
+        if (nextEvents.length > 1) {
+          const rotationInterval = setInterval(() => {
+            if (!document.getElementById('liveCountdownEventName')) return clearInterval(rotationInterval);
+            eventIdx = (eventIdx + 1) % nextEvents.length;
+            let evName = nextEvents[eventIdx].name;
+            eventNameEl.style.opacity = 0;
+            setTimeout(() => {
+              if (!document.getElementById('liveCountdownEventName')) return;
+              eventNameEl.innerHTML = \`\${evName.includes('Bear Trap') ? '🪤' : '✨'} \${evName}\`;
+              eventNameEl.style.opacity = 1;
+            }, 300);
+          }, 4000); // Rotate every 4 seconds
+        }
+
+        // Countdown Interval
+        const timerEl = document.getElementById('liveCountdownTimer');
+        const updateTimer = () => {
+          if (!document.getElementById('liveCountdownTimer')) return clearInterval(countdownInterval);
+          let now = new Date();
+          let diff = nextEventTime - now;
+          
+          if (diff <= 0) {
+            timerEl.innerHTML = "Started!";
+            timerEl.style.color = "var(--success)";
+            clearInterval(countdownInterval);
+            // Refresh view to get the next event
+            setTimeout(() => {
+              if (document.getElementById('liveCountdownTimer')) views.home();
+            }, 5000);
+            return;
+          }
+          
+          let h = Math.floor(diff / (1000 * 60 * 60));
+          let m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          let s = Math.floor((diff % (1000 * 60)) / 1000);
+          
+          timerEl.innerHTML = \`\${h.toString().padStart(2, '0')}h \${m.toString().padStart(2, '0')}m \${s.toString().padStart(2, '0')}s\`;
+        };
+        
+        let countdownInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+      }
       
     } catch(e) { renderError(e.message); }
   },
