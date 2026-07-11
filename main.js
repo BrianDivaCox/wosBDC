@@ -1724,7 +1724,7 @@ const views = {
       let countdownHtml = '';
       if (nextEvents.length > 0) {
         countdownHtml = `
-          <div class="card" style="margin-bottom: 25px; border-left: 4px solid var(--accent); position: relative; overflow: hidden; animation: fadeIn 0.5s ease;">
+          <div class="card" style="margin-bottom: 25px; position: relative; overflow: hidden; animation: fadeIn 0.5s ease;">
             <div class="countdown-widget-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
               <div class="countdown-event-details" style="display:flex; align-items:center; gap:15px;">
                 <div style="background:rgba(168,85,247,0.1); color:var(--accent); width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">

@@ -2,6 +2,10 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.11.1] - 2026-07-11
+### Fixed
+- **UI**: Removed the thick pink left border on the Upcoming Event countdown widget to match the standard card styling across the dashboard.
+
 ## [1.11.0] - 2026-07-11
 ### Added
 - **Feature**: Broadcast Push Notifications Tool. Admins can now instantly send push notifications to all registered devices directly from the Admin Panel.
