@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwbObjYWg_zXNTyf-3vTBYjqH2R6UqcDm0iO7s-hQOVPSY8N19bX2RFURkHYwCdqWI/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxEvDJ70QXglpzophYUarN1gJWcLClmwya6kyOSjk1OxdM4qWcTTCAIDQYfz_4_vF8/exec';
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -1005,6 +1005,46 @@ const views = {
       players.forEach(p => {
         playerOptions += `<option value="${p}">${p}</option>`;
       });
+
+      window.sendBroadcastPush = async () => {
+        const title = document.getElementById('adminPushTitle').value.trim();
+        const body = document.getElementById('adminPushBody').value.trim();
+        const statusEl = document.getElementById('adminPushStatus');
+        
+        if (!title || !body) {
+          statusEl.textContent = "Title and Body are required.";
+          statusEl.style.color = "var(--danger)";
+          return;
+        }
+        
+        if (!confirm("Are you sure you want to broadcast this notification to all subscribed users?")) {
+          return;
+        }
+        
+        statusEl.textContent = "Sending...";
+        statusEl.style.color = "var(--text-muted)";
+        
+        try {
+          const res = await fetch(API_BASE_URL, {
+            method: 'POST',
+            body: JSON.stringify({ api: 'sendPush', title: title, body: body }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+          }).then(r => r.json());
+          
+          if (res.success) {
+            statusEl.textContent = res.message;
+            statusEl.style.color = "var(--success)";
+            document.getElementById('adminPushTitle').value = "";
+            document.getElementById('adminPushBody').value = "";
+          } else {
+            statusEl.textContent = "Error: " + res.message;
+            statusEl.style.color = "var(--danger)";
+          }
+        } catch(e) {
+          statusEl.textContent = "Network Error: " + e.message;
+          statusEl.style.color = "var(--danger)";
+        }
+      };
       
       let html = `
         <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
@@ -1043,6 +1083,16 @@ const views = {
               <div id="uniEditorRes" style="display:none; flex-direction:column; gap:12px; border-top:1px solid var(--border); padding-top:15px;">
                  <!-- Populated by JS -->
               </div>
+            </div>
+
+            <!-- Push Notification Broadcast -->
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
+              <h3 style="margin:0 0 5px 0; color:var(--accent);">Broadcast Push Notification</h3>
+              <p style="margin:0 0 15px 0; font-size:12px; color:var(--text-muted);">Send an instant alert to all registered devices.</p>
+              <input type="text" id="adminPushTitle" placeholder="Notification Title (e.g. Bear Trap Starting!)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-weight:bold;">
+              <textarea id="adminPushBody" placeholder="Message Body" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); min-height:80px;"></textarea>
+              <button onclick="window.sendBroadcastPush()" style="background:var(--danger); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%;">Send Alert 🚀</button>
+              <div id="adminPushStatus" style="font-size:12px; font-weight:bold; margin-top:10px; text-align:center;"></div>
             </div>
           </div>
           
