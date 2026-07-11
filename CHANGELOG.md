@@ -2,6 +2,10 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.8.6] - 2026-07-11
+### Changed
+- **UI**: Temporarily removed the "Analytics" page from the main navigation menu while we determine which charts and data visualizations are most useful for the Alliance.
+
 ## [1.8.5] - 2026-07-10
 ### Changed
 - **Content**: Updated the "Join Discord" button on the Contact Support page to point to the official BDC Alliance Discord server link.
