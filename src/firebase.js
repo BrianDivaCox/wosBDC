@@ -123,8 +123,17 @@ export async function requestPushPermission(uid) {
   
   const permission = await Notification.requestPermission();
   if (permission === 'granted') {
+    let registration;
+    try {
+      registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}firebase-messaging-sw.js`);
+    } catch(err) {
+      console.error("Service worker registration failed:", err);
+      throw new Error("Failed to register background sync.");
+    }
+
     const token = await getToken(messaging, { 
-      vapidKey: 'BPb1AoYfDZ396gJao3kuPtnBZqvV8KB6ufRGukiCW5INPh4oIyYno-3Noovj8ExY25wb-BXYgNHTP6sL9iESIpM' 
+      vapidKey: 'BPb1AoYfDZ396gJao3kuPtnBZqvV8KB6ufRGukiCW5INPh4oIyYno-3Noovj8ExY25wb-BXYgNHTP6sL9iESIpM',
+      serviceWorkerRegistration: registration
     });
     
     if (token) {
