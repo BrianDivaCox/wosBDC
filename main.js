@@ -1693,7 +1693,7 @@ const views = {
             eventNameEl.style.opacity = 0;
             setTimeout(() => {
               if (!document.getElementById('liveCountdownEventName')) return;
-              eventNameEl.innerHTML = \`\${evName.includes('Bear Trap') ? '🪤' : '✨'} \${evName}\`;
+              eventNameEl.innerHTML = `${evName.includes('Bear Trap') ? '🪤' : '✨'} ${evName}`;
               eventNameEl.style.opacity = 1;
             }, 300);
           }, 4000); // Rotate every 4 seconds
@@ -1721,7 +1721,7 @@ const views = {
           let m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           let s = Math.floor((diff % (1000 * 60)) / 1000);
           
-          timerEl.innerHTML = \`\${h.toString().padStart(2, '0')}h \${m.toString().padStart(2, '0')}m \${s.toString().padStart(2, '0')}s\`;
+          timerEl.innerHTML = `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
         };
         
         let countdownInterval = setInterval(updateTimer, 1000);
