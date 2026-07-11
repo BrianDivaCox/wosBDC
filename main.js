@@ -1725,8 +1725,8 @@ const views = {
       if (nextEvents.length > 0) {
         countdownHtml = `
           <div class="card" style="margin-bottom: 25px; border-left: 4px solid var(--accent); position: relative; overflow: hidden; animation: fadeIn 0.5s ease;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
-              <div style="display:flex; align-items:center; gap:15px;">
+            <div class="countdown-widget-container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+              <div class="countdown-event-details" style="display:flex; align-items:center; gap:15px;">
                 <div style="background:rgba(168,85,247,0.1); color:var(--accent); width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">
                   ⏱️
                 </div>
@@ -1737,7 +1737,7 @@ const views = {
                   </div>
                 </div>
               </div>
-              <div style="text-align:right;">
+              <div class="countdown-timer-details" style="text-align:right;">
                 <div style="font-weight:bold; color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Starts In</div>
                 <div id="liveCountdownTimer" style="font-weight:bold; color:var(--accent); font-size:24px; font-family:monospace; background:var(--bg-main); padding:6px 12px; border-radius:8px; border:1px solid var(--border);">
                   --h --m --s

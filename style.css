@@ -554,3 +554,18 @@ tr:hover td {
 @keyframes fadeOutToast {
   to { opacity: 0; }
 }
+
+@media (max-width: 600px) {
+  .countdown-widget-container {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  .countdown-event-details {
+    justify-content: center !important;
+    width: 100%;
+  }
+  .countdown-timer-details {
+    text-align: center !important;
+    width: 100%;
+  }
+}
