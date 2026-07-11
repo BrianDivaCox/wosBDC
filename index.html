@@ -23,7 +23,7 @@
               👁️ <span id="views-counter">...</span>
             </span>
             <span id="versionBadge" title="Click to view Changelog" style="background: rgba(168, 85, 247, 0.2); color: #a855f7; padding: 2px 6px; border-radius: 10px; font-weight: bold; display:flex; align-items:center; gap:4px; cursor:pointer;">
-              v1.8.1
+              v1.8.2
             </span>
             <span id="navbar-user-indicator" title="Logged In" style="display:none; background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 2px 6px; border-radius: 10px; font-weight: bold; align-items:center; gap:4px; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             </span>
@@ -58,6 +58,7 @@
                 <a href="#" class="sub-link" data-target="todays_schedule">Today's Schedule</a>
               </div>
             </div>
+            <a href="#" class="nav-link" data-target="contact">Contact Support</a>
             <a href="#" class="nav-link mobile-only-link" id="mobileSettingsBtn">⚙️ Settings</a>
           </div>
 
@@ -87,9 +88,6 @@
         </button>
         <button id="adminSidebarBtn" style="width:100%; padding:10px; background:var(--danger); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; transition:0.2s; margin-top:10px; display:none;">
           🛡️ Admin Panel
-        </button>
-        <button id="contactSidebarBtn" style="width:100%; padding:10px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; transition:0.2s; margin-top:10px;">
-          💬 Contact Support
         </button>
       </div>
       
@@ -152,6 +150,16 @@
     <!-- Toast Notifications -->
     <div id="toast-container"></div>
     
+    <!-- Error State Overlay -->
+    <div id="errorOverlay" class="error-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;">
+      <div style="background:var(--bg-card); max-width:500px; width:100%; padding:30px; border-radius:12px; text-align:center; border:1px solid var(--danger); box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="font-size:48px; margin-bottom:15px;">⚠️</div>
+        <h2 style="color:var(--danger); margin-top:0; margin-bottom:15px;">Database Connection Error</h2>
+        <p id="errorMsgText" style="color:var(--text-main); font-size:16px; margin-bottom:25px; line-height:1.5;">We encountered an issue while connecting to the backend Google Apps Script database.</p>
+        <button onclick="window.location.reload()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer; transition:0.2s;">Retry Connection</button>
+      </div>
+    </div>
+    
     <!-- Changelog Modal -->
     <div id="changelogModalOverlay" class="sidebar-overlay"></div>
     <div id="changelogModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card-bg); padding:30px; border-radius:12px; border:1px solid var(--accent); box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:1001; width:90%; max-width:600px; max-height:80vh; overflow-y:auto;">
@@ -194,9 +202,9 @@
       ⚠️ MAINTENANCE MODE IS ACTIVE
     </div>
     
-    <div id="maintenanceOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-main); z-index:10000; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box;">
-      <div style="font-size:70px; margin-bottom:20px;">🚧</div>
-      <h1 style="color:var(--text-main); margin-bottom:15px; font-size:28px;">Site Under Maintenance</h1>
+    <div id="maintenanceOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; flex-direction:column; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; text-align:center;">
+      <div style="font-size:64px; margin-bottom:20px; animation: pulse 2s infinite;">🛠️</div>
+      <h1 style="color:var(--text-main); font-size:32px; margin:0 0 10px 0;">Dashboard Maintenance</h1>
       <p style="color:var(--text-muted); font-size:16px; max-width:400px; line-height:1.5;">We are currently performing scheduled maintenance on the dashboard.</p>
       <div id="maintenanceCountdown" style="margin-top:30px; display:none;">
         <p style="color:var(--text-muted); font-size:14px; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:1px;">Estimated time remaining</p>
@@ -229,29 +237,6 @@
         <div style="padding:15px; display:flex; gap:10px; border-top:1px solid var(--border);">
           <button id="cropperCancelBtn" style="flex:1; padding:10px; background:var(--bg-card); border:1px solid var(--border); color:var(--text-main); border-radius:8px; font-weight:bold; cursor:pointer;">Cancel</button>
           <button id="cropperSaveBtn" style="flex:2; padding:10px; background:var(--accent); border:none; color:#fff; border-radius:8px; font-weight:bold; cursor:pointer;">Save</button>
-        </div>
-      </div>
-    </div>
-    <!-- Support Modal -->
-    <div id="supportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; backdrop-filter: blur(5px);">
-      <div style="background:var(--bg-main); width:100%; max-width:600px; height:90vh; max-height:800px; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.6); position:relative; animation: slideUp 0.3s ease;">
-        <div style="padding:15px 20px; background:var(--bg-card); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h3 style="margin:0; color:var(--text-main); font-size:18px;">💬 Contact Support</h3>
-            <p style="margin:4px 0 0 0; color:var(--text-muted); font-size:12px;">Report a bug, request a feature, or get help.</p>
-          </div>
-          <button id="closeSupportModalBtn" style="background:transparent; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s;">&times;</button>
-        </div>
-        <div style="flex:1; width:100%; background:var(--bg-card); overflow:hidden;">
-          <iframe 
-            src="https://docs.google.com/forms/d/e/1FAIpQLSdL6uJrUBV05I3NIfwTVyGd0Bx6osn2ZEBGeyp2RnwJZxujXA/viewform?embedded=true" 
-            width="100%" 
-            height="100%" 
-            frameborder="0" 
-            marginheight="0" 
-            marginwidth="0"
-            style="display:block;"
-          >Loading…</iframe>
         </div>
       </div>
     </div>

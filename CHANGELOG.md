@@ -109,6 +109,10 @@ All notable changes to the WhiteOut Survival BDC Dashboard will be documented in
 ### Fixed
 - **Mobile Menu Scrolling**: Fixed a critical CSS issue where the main mobile navigation menu (hamburger menu) failed to trigger a scrollbar on smartphones due to box-sizing and dynamic viewport height clipping.
 
+## [1.8.2] - 2026-07-10
+### Changed
+- UX: Reverted Contact Support page back to a dedicated full-screen page in the main navigation menu, matching the sleek layout of the Perks Auto Redeem page.
+
 ## [1.8.1] - 2026-07-10
 ### Changed
 - UX: Moved the Contact Support page out of the main navigation menu and embedded it directly into a popup modal that launches from the Settings Sidebar to reduce navigation clutter.

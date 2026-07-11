@@ -30,24 +30,6 @@ if(settingsBtn) settingsBtn.addEventListener('click', openSidebar);
 if(closeSidebar) closeSidebar.addEventListener('click', closeSidebarFunc);
 if(sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebarFunc);
 
-// --- Support Modal Logic ---
-const supportModal = document.getElementById('supportModal');
-const contactSidebarBtn = document.getElementById('contactSidebarBtn');
-const closeSupportModalBtn = document.getElementById('closeSupportModalBtn');
-
-if(contactSidebarBtn) {
-  contactSidebarBtn.addEventListener('click', () => {
-    closeSidebarFunc();
-    if(supportModal) supportModal.style.display = 'flex';
-  });
-}
-
-if(closeSupportModalBtn) {
-  closeSupportModalBtn.addEventListener('click', () => {
-    if(supportModal) supportModal.style.display = 'none';
-  });
-}
-
 // --- Mobile Menu Logic ---
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const mobileMenu = document.getElementById('mobileMenu');
@@ -2498,6 +2480,31 @@ const views = {
     } catch(e) { renderError(e.message); }
   },
   
+  contact: async () => {
+    app.innerHTML = `
+      <div class="card" style="display:flex; flex-direction:column; height: 85vh; min-height: 800px; padding:0; overflow:hidden; animation: fadeIn 0.3s ease;">
+        <div style="padding:15px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:24px;">💬</span>
+            <h2 style="margin:0; font-size:20px; color:var(--text-main);">Support & Feedback</h2>
+          </div>
+          <a href="https://discord.gg/wos" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:#5865F2; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:13px; transition:0.2s;">
+            <span style="font-size:16px;">👾</span> Join Discord
+          </a>
+        </div>
+        <div style="flex:1; width:100%; position:relative; background:var(--bg-main);">
+          <iframe 
+            src="https://docs.google.com/forms/d/e/1FAIpQLSdL6uJrUBV05I3NIfwTVyGd0Bx6osn2ZEBGeyp2RnwJZxujXA/viewform?embedded=true" 
+            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"
+            frameborder="0" 
+            marginheight="0" 
+            marginwidth="0">
+            Loading…
+          </iframe>
+        </div>
+      </div>
+    `;
+  },
 
   
   analytics: async () => {
