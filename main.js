@@ -2554,14 +2554,6 @@ const views = {
         
         let html = `<div class="card" style="margin-bottom:20px; text-align:center;">
                       <div class="card-title" style="margin-bottom:15px; font-size:24px;">🕵️‍♂️ Player Lookup</div>
-                      
-                      ${!globalRosterRegisteredOnly ? `
-                      <div style="margin-bottom:15px; font-size:14px; color:var(--text-muted);">
-                          <label style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; justify-content:center;">
-                              <input type="checkbox" id="registeredOnlyToggle"> 
-                              Show Registered Accounts Only
-                          </label>
-                      </div>` : ''}
 
                       <select id="playerLookupSelect" style="width:100%; max-width:400px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
                         <!-- Options rendered via JS -->
@@ -2598,14 +2590,6 @@ const views = {
         };
         
         renderDropdownOptions();
-        
-        if (regToggle) {
-            regToggle.addEventListener('change', () => {
-                renderDropdownOptions();
-                select.value = "";
-                renderCardForChief(""); // Clear profile
-            });
-        }
       
       const renderCardForChief = (idx) => {
         if (idx === "") {
