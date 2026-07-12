@@ -1,76 +1,14 @@
 ﻿
-  
-  
-  // --- Maintenance Mode State ---
-> let maintenanceMode = false;
-  let maintenanceEndTime = null;
-  let maintenanceCountdownInterval = null;
-  const maintenanceOverlay = document.getElementById('maintenanceOverlay');
-  
-  const checkMaintenanceAccess = () => {
-    const isAdmin = window.isAdminUser(currentUser);
-    const adminBanner = document.getElementById('adminMaintenanceBanner');
+        html += `</div>`;
+        app.innerHTML = html;
+      } catch(e) { renderError(e.message); }
+    },
     
->   if (maintenanceMode) {
-      if (isAdmin) {
-        maintenanceOverlay.style.display = 'none';
-        if(adminBanner) adminBanner.style.display = 'block';
-      } else {
-        maintenanceOverlay.style.display = 'flex';
-  // Listen for maintenanceEndTime changes
-  onValue(ref(db, 'config/maintenanceEndTime'), (snapshot) => {
-    maintenanceEndTime = snapshot.val() || null;
->   if (maintenanceMode) startMaintenanceCountdown();
-  });
-  
-  window._executeLogBearTrapWinner = async (name, trap) => {
-      window.showToast("Crowning Winner...", "accent");
+>   roster: async () => {
+      renderLoading("Loading Player Lookup");
       try {
-  };
-  
-  window.toggleMaintenance = async () => {
->   if (maintenanceMode) {
-      // Turning OFF â€” just disable it
-      try {
->       await set(ref(db, 'config/maintenanceMode'), false);
-        await set(ref(db, 'config/maintenanceEndTime'), null);
-        window.showToast('Maintenance mode is now OFF', 'success');
-        if (app.querySelector('#adminHubView')) views.admin();
-      } catch (err) {
-        alert(err.message);
-    const activateMaintenance = async (endTime, label) => {
-      modal.remove();
-      try {
->       await set(ref(db, 'config/maintenanceMode'), true);
-        await set(ref(db, 'config/maintenanceEndTime'), endTime);
-        window.showToast(`Maintenance mode ON${label ? ' â€” ' + label : ''}`, 'error');
-        if (app.querySelector('#adminHubView')) views.admin();
-      } catch (err) {
-        alert(err.message);
-    }
-  };
-  
-> onValue(ref(db, 'config/maintenanceMode'), (snapshot) => {
->   maintenanceMode = snapshot.val() || false;
-    checkMaintenanceAccess();
-  });
-  
-  // Listen to Auth State
-  listenToAuth((user) => {
-                  <h3 style="margin:0; color:var(--danger);">Maintenance Mode</h3>
-                  <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Lock out all non-admin users 
-and display a maintenance screen.</p>
-                </div>
->               <button onclick="window.toggleMaintenance()" style="background:${maintenanceMode ? 'var(--bg-main)' : 
-'var(--danger)'}; color:${maintenanceMode ? 'var(--success)' : '#fff'}; border:1px solid ${maintenanceMode ? 
-'var(--success)' : 'transparent'}; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; 
-min-width:100px;">
->                 ${maintenanceMode ? 'ðŸŸ¢ Turn OFF' : 'ðŸ”´ Turn ON'}
-                </button>
-              </div>
-              
-              <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); 
-margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
+        const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
+          fetchSheet("activity "),
+          fetchSheet("Chief's List"),
 
 
