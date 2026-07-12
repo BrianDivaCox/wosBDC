@@ -1,24 +1,121 @@
 ﻿
->     window.refreshSchedule = async () => {
-        const icon = document.getElementById('schRefreshIcon');
-        if(icon) icon.style.animation = 'spin 1s linear infinite';
-        
-        if (window.showToast) window.showToast("Refreshing schedule...", "info");
-        
-        // Clear live data cache to force a fresh fetch from Firebase
-        delete window.liveData["schedule"];
-        delete window.livePromises["schedule"];
-        if (window.liveListeners["schedule"]) {
-            window.liveListeners["schedule"](); // unsubscribe
-            delete window.liveListeners["schedule"];
-        }
-        
-        setTimeout(async () => {
-          await views.schedule();
-        }, 400);
-      };
-  
-      renderLoading("Loading Schedule");
-      try {
+  main.js:2115:      // Initialize Firebase Listeners for any Bear Trap widgets rendered
+  main.js:2116:      document.querySelectorAll('.bear-trap-activity-widget').forEach(widget => {
+> main.js:2117:        widget.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:12px; 
+padding:10px;">Loading today's activity...</div>`;
+  main.js:2118:        
+  main.js:2119:        const logRef = ref(db, 'bearTrapLog');
+  main.js:2120:        onValue(logRef, (snapshot) => {
+  main.js:2121:          if (!document.contains(widget)) return; // Exit if user navigated away
+  main.js:2122:          
+  main.js:2127:          }
+  main.js:2128:          
+> main.js:2129:          const todayStr = new Date().toDateString();
+> main.js:2130:          let todaysLogs = logs.filter(log => new Date(log.timestamp).toDateString() === todayStr);
+  main.js:2131:          
+> main.js:2132:          if (todaysLogs.length === 0) {
+  main.js:2133:             widget.innerHTML = '';
+  main.js:2134:             return;
+  main.js:2135:          }
+  main.js:2136:          
+> main.js:2137:          todaysLogs.reverse(); // Newest first
+  main.js:2138:          
+  main.js:2139:          let logHtml = `<div style="background:var(--bg-main); border:1px solid var(--border); 
+border-radius:8px; overflow:hidden;">
+  main.js:2140:            <button onclick="this.nextElementSibling.classList.toggle('hidden')" style="width:100%; 
+background:transparent; border:none; padding:12px 15px; color:var(--text-main); font-weight:bold; cursor:pointer; 
+display:flex; justify-content:space-between; align-items:center;">
+> main.js:2141:              <span>📅 View Today's Activity (${todaysLogs.length} Update${todaysLogs.length > 1 ? 's' 
+: ''})</span>
+  main.js:2142:              <span style="color:var(--text-muted);">▼</span>
+  main.js:2143:            </button>
+  main.js:2144:            <div class="hidden" style="padding:0 15px 15px 15px; border-top:1px solid var(--border);">
+  main.js:2145:              <ul style="list-style:none; padding:0; margin:0; margin-top:10px;">`;
+  main.js:2146:              
+> main.js:2147:          todaysLogs.forEach(log => {
+  main.js:2148:             let d = new Date(log.timestamp);
+  main.js:2149:             let timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  main.js:2150:             logHtml += `<li style="padding:8px 0; border-bottom:1px dashed var(--border); 
+font-size:13px; color:var(--text-muted);">
+  main.js:2151:                <span style="color:var(--accent); font-weight:bold;">${timeStr}</span>: 
+  main.js:2152:                <span style="color:var(--text-main); font-weight:bold;">${log.name}</span> donated 
+  main.js:2734:  },
+  main.js:2735:  
+> main.js:2736:  todays_schedule: async () => {
+> main.js:2737:    renderLoading("Loading Today's Events");
+  main.js:2738:    try {
+  main.js:2739:      const data = await fetchSheet("WhiteOut Survival");
+  main.js:2740:      
+  main.js:2741:      if (!data || !Array.isArray(data) || data.length === 0) {
+> main.js:2742:        app.innerHTML = `<div class="card"><div class="loading">⚠️ Today's schedule data is currently 
+unavailable. Please try again later.</div></div>`;
+  main.js:2743:        return;
+  main.js:2744:      }
+  main.js:2745:      
+> main.js:2746:      let todayHtml = "";
+  main.js:2747:      let upcomingHtml = "";
+> main.js:2748:      let currentCategory = "today";
+  main.js:2749:      
+  main.js:2750:      for (let i = 1; i < Math.min(34, data.length); i++) {
+  main.js:2751:        let row = data[i];
+  main.js:2752:        let eventName = row[5];
+  main.js:2753:        let originalDateVal = row[6];
+  main.js:2768:          let now = new Date();
+  main.js:2769:          
+> main.js:2770:          let isToday = (eventDate.getDate() === now.getDate() && eventDate.getMonth() === 
+now.getMonth() && eventDate.getFullYear() === now.getFullYear());
+> main.js:2771:          if (isToday) {
+> main.js:2772:            currentCategory = "today";
+  main.js:2773:          } else {
+  main.js:2774:            currentCategory = "upcoming";
+  main.js:2775:          }
+  main.js:2776:          
+  main.js:2777:          dateVal = (eventDate.getMonth()+1) + '/' + eventDate.getDate();
+  main.js:2793:            
+  main.js:2794:            // Calculate the visitor's local time by treating that time as UTC!
+> main.js:2795:            let todayLocal = new Date();
+> main.js:2796:            todayLocal.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
+> main.js:2797:            localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  main.js:2798:            
+  main.js:2799:            // Check if exact event time is in the past
+  main.js:2800:            let exactEventDate = new Date(eventDate);
+  main.js:2801:            exactEventDate.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
+  main.js:2802:            if (exactEventDate < now) {
+  main.js:2805:          } else {
+  main.js:2806:            if (utcVal === undefined) utcVal = "";
+> main.js:2807:            // For all-day events or events with no time, strike if it's strictly before today
+> main.js:2808:            if (!isToday && eventDate < now) {
+  main.js:2809:              isPast = true;
+  main.js:2810:            }
+  main.js:2811:          }
+  main.js:2812:        } else {
+  main.js:2813:          if (dateVal === undefined) dateVal = "";
+  main.js:2843:        }
+  main.js:2844:        
+> main.js:2845:        if (currentCategory === "today") {
+> main.js:2846:          todayHtml += rowHtml;
+  main.js:2847:        } else {
+  main.js:2848:          upcomingHtml += rowHtml;
+  main.js:2849:        }
+  main.js:2850:      }
+  main.js:2851:      
+  main.js:2852:      let finalHtml = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+  main.js:2853:      
+> main.js:2854:      if (todayHtml !== "") {
+  main.js:2855:        finalHtml += `<div class="card" style="overflow-x:auto;">
+> main.js:2856:                        <div class="card-title">🕒 Today's Schedule</div>
+  main.js:2857:                        <table><thead><tr>
+  main.js:2858:                          <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
+> main.js:2859:                        </tr></thead><tbody>${todayHtml}</tbody></table></div>`;
+  main.js:2860:      } else {
+  main.js:2861:        finalHtml += `<div class="card" style="overflow-x:auto;">
+> main.js:2862:                        <div class="card-title">🕒 Today's Schedule</div>
+> main.js:2863:                        <div style="padding: 20px; text-align: center; color: var(--text-muted);">No 
+events scheduled for today.</div>
+  main.js:2864:                      </div>`;
+  main.js:2865:      }
+  main.js:2866:      
+  main.js:2867:      if (upcomingHtml !== "") {
+  main.js:2868:        finalHtml += `<div class="card" style="overflow-x:auto;">
 
 

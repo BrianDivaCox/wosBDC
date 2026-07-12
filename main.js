@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyymNf2q2Tg_cDgRtikiMz0_GCE_rSdil60vXPbV0T43hJgWBC-vrofWqCv9syUzg/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbz3ZY0vqyHEBozmbpvJO2C9s3yRdZsqrd5lDTpb8tmaf47hMbLCaG7xUAQ8eNv03js/exec';
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -2126,8 +2126,8 @@ const views = {
              return;
           }
           
-          const todayStr = new Date().toDateString();
-          let todaysLogs = logs.filter(log => new Date(log.timestamp).toDateString() === todayStr);
+          const todayUTCStr = new Date().toISOString().split('T')[0];
+          let todaysLogs = logs.filter(log => new Date(log.timestamp).toISOString().split('T')[0] === todayUTCStr);
           
           if (todaysLogs.length === 0) {
              widget.innerHTML = '';
