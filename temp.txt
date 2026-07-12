@@ -1,53 +1,7 @@
 ﻿
-                        <div class="card-title" style="margin-bottom:15px; font-size:24px;">ðŸ•µï¸â€â™‚ï¸ Player 
-Lookup</div>
-                        
-                        ${!globalRosterRegisteredOnly ? `
-                        <div style="margin-bottom:15px; font-size:14px; color:var(--text-muted);">
-                            <label style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; 
-justify-content:center;">
->                               <input type="checkbox" id="registeredOnlyToggle"> 
-                                Show Registered Accounts Only
-                            </label>
-                        </div>` : ''}
-  
-                        <select id="playerLookupSelect" style="width:100%; max-width:400px; padding:12px; 
-border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; 
-font-weight:bold; cursor:pointer;">
-                          <!-- Options rendered via JS -->
-                        </select>
-                      </div>
-                      
-                      <div id="playerProfileContainer">
-                        <div style="text-align:center; color:var(--text-muted); padding:40px; font-size:16px;">
-                          Select a player to view their activity profile.
-                        </div>
-                      </div>`;
-                      
-          app.innerHTML = html;
-          
-          const select = document.getElementById('playerLookupSelect');
-          const container = document.getElementById('playerProfileContainer');
->         const regToggle = document.getElementById('registeredOnlyToggle');
-          
-          const renderDropdownOptions = () => {
-              const onlyReg = globalRosterRegisteredOnly || (regToggle && regToggle.checked);
-              let optsHtml = '<option value="">-- Select a Chief --</option>';
-              players.forEach((p, i) => {
-                  let name = p[0].toString().trim();
-                  let isReg = false;
-                  let gid = nameToIdMap[name];
-                  if (gid && registeredGameIds.has(gid)) isReg = true;
-                  
-                  if (onlyReg && !isReg) return;
-                  
-                  let nt = /^[ -~]*$/.test(name) ? 'class="notranslate"' : '';
-                  optsHtml += `<option value="${i}" ${nt}>${name}${isReg ? ' (âœ…)' : ''}</option>`;
-              });
-              select.innerHTML = optsHtml;
-          };
-          
-          renderDropdownOptions();
-          
+>           <!-- Tab 2: Users -->
+            <div id="tab-users" class="admin-tab-content" style="display:none;">
+              <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); 
+margin-bottom:20px;">
 
 

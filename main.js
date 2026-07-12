@@ -1137,6 +1137,15 @@ const views = {
           
           <!-- Tab 2: Users -->
           <div id="tab-users" class="admin-tab-content" style="display:none;">
+              <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <h3 style="margin:0; color:var(--text-main);">Global Chief List Filter</h3>
+                  <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Permanently hide unregistered users from the Player Lookup list for everyone.</p>
+                </div>
+                <button onclick="window.toggleRosterFilter()" style="background:${globalRosterRegisteredOnly ? 'var(--success)' : 'var(--bg-main)'}; color:${globalRosterRegisteredOnly ? '#fff' : 'var(--text-main)'}; border:1px solid ${globalRosterRegisteredOnly ? 'transparent' : 'var(--border)'}; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; min-width:100px;">
+                  ${globalRosterRegisteredOnly ? 'ON' : 'OFF'}
+                </button>
+              </div>
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
               <div style="margin-bottom:15px;">
                 <h3 style="margin:0; color:var(--accent);">🛡️ Staff Roles (Admins)</h3>
