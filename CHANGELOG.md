@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.13.2] - 2026-07-11
+### Fixed
+- **Backend**: Fixed a bug where `BrianDivaCox` was improperly resolved as the admin name when logging actions from the Google Sheets sidebar. It now properly maps to `BrianDCox`.
+
+
 ## [1.13.1] - 2026-07-11
 ### Added
 - **UI**: Added a dropdown menu to the Admin Logs tab to easily filter logs by specific admins.
