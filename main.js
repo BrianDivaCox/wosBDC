@@ -181,6 +181,15 @@ const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 
 
 // --- Maintenance Mode State ---
+let globalRosterRegisteredOnly = false;
+onValue(ref(db, 'config/rosterRegisteredOnly'), (snapshot) => {
+  globalRosterRegisteredOnly = snapshot.val() || false;
+  // Auto-refresh roster if currently open
+  const profContainer = document.getElementById('playerProfileContainer');
+  if (profContainer && views && typeof views.roster === 'function') {
+      // It's the roster view, might want to re-render but not strictly necessary for real-time
+  }
+});
 let maintenanceMode = false;
 let maintenanceEndTime = null;
 let maintenanceCountdownInterval = null;
@@ -311,6 +320,16 @@ window.promptLogBearTrapWinner = (name) => {
         window._executeLogBearTrapWinner(name, trapNum);
     } else if (trapNum !== null && trapNum.trim() !== "") {
         alert("Invalid input. Please enter 1 or 2.");
+    }
+};
+
+window.toggleRosterFilter = async () => {
+    try {
+        await set(ref(db, 'config/rosterRegisteredOnly'), !globalRosterRegisteredOnly);
+        window.showToast('Global Roster Filter toggled!', 'success');
+        if (document.querySelector('.admin-tab-content')) views.admin();
+    } catch(e) {
+        alert(e.message);
     }
 };
 
@@ -2531,12 +2550,13 @@ const views = {
         let html = `<div class="card" style="margin-bottom:20px; text-align:center;">
                       <div class="card-title" style="margin-bottom:15px; font-size:24px;">🕵️‍♂️ Player Lookup</div>
                       
+                      ${!globalRosterRegisteredOnly ? `
                       <div style="margin-bottom:15px; font-size:14px; color:var(--text-muted);">
                           <label style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; justify-content:center;">
                               <input type="checkbox" id="registeredOnlyToggle"> 
                               Show Registered Accounts Only
                           </label>
-                      </div>
+                      </div>` : ''}
 
                       <select id="playerLookupSelect" style="width:100%; max-width:400px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
                         <!-- Options rendered via JS -->
@@ -2556,7 +2576,7 @@ const views = {
         const regToggle = document.getElementById('registeredOnlyToggle');
         
         const renderDropdownOptions = () => {
-            const onlyReg = regToggle.checked;
+            const onlyReg = globalRosterRegisteredOnly || (regToggle && regToggle.checked);
             let optsHtml = '<option value="">-- Select a Chief --</option>';
             players.forEach((p, i) => {
                 let name = p[0].toString().trim();
@@ -2574,11 +2594,13 @@ const views = {
         
         renderDropdownOptions();
         
-        regToggle.addEventListener('change', () => {
-            renderDropdownOptions();
-            select.value = "";
-            renderCardForChief(""); // Clear profile
-        });
+        if (regToggle) {
+            regToggle.addEventListener('change', () => {
+                renderDropdownOptions();
+                select.value = "";
+                renderCardForChief(""); // Clear profile
+            });
+        }
       
       const renderCardForChief = (idx) => {
         if (idx === "") {
