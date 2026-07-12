@@ -1,45 +1,34 @@
 ﻿
-  const adminSidebarBtn = document.getElementById('adminSidebarBtn');
-  
-  
-> // --- Maintenance Mode State ---
-  let globalRosterRegisteredOnly = false;
-  onValue(ref(db, 'config/rosterRegisteredOnly'), (snapshot) => {
-    globalRosterRegisteredOnly = snapshot.val() || false;
-      try {
-        await set(ref(db, 'config/maintenanceMode'), false);
-        await set(ref(db, 'config/maintenanceEndTime'), null);
->       window.showToast('Maintenance mode is now OFF', 'success');
-        if (app.querySelector('#adminHubView')) views.admin();
-      } catch (err) {
-        alert(err.message);
-    
-    modal.innerHTML = `
-      <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:30px; 
-max-width:400px; width:90%; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
->       <h2 style="margin:0 0 5px 0; color:var(--danger); font-size:20px;">ðŸš§ Enable Maintenance Mode</h2>
-        <p style="margin:0 0 20px 0; color:var(--text-muted); font-size:13px;">How long will maintenance take? This 
-countdown will be shown to all users.</p>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-      try {
-        await set(ref(db, 'config/maintenanceMode'), true);
-        await set(ref(db, 'config/maintenanceEndTime'), endTime);
->       window.showToast(`Maintenance mode ON${label ? ' â€” ' + label : ''}`, 'error');
-        if (app.querySelector('#adminHubView')) views.admin();
-      } catch (err) {
-        alert(err.message);
-            <div id="tab-settings" class="admin-tab-content" style="display:none;">
-              <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--danger); 
-margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
->                 <h3 style="margin:0; color:var(--danger);">Maintenance Mode</h3>
-                  <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Lock out all non-admin users 
-and display a maintenance screen.</p>
+>           <!-- Tab 2: Users -->
+            <div id="tab-users" class="admin-tab-content" style="display:none;">
+              <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); 
+margin-bottom:20px;">
+                <div style="margin-bottom:15px;">
+                  <h3 style="margin:0; color:var(--accent);">ðŸ›¡ï¸ Staff Roles (Admins)</h3>
+                  <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">List of players who currently 
+have Admin Dashboard access. You can grant admin access directly from a player's profile card.</p>
                 </div>
-                <button onclick="window.toggleMaintenance()" style="background:${maintenanceMode ? 'var(--bg-main)' : 
-'var(--danger)'}; color:${maintenanceMode ? 'var(--success)' : '#fff'}; border:1px solid ${maintenanceMode ? 
-'var(--success)' : 'transparent'}; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; 
-min-width:100px;">
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; 
+background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                    <div style="font-weight:bold; color:var(--text-main);">Diva (Root Admin)</div>
+                    <div style="color:var(--text-muted); font-size:12px;">318843189</div>
+                  </div>
+                  ${Object.keys(window.systemAdmins).map(gid => {
+                     let n = idToNameMap[gid] || "Unknown Player";
+                     return `
+                     <div style="display:flex; justify-content:space-between; align-items:center; 
+background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                       <div style="font-weight:bold; color:var(--text-main);">${n}</div>
+                       <div style="display:flex; gap:10px; align-items:center;">
+                         <div style="color:var(--text-muted); font-size:12px;">${gid}</div>
+                         <button onclick="window.revokeAdmin('${gid}')" style="background:var(--danger); color:#fff; 
+border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
+                       </div>
+                     </div>
+                     `;
+                  }).join('')}
+                </div>
+              </div>
 
 

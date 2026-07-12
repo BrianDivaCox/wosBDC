@@ -2,6 +2,12 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.14.13] - 2026-07-12
+### Fixed
+- **Global Chief List Filter**: Corrected multiple UI insertion and Firebase permission bugs that prevented the toggle from appearing in the Admin Control Panel and caused the Chief's List to fail loading.
+- Moved the **Global Chief List Filter** toggle from the Settings Tab to the Users Tab.
+
+
 ## [1.14.12] - 2026-07-12
 ### Added
 - **Global Chief List Filter**: Added a new setting to the Admin Control Panel (Settings Tab) to permanently hide unregistered users from the Chief's List for all users. When this Admin setting is turned ON, the local UI filter is automatically hidden and the list forces only registered accounts to show globally.
