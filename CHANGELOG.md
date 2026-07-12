@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.14.8] - 2026-07-12
+### Changed
+- **UI**: Renamed the sidebar title from "WhiteOut Dashboard" to "WOS Dashboard".
+
+
 ## [1.14.7] - 2026-07-12
 ### Fixed
 - **UI**: Fixed a bug where events marked as "Upcoming" (with an hourglass ⏳, like Polar Terrors early in the week) could not be edited by admins using the Quick Fix action buttons on player cards. Admins can now mark upcoming events as Participated.
