@@ -920,7 +920,7 @@ fetchSheet("Chief's List").then(rosterRawData => {
       let id = rosterRawData[i][1];
       if (name && id) {
          idToNameMap[id] = name.toString().trim();
-         nameToIdMap[name.toString().trim()] = id;
+         nameToIdMap[name.toString().trim()] = id.toString().trim();
       }
     }
     // Update navbar if user already loaded
@@ -2557,7 +2557,7 @@ const views = {
         const registeredGameIds = new Set();
         if (usersSnap && usersSnap.val()) {
             Object.values(usersSnap.val()).forEach(u => {
-                if (u.gameId) registeredGameIds.add(u.gameId);
+                if (u.gameId) registeredGameIds.add(u.gameId.toString().trim());
             });
         }
         
@@ -2588,7 +2588,7 @@ const views = {
                 let name = p[0].toString().trim();
                 let isReg = false;
                 let gid = nameToIdMap[name];
-                if (gid && registeredGameIds.has(gid)) isReg = true;
+                if (gid && registeredGameIds.has(gid.toString().trim())) isReg = true;
                 
                 if (onlyReg && !isReg) return;
                 

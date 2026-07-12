@@ -1,7 +1,62 @@
 ﻿
->           <!-- Tab 2: Users -->
-            <div id="tab-users" class="admin-tab-content" style="display:none;">
-              <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); 
-margin-bottom:20px;">
+  
+  // Global mappings
+  export let idToNameMap = {};
+> export let nameToIdMap = {};
+  
+  // Listen to Avatars globally
+  onValue(ref(db, 'avatars'), (snap) => {
+    if (snap.val()) {
+      avatarMap = snap.val();
+    }
+  });
+  
+  // Admin System
+  window.systemAdmins = {};
+        let id = rosterRawData[i][1];
+        if (name && id) {
+           idToNameMap[id] = name.toString().trim();
+>          nameToIdMap[name.toString().trim()] = id;
+        }
+      }
+      // Update navbar if user already loaded
+      if (currentUser && authSidebarBtn) {
+         authSidebarBtn.innerHTML = `ðŸ‘¤ ${idToNameMap[currentUser.gameId] || 'Account'}`;
+      }
+      // Update Account Hub if it is currently open
+      const accHubView = document.getElementById('accountHubView');
+      if (accHubView && currentUser) {
+         views.account(); // re-render account view with correct name
+              players.forEach((p, i) => {
+                  let name = p[0].toString().trim();
+                  let isReg = false;
+>                 let gid = nameToIdMap[name];
+                  if (gid && registeredGameIds.has(gid)) isReg = true;
+                  
+                  if (onlyReg && !isReg) return;
+                  
+                  let nt = /^[ -~]*$/.test(name) ? 'class="notranslate"' : '';
+                  optsHtml += `<option value="${i}" ${nt}>${name}${isReg ? ' (âœ…)' : ''}</option>`;
+              });
+              select.innerHTML = optsHtml;
+          };
+          
+    }
+    metricsHtml += '</div></div>';
+    
+>   let playerGameId = nameToIdMap[chiefName];
+    let tryUrl = (playerGameId && avatarMap[playerGameId]) ? avatarMap[playerGameId] : 'images/' + chiefName + '.png';
+    
+    let avatarImgHtml = '<img src="'+tryUrl+'" style="width:100%; height:100%; object-fit:cover;" 
+onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"><div 
+style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">' + 
+chiefName.charAt(0).toUpperCase() + '</div>';
+    
+    let adminBarHtml = '';
+    if (isAdmin) {
+      let missedJson = encodeURIComponent(JSON.stringify(missedEvents));
+      let adminActionBtn = '';
+      if (playerGameId) {
+          if (window.isAdminUser({gameId: parseInt(playerGameId)})) {
 
 
