@@ -543,7 +543,13 @@ tr:hover td {
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   border-left: 4px solid var(--accent);
   font-weight: bold;
+  pointer-events: auto;
+}
+.toast-msg:not(.sticky) {
   animation: slideUpToast 0.3s ease, fadeOutToast 0.3s ease 2.7s forwards;
+}
+.toast-msg.sticky {
+  animation: slideUpToast 0.3s ease;
 }
 .toast-msg.success { border-left-color: var(--success); }
 .toast-msg.error { border-left-color: var(--danger); }

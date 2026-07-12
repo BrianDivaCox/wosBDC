@@ -801,18 +801,34 @@ if (versionBadge) versionBadge.addEventListener('click', async () => {
 const app = document.getElementById('app');
 const navLinks = document.querySelectorAll('.nav-link');
 
-window.showToast = (message, type = 'success') => {
+window.showToast = (message, type = 'success', sticky = false) => {
   const container = document.getElementById('toast-container');
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = `toast-msg ${type}`;
-  toast.innerHTML = message;
+  
+  if (sticky) {
+    toast.classList.add('sticky');
+    toast.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:15px;">
+        <div>${message}</div>
+        <button class="toast-close" style="background:var(--bg-main); border:1px solid var(--border); color:var(--text-main); cursor:pointer; font-size:16px; font-weight:bold; padding:2px 8px; border-radius:4px;">&times;</button>
+      </div>
+    `;
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.style.animation = 'fadeOutToast 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    });
+  } else {
+    toast.innerHTML = message;
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.remove();
+      }
+    }, 3000);
+  }
+  
   container.appendChild(toast);
-  setTimeout(() => {
-    if (toast.parentElement) {
-      toast.remove();
-    }
-  }, 3000);
 };
 
 
@@ -2613,6 +2629,7 @@ const views = {
       
       setTimeout(async () => {
         await views.schedule();
+        if (window.showToast) window.showToast("Schedule refreshed!", "success", true);
       }, 400);
     };
 
@@ -3378,7 +3395,7 @@ window.promptEditEvents = (name, missedEventsStr) => {
       }
     }
     
-    window.showToast("Updates complete!", "success");
+    window.showToast("Updates complete!", "success", true);
     window.sheetCache = {}; 
     if (document.getElementById('uniSearchInput')) {
       window.searchPlayerFull(name); 
@@ -3398,7 +3415,7 @@ window.promptBearTrap = async (name) => {
   try {
     const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(name)}&amount=${encodeURIComponent(amt)}&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
     if (res.success) {
-      window.showToast("Successfully added! New Total: " + res.newTotal, "success");
+      window.showToast("Successfully added! New Total: " + res.newTotal, "success", true);
       window.sheetCache = {}; 
       if (document.getElementById('uniSearchInput')) {
         window.searchPlayerFull(name);
