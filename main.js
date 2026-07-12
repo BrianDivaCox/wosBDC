@@ -2600,9 +2600,20 @@ const views = {
     window.refreshSchedule = async () => {
       const icon = document.getElementById('schRefreshIcon');
       if(icon) icon.style.animation = 'spin 1s linear infinite';
-      localStorage.removeItem('cache_schedule');
-      localStorage.removeItem('cacheTime_schedule');
-      await views.schedule();
+      
+      if (window.showToast) window.showToast("Refreshing schedule...", "info");
+      
+      // Clear live data cache to force a fresh fetch from Firebase
+      delete window.liveData["schedule"];
+      delete window.livePromises["schedule"];
+      if (window.liveListeners["schedule"]) {
+          window.liveListeners["schedule"](); // unsubscribe
+          delete window.liveListeners["schedule"];
+      }
+      
+      setTimeout(async () => {
+        await views.schedule();
+      }, 400);
     };
 
     renderLoading("Loading Schedule");
