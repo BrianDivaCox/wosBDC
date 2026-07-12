@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzm-idHYAOSkdqbOxvgv6XgiG9P04OkPaqGIXhgrNsfxprHCYE9c-hEwFOnD1NwknM/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxraLaRJ7mR8zxeWYBiQX7Cj0gRU8MgWelxdw5GeHXVFI5aX0ceOw_f3pKIyLEKNhA/exec';
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -1057,6 +1057,7 @@ const views = {
             <button class="admin-tab-btn active" data-tab="tab-tools" style="background:none; border:none; color:var(--accent); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid var(--accent);">🛠️ Daily Tools</button>
             <button class="admin-tab-btn" data-tab="tab-users" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">👥 Users</button>
             <button class="admin-tab-btn" data-tab="tab-settings" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">⚙️ Settings</button>
+            <button class="admin-tab-btn" data-tab="tab-logs" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">📋 Logs</button>
           </div>
           
           <!-- Tab 1: Daily Tools -->
@@ -1191,6 +1192,32 @@ const views = {
               </label>
             </div>
           </div>
+          
+          <!-- Tab 4: Logs -->
+          <div id="tab-logs" class="admin-tab-content" style="display:none;">
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:15px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; color:var(--text-main);">📋 Admin Activity Logs</h3>
+                <input type="text" id="adminLogSearch" placeholder="Search logs..." onkeyup="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); width:200px;">
+              </div>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; text-align:left;">
+                  <thead>
+                    <tr style="border-bottom:2px solid var(--border); color:var(--text-muted);">
+                      <th style="padding:10px;">Date & Time</th>
+                      <th style="padding:10px;">Admin</th>
+                      <th style="padding:10px;">Player</th>
+                      <th style="padding:10px;">Action / Amount</th>
+                      <th style="padding:10px;">New Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminLogsTableBody">
+                    <tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">Loading logs from Firebase...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>`;
       app.innerHTML = html;
       
@@ -1253,6 +1280,49 @@ const views = {
           }
         });
       });
+      
+      // Firebase listener for Logs tab
+      const adminLogRef = ref(db, 'sheets/Admin Log');
+      onValue(adminLogRef, (snapshot) => {
+        if (!document.getElementById('adminLogsTableBody')) return;
+        const logsData = snapshot.val();
+        let tbodyHtml = '';
+        if (logsData && logsData.length > 1) {
+           for (let i = logsData.length - 1; i >= 1; i--) {
+              let row = logsData[i];
+              if (row && row[0]) {
+                 let d = new Date(row[0]);
+                 let dStr = d.toLocaleString([], {month:'numeric', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'});
+                 let adminName = row[1] || '';
+                 let playerName = row[2] || '';
+                 let amount = row[3] || '';
+                 let newTotal = row[4] !== undefined ? row[4] : '';
+                 tbodyHtml += `
+                   <tr class="admin-log-row" style="border-bottom:1px solid var(--border);">
+                     <td style="padding:10px; font-size:13px; color:var(--text-muted);">${dStr}</td>
+                     <td style="padding:10px; font-weight:bold; color:var(--accent);">${adminName}</td>
+                     <td style="padding:10px; font-weight:bold; color:var(--text-main);">${playerName}</td>
+                     <td style="padding:10px; color:var(--text-main);">${amount}</td>
+                     <td style="padding:10px; font-weight:bold; color:var(--success);">${newTotal}</td>
+                   </tr>
+                 `;
+              }
+           }
+        }
+        if (tbodyHtml === '') tbodyHtml = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">No logs found.</td></tr>`;
+        document.getElementById('adminLogsTableBody').innerHTML = tbodyHtml;
+      });
+      
+      window.filterAdminLogs = () => {
+         const search = document.getElementById('adminLogSearch').value.toLowerCase();
+         document.querySelectorAll('.admin-log-row').forEach(row => {
+            if (row.innerText.toLowerCase().includes(search)) {
+               row.style.display = '';
+            } else {
+               row.style.display = 'none';
+            }
+         });
+      };
       
     } catch(err) {
       renderError(err.message);

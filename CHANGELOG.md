@@ -2,6 +2,12 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.13.0] - 2026-07-11
+### Added
+- **Feature**: Brand new "📋 Logs" tab in the Admin Control Panel for comprehensively viewing and searching historical admin actions.
+- **Backend**: Synced the entire "Admin Log" sheet directly to Firebase to enable instantaneous loading and frictionless frontend searching of the entire history.
+
+
 ## [1.12.1] - 2026-07-11
 ### Fixed
 - **UI**: Fixed an issue where the Daily Digest collapsible arrow wouldn't hide the log due to a missing `.hidden` CSS utility class.
