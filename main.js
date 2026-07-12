@@ -153,6 +153,14 @@ window.linkAltAccountPrompt = async () => {
     }
     let gid = prompt("Enter the exact Game ID of your Alt Account:");
     if (!gid) return;
+    
+    let chiefName = idToNameMap[gid.trim()];
+    if (chiefName) {
+        if (!confirm(`Is your Chief Name: ${chiefName}?`)) return;
+    } else {
+        if (!confirm(`We couldn't find a Chief Name for Game ID ${gid.trim()} on the master list. Do you still want to link it?`)) return;
+    }
+    
     try {
         await linkAltAccount(currentUser.uid, gid.trim(), currentUser.linkedGameIds || []);
         if(window.showToast) window.showToast("Alt account linked!", "success");
