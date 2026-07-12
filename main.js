@@ -1672,7 +1672,44 @@ const views = {
       return;
     }
     
-    let currentChiefName = idToNameMap[currentUser.gameId] || `Game ID: ${currentUser.gameId}`;
+          let linkedHtml = '';
+      let links = currentUser.linkedGameIds || [];
+      if (links.length > 0) {
+          linkedHtml += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
+            <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">s< Linked Alt Accounts</h3>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">`;
+            
+          links.forEach(gid => {
+              let altName = idToNameMap[gid] || `Game ID: ${gid}`;
+              linkedHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-main); padding:10px 15px; border-radius:8px; border:1px solid var(--border);">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                      <div style="width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; overflow:hidden;">
+                          <img src="${avatarMap[gid] || `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                          <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${altName.charAt(0).toUpperCase()}</div>
+                      </div>
+                      <div style="text-align:left;">
+                          <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${altName}</div>
+                          <div style="font-size:11px; color:var(--text-muted);">${gid}</div>
+                      </div>
+                  </div>
+                  <button onclick="window.unlinkAltAccountPrompt('${gid}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-weight:bold; font-size:12px;">Unlink</button>
+              </div>`;
+          });
+          
+          linkedHtml += `</div>`;
+          if (links.length < 2) {
+              linkedHtml += `<button onclick="window.linkAltAccountPrompt()" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link Another Account</button>`;
+          }
+          linkedHtml += `</div>`;
+      } else {
+          linkedHtml += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
+            <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">s< Linked Alt Accounts</h3>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">You can link up to 2 alt accounts to bypass the unregistered filter.</p>
+            <button onclick="window.linkAltAccountPrompt()" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link Alt Account</button>
+          </div>`;
+      }
+      
+      let currentChiefName = idToNameMap[currentUser.gameId] || `Game ID: ${currentUser.gameId}`;
     
     app.innerHTML = `
       <div id="accountHubView" class="card" style="max-width:600px; margin:0 auto; text-align:center;">
@@ -1697,6 +1734,7 @@ const views = {
             <div id="avatarUploadStatus" style="margin-top:10px; font-size:13px; color:var(--success); font-weight:bold;"></div>
           </div>
         </div>
+            ${linkedHtml}
         
         <button id="logoutBtn" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold;">Sign Out</button>
       </div>
@@ -2731,43 +2769,7 @@ const views = {
       const data = await fetchSheet("schedule");
       
       if (!data || !Array.isArray(data) || data.length === 0) {
-        let linkedHtml = '';
-      let links = currentUser.linkedGameIds || [];
-      if (links.length > 0) {
-          linkedHtml += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
-            <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">s< Linked Alt Accounts</h3>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">`;
-            
-          links.forEach(gid => {
-              let altName = idToNameMap[gid] || `Game ID: ${gid}`;
-              linkedHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-main); padding:10px 15px; border-radius:8px; border:1px solid var(--border);">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                      <div style="width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; overflow:hidden;">
-                          <img src="${avatarMap[gid] || `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                          <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${altName.charAt(0).toUpperCase()}</div>
-                      </div>
-                      <div style="text-align:left;">
-                          <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${altName}</div>
-                          <div style="font-size:11px; color:var(--text-muted);">${gid}</div>
-                      </div>
-                  </div>
-                  <button onclick="window.unlinkAltAccountPrompt('${gid}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-weight:bold; font-size:12px;">Unlink</button>
-              </div>`;
-          });
-          
-          linkedHtml += `</div>`;
-          if (links.length < 2) {
-              linkedHtml += `<button onclick="window.linkAltAccountPrompt()" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link Another Account</button>`;
-          }
-          linkedHtml += `</div>`;
-      } else {
-          linkedHtml += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
-            <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">s< Linked Alt Accounts</h3>
-            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">You can link up to 2 alt accounts to bypass the unregistered filter.</p>
-            <button onclick="window.linkAltAccountPrompt()" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link Alt Account</button>
-          </div>`;
-      }
-      
+  
       app.innerHTML = `<div class="card"><div class="loading">⚠️ Schedule data is currently unavailable. Please try again later.</div></div>`;
         return;
       }
