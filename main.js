@@ -2126,8 +2126,8 @@ const views = {
              return;
           }
           
-          const todayUTCStr = new Date().toISOString().split('T')[0];
-          let todaysLogs = logs.filter(log => new Date(log.timestamp).toISOString().split('T')[0] === todayUTCStr);
+          const todayStr = new Date().toDateString();
+          let todaysLogs = logs.filter(log => new Date(log.timestamp).toDateString() === todayStr);
           
           if (todaysLogs.length === 0) {
              widget.innerHTML = '';
