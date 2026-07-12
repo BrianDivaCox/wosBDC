@@ -1,72 +1,25 @@
 ﻿
-    if (typeof checkMaintenanceAccess === 'function') checkMaintenanceAccess();
-  });
+    });
+  }
   
-> window.linkAltAccountPrompt = async () => {
-      let numLinks = (currentUser.linkedGameIds || []).length;
-      if (numLinks >= 2) {
-          if(window.showToast) window.showToast("Maximum of 2 alt accounts allowed.", "error");
-          else alert("Maximum of 2 alt accounts allowed.");
-          return;
-      }
-      let gid = prompt("Enter the exact Game ID of your Alt Account:");
-      if (!gid) return;
-      try {
-          await linkAltAccount(currentUser.uid, gid.trim(), currentUser.linkedGameIds || []);
-          if(window.showToast) window.showToast("Alt account linked!", "success");
-      } catch(e) {
-          if(window.showToast) window.showToast(e.message, "error");
-          else alert(e.message);
-      }
-  };
+> export async function linkAltAccount(uid, newGameId, currentLinks = []) {
+    if (currentLinks.length >= 2) throw new Error("You can only link a maximum of 2 alt accounts.");
+    if (currentLinks.includes(newGameId)) throw new Error("This account is already linked.");
+    
+    const updatedLinks = [...currentLinks, newGameId];
+    await set(ref(db, `users/${uid}/linkedGameIds`), updatedLinks);
+  }
   
-  window.unlinkAltAccountPrompt = async (gid) => {
-      if (!confirm(`Are you sure you want to unlink Game ID ${gid}?`)) return;
-      try {
-            
-            linkedHtml += `</div>`;
-            if (links.length < 2) {
->               linkedHtml += `<button onclick="window.linkAltAccountPrompt()" style="background:rgba(52,152,219,0.1); 
-color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; 
-font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" 
-onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link Another Account</button>`;
-            }
-            linkedHtml += `</div>`;
-        } else {
-            linkedHtml += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; 
-margin-top:20px;">
-              <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">s< Linked Alt Accounts</h3>
-              <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">You can link up to 2 alt 
-accounts to bypass the unregistered filter.</p>
->             <button onclick="window.linkAltAccountPrompt()" style="background:rgba(52,152,219,0.1); 
-color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; 
-font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" 
-onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link Alt Account</button>
-            </div>`;
-        }
-        
-        let currentChiefName = idToNameMap[currentUser.gameId] || `Game ID: ${currentUser.gameId}`;
-      
-      app.innerHTML = `
-        <div id="accountHubView" class="card" style="max-width:600px; margin:0 auto; text-align:center;">
-          <h2 style="color:var(--text-main); margin-top:0;">Account Hub</h2>
-          <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); 
-margin-bottom:20px;">
-            <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:10px;">
-              <div style="width:80px; height:80px; border-radius:50%; background:var(--accent); color:#fff; 
-display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold; margin-bottom:10px; 
-overflow:hidden; border:2px solid var(--border);">
-                <img id="accountHubAvatarImg" src="${avatarMap[currentUser.gameId] || 
-`images/${currentChiefName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; 
-this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div style="display:none; align-items:center; justify-content:center; width:100%; 
-height:100%;">${currentChiefName.charAt(0).toUpperCase()}</div>
-              </div>
-              <div style="font-size:18px; font-weight:bold; color:var(--accent);">${currentChiefName}</div>
-            </div>
-            <div style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">${currentUser.email}</div>
-            
-            <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
-              <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">ðŸ–¼ï¸ Profile Picture</h3>
+> export async function unlinkAltAccount(uid, gameIdToRemove, currentLinks = []) {
+    const updatedLinks = currentLinks.filter(id => id !== gameIdToRemove);
+    await set(ref(db, `users/${uid}/linkedGameIds`), updatedLinks);
+  }
+  
+  export async function registerUser(email, password, gameId) {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Save user profile in Realtime Database mapped by UID
+    await set(ref(db, `users/${user.uid}`), {
 
 

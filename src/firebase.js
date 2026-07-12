@@ -73,7 +73,7 @@ export function listenToAuth(callback) {
 }
 
 export async function linkAltAccount(uid, newGameId, currentLinks = []) {
-  if (currentLinks.length >= 2) throw new Error("You can only link a maximum of 2 alt accounts.");
+  if (currentLinks.length >= 1) throw new Error("You can only link 1 alt account.");
   if (currentLinks.includes(newGameId)) throw new Error("This account is already linked.");
   
   const updatedLinks = [...currentLinks, newGameId];

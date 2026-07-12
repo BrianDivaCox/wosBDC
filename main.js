@@ -1680,10 +1680,10 @@ const views = {
           });
           linkedHtml += `</div>`;
       } else {
-          linkedHtml += `<p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">You can link up to 2 alt accounts to bypass the unregistered filter.</p>`;
+          linkedHtml += `<p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">You can link 1 alt account to bypass the unregistered filter.</p>`;
       }
       
-      if (links.length < 2) {
+      if (links.length < 1) {
           linkedHtml += `
           <div id="linkAltForm" style="display:none; background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
               <input type="number" id="altGameIdInput" placeholder="Enter Alt Game ID" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); margin-bottom:10px;">
