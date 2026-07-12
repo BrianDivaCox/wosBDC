@@ -1,14 +1,19 @@
 ﻿
-        html += `</div>`;
-        app.innerHTML = html;
-      } catch(e) { renderError(e.message); }
-    },
-    
->   roster: async () => {
-      renderLoading("Loading Player Lookup");
-      try {
-        const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
-          fetchSheet("activity "),
-          fetchSheet("Chief's List"),
+  export let nameToIdMap = {};
+  
+  // Listen to Avatars globally
+> onValue(ref(db, 'avatars'), (snap) => {
+    if (snap.val()) {
+      avatarMap = snap.val();
+    }
+  });
+  
+  // Admin System
+  window.systemAdmins = {};
+  onValue(ref(db, 'config/admins'), (snap) => {
+    window.systemAdmins = snap.val() || {};
+    if (typeof checkMaintenanceAccess === 'function') checkMaintenanceAccess();
+  });
+  
 
 

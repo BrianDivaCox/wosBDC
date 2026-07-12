@@ -449,14 +449,16 @@ window.searchPlayerFull = async (name) => {
   }
   
   try {
-    const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData, usersSnap] = await Promise.all([
-          fetchSheet("activity "),
-          fetchSheet("Chief's List"),
-          fetchSheet("LeaderBoards"),
-          fetchSheet("Showdown History"),
-          fetchSheet("Showdown"),
-          get(ref(db, 'users'))
-        ]);
+    const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
+            fetchSheet("activity "),
+            fetchSheet("Chief's List"),
+            fetchSheet("LeaderBoards"),
+            fetchSheet("Showdown History"),
+            fetchSheet("Showdown")
+          ]);
+        
+        let usersSnap = null;
+        try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
     
     // Parse Maps
     const rosterMap = {};
@@ -2379,12 +2381,15 @@ const views = {
     renderLoading("Loading Player Lookup");
     try {
       const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
-        fetchSheet("activity "),
-        fetchSheet("Chief's List"),
-        fetchSheet("LeaderBoards"),
-        fetchSheet("Showdown History"),
-        fetchSheet("Showdown")
-      ]);
+            fetchSheet("activity "),
+            fetchSheet("Chief's List"),
+            fetchSheet("LeaderBoards"),
+            fetchSheet("Showdown History"),
+            fetchSheet("Showdown")
+          ]);
+        
+        let usersSnap = null;
+        try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
       
       if (!data || data.length < 2) throw new Error("No data found.");
       
