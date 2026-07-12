@@ -1198,7 +1198,12 @@ const views = {
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:15px;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="margin:0; color:var(--text-main);">📋 Admin Activity Logs</h3>
-                <input type="text" id="adminLogSearch" placeholder="Search logs..." onkeyup="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); width:200px;">
+                <div style="display:flex; gap:10px;">
+                  <select id="adminLogFilter" onchange="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+                    <option value="">All Admins</option>
+                  </select>
+                  <input type="text" id="adminLogSearch" placeholder="Search logs..." onkeyup="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); width:200px;">
+                </div>
               </div>
               <div style="overflow-x:auto;">
                 <table style="width:100%; border-collapse:collapse; text-align:left;">
@@ -1287,6 +1292,8 @@ const views = {
         if (!document.getElementById('adminLogsTableBody')) return;
         const logsData = snapshot.val();
         let tbodyHtml = '';
+        let uniqueAdmins = new Set();
+        
         if (logsData && logsData.length > 1) {
            for (let i = logsData.length - 1; i >= 1; i--) {
               let row = logsData[i];
@@ -1294,11 +1301,12 @@ const views = {
                  let d = new Date(row[0]);
                  let dStr = d.toLocaleString([], {month:'numeric', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'});
                  let adminName = row[1] || '';
+                 if (adminName) uniqueAdmins.add(adminName);
                  let playerName = row[2] || '';
                  let amount = row[3] || '';
                  let newTotal = row[4] !== undefined ? row[4] : '';
                  tbodyHtml += `
-                   <tr class="admin-log-row" style="border-bottom:1px solid var(--border);">
+                   <tr class="admin-log-row" data-admin="${adminName.toLowerCase()}" style="border-bottom:1px solid var(--border);">
                      <td style="padding:10px; font-size:13px; color:var(--text-muted);">${dStr}</td>
                      <td style="padding:10px; font-weight:bold; color:var(--accent);">${adminName}</td>
                      <td style="padding:10px; font-weight:bold; color:var(--text-main);">${playerName}</td>
@@ -1309,14 +1317,32 @@ const views = {
               }
            }
         }
+        
         if (tbodyHtml === '') tbodyHtml = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">No logs found.</td></tr>`;
         document.getElementById('adminLogsTableBody').innerHTML = tbodyHtml;
+        
+        // Populate Admin Filter Dropdown
+        const adminSelect = document.getElementById('adminLogFilter');
+        if (adminSelect) {
+           const currentSelection = adminSelect.value;
+           let selectHtml = '<option value="">All Admins</option>';
+           Array.from(uniqueAdmins).sort().forEach(admin => {
+              selectHtml += `<option value="${admin.toLowerCase()}">${admin}</option>`;
+           });
+           adminSelect.innerHTML = selectHtml;
+           adminSelect.value = currentSelection || '';
+        }
       });
       
       window.filterAdminLogs = () => {
          const search = document.getElementById('adminLogSearch').value.toLowerCase();
+         const adminFilter = document.getElementById('adminLogFilter').value.toLowerCase();
+         
          document.querySelectorAll('.admin-log-row').forEach(row => {
-            if (row.innerText.toLowerCase().includes(search)) {
+            const matchesSearch = row.innerText.toLowerCase().includes(search);
+            const matchesAdmin = adminFilter === '' || row.getAttribute('data-admin') === adminFilter;
+            
+            if (matchesSearch && matchesAdmin) {
                row.style.display = '';
             } else {
                row.style.display = 'none';

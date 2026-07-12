@@ -2,6 +2,12 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.13.1] - 2026-07-11
+### Added
+- **UI**: Added a dropdown menu to the Admin Logs tab to easily filter logs by specific admins.
+
+
+
 ## [1.13.0] - 2026-07-11
 ### Added
 - **Feature**: Brand new "📋 Logs" tab in the Admin Control Panel for comprehensively viewing and searching historical admin actions.
