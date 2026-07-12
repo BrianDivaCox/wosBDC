@@ -1,8 +1,0 @@
-﻿
-    
-    if (missedEvents.length === 0) {
->     alert("This player has no supported missing events this week.");
-      return;
-    }
-
-

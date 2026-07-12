@@ -3271,7 +3271,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
         val = "✅";
       } else if (val === false || strVal === "false" || strVal === "❌" || strVal === "no") {
         val = colIsUpcoming[col] ? "⏳" : "❌";
-        if (val === "❌") isX = true;
+        isX = true; // Include both missed and upcoming in the missedEvents array for Admin Quick Fix
       }
     }
     
