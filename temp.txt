@@ -1,53 +1,119 @@
 ﻿
-          app.innerHTML = `<div class="card"><div class="loading">âšï¸ Schedule data is currently unavailable. Please 
-try again later.</div></div>`;
-          return;
-        }
+>                   <select id="adminLogFilter" onchange="window.filterAdminLogs()" style="padding:8px 12px; 
+border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+                      <option value="">All Admins</option>
+                    </select>
+>                   <input type="text" id="adminLogSearch" placeholder="Search logs..." 
+onkeyup="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); 
+background:var(--card-bg); color:var(--text-main); width:200px;">
+                  </div>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table style="width:100%; border-collapse:collapse; text-align:left;">
+                    <thead>
+                      <tr style="border-bottom:2px solid var(--border); color:var(--text-muted);">
+                        <th style="padding:10px;">Date & Time</th>
+                        <th style="padding:10px;">Admin</th>
+                        <th style="padding:10px;">Player</th>
+                        <th style="padding:10px;">Action / Amount</th>
+                        <th style="padding:10px;">New Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminLogsTableBody">
+                      <tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">Loading 
+logs from Firebase...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        app.innerHTML = html;
         
-        // Find the row that contains the dates
->       let dateRowIdx = -1;
-        for (let r = 0; r < data.length; r++) {
-          if (data[r].some(cell => typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/))) {
->           dateRowIdx = r;
-            break;
-          }
-        }
-        
->       if (dateRowIdx === -1) {
-          app.innerHTML = `<div class="card"><div class="loading">Could not find dates in schedule.</div></div>`;
-          return;
-        }
-        
-        // Map each date to its column index
-        let days = [];
-        for (let c = 0; c < data[dateRowIdx].length; c++) {
-          let cell = data[dateRowIdx][c];
-          if (typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
-            let d = new Date(cell);
-            let formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            days.push({ dateStr: formatted, colIdx: c, categories: {} });
-          }
-        }
-        
-        // Extract events for each day, grouping by category
-        let currentCategory = "Events";
-        for (let r = dateRowIdx + 1; r < data.length; r++) {
-          if (data[r].every(cell => cell === "")) continue;
-          
-          // Detect category headers: A row with exactly one non-empty cell located in Column B (index 1)
-          let nonEmptyCells = data[r].filter(c => c !== "");
-          if (nonEmptyCells.length === 1 && typeof data[r][1] === 'string' && data[r][1].trim() !== "") {
-            currentCategory = data[r][1].trim();
-            continue;
-          }
-          
-          days.forEach(day => {
-            let eventCell = data[r][day.colIdx];
-            if (eventCell && eventCell.trim() !== "") {
-              if (!day.categories[currentCategory]) day.categories[currentCategory] = [];
-              day.categories[currentCategory].push(eventCell);
-            }
+        // Bind Admin Tabs
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.admin-tab-btn').forEach(b => {
+              b.style.color = 'var(--text-muted)';
+              b.style.borderBottomColor = 'transparent';
+            });
+            document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
+            
+            e.target.style.color = 'var(--accent)';
+            e.target.style.borderBottomColor = 'var(--accent)';
+            document.getElementById(e.target.getAttribute('data-tab')).style.display = 'block';
           });
-        }
+        });
+        
+        
+        // Bind Dev Mode toggle in Admin Panel
+        const devModeToggleAdmin = document.getElementById('devModeToggleAdmin');
+        const devModeSliderAdmin = document.getElementById('devModeSliderAdmin');
+        if (devModeToggleAdmin) {
+          const isDevMode = localStorage.getItem('devMode') === 'true';
+          devModeToggleAdmin.checked = isDevMode;
+          if (isDevMode && devModeSliderAdmin) {
+            devModeSliderAdmin.style.transform = 'translateX(20px)';
+          }
+          
+          devModeToggleAdmin.addEventListener('change', (e) => {
+>       window.filterAdminLogs = () => {
+           const search = document.getElementById('adminLogSearch').value.toLowerCase();
+           const adminFilter = document.getElementById('adminLogFilter').value.toLowerCase();
+           
+           document.querySelectorAll('.admin-log-row').forEach(row => {
+              const matchesSearch = row.innerText.toLowerCase().includes(search);
+              const matchesAdmin = adminFilter === '' || row.getAttribute('data-admin') === adminFilter;
+              
+              if (matchesSearch && matchesAdmin) {
+                 row.style.display = '';
+              } else {
+                 row.style.display = 'none';
+              }
+           });
+        };
+        
+      } catch(err) {
+        renderError(err.message);
+      }
+    },
+    
+    beartrap: async () => {
+      if (!window.isAdminUser(currentUser)) {
+        views.home();
+        return;
+      }
+      
+      // Fetch roster so datalist has everyone, not just registered users
+      let rosterRawData = null;
+      try {
+        rosterRawData = await fetchSheet("Chief's List");
+      } catch (e) {
+        console.error("Failed to load roster for datalist", e);
+      }
+      
+      app.innerHTML = `
+        <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease; position:relative;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; 
+border-bottom:1px solid var(--border); padding-bottom:10px;">
+            <h2 style="color:var(--accent); margin:0; display:flex; align-items:center; gap:10px;">
+              ðŸ» Multi-BT Donations
+              <button onclick="document.getElementById('btLookupModal').style.display='block'" 
+style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--accent); padding:4px 8px; 
+border-radius:6px; cursor:pointer; font-size:12px; margin-left:10px;">ðŸ” Lookup</button>
+            </h2>
+            <button onclick="views.admin()" style="background:var(--bg-main); color:var(--text-main); border:1px solid 
+var(--border); padding:5px 12px; border-radius:6px; cursor:pointer;">Back to Admin</button>
+          </div>
+          
+          <!-- Quick Lookup Modal (Hidden by default) -->
+          <div id="btLookupModal" style="display:none; position:absolute; top:50px; left:0; width:100%; 
+background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); box-shadow:0 10px 25px 
+rgba(0,0,0,0.5); z-index:10; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+              <h3 style="margin:0; color:var(--text-main); font-size:16px;">ðŸ” Quick Lookup</h3>
+              <button onclick="document.getElementById('btLookupModal').style.display='none'" style="background:none; 
+border:none; color:var(--text-muted); cursor:pointer; font-size:20px;">&times;</button>
+            </div>
 
 

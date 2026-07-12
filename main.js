@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzQsP3LsHn6VdAlMqIHFEbNCRa2z7QxYF411gRkK-VNnGcEXPUIxic5WCgZbBenE2U/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyymNf2q2Tg_cDgRtikiMz0_GCE_rSdil60vXPbV0T43hJgWBC-vrofWqCv9syUzg/exec';
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -1191,6 +1191,14 @@ const views = {
                 </span>
               </label>
             </div>
+            
+            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
+              <h3 style="margin:0; color:var(--text-main); margin-bottom:10px;">🔄 Live Database Sync Status</h3>
+              <p style="margin:0 0 15px 0; font-size:12px; color:var(--text-muted);">Shows the exact timestamp of when each master sheet was last pushed to Firebase.</p>
+              <div id="adminSyncStatusList">
+                 <div style="color:var(--text-muted); font-size:12px; text-align:center; padding:10px;">Loading sync data from Firebase...</div>
+              </div>
+            </div>
           </div>
           
           <!-- Tab 4: Logs -->
@@ -1241,6 +1249,23 @@ const views = {
         });
       });
       
+      // Listen to Live Sync Status
+      const syncStatusDiv = document.getElementById('adminSyncStatusList');
+      if (syncStatusDiv) {
+        if (window.adminSyncListener) window.adminSyncListener();
+        window.adminSyncListener = onValue(ref(db, 'system/lastSync'), (snap) => {
+          const data = snap.val() || {};
+          let html = Object.keys(data).sort().map(sheet => {
+            let timeStr = new Date(data[sheet]).toLocaleString();
+            return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+              <span style="color:var(--text-main); font-weight:bold;">${sheet}</span>
+              <span style="color:var(--success); font-size:12px; font-weight:bold;">${timeStr}</span>
+            </div>`;
+          }).join('');
+          if (html === '') html = '<div style="color:var(--text-muted); font-size:12px; text-align:center; padding:10px;">No sync data available yet.</div>';
+          syncStatusDiv.innerHTML = html;
+        });
+      }
       
       // Bind Dev Mode toggle in Admin Panel
       const devModeToggleAdmin = document.getElementById('devModeToggleAdmin');
