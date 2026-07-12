@@ -3328,7 +3328,7 @@ window.promptEditEvents = (name, missedEventsStr) => {
   try { missedEvents = JSON.parse(missedEventsStr); } catch (e) {}
   
   if (missedEvents.length === 0) {
-    alert("This player has no supported missing events this week.");
+    if (window.showToast) { window.showToast("This player has no supported missing events this week.", "info"); } else { alert("This player has no supported missing events this week."); }
     return;
   }
   
@@ -3448,3 +3448,4 @@ if (contactSidebarBtn) {
     }
   });
 }
+
