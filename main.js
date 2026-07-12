@@ -2608,7 +2608,8 @@ const views = {
       for (let c = 0; c < data[dateRowIdx].length; c++) {
         let cell = data[dateRowIdx][c];
         if (typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
-          let d = new Date(cell);
+          let [year, month, day] = cell.split('T')[0].split('-');
+          let d = new Date(year, month - 1, day);
           let formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
           days.push({ dateStr: formatted, colIdx: c, categories: {} });
         }

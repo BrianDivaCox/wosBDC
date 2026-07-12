@@ -1,0 +1,53 @@
+﻿
+          app.innerHTML = `<div class="card"><div class="loading">âšï¸ Schedule data is currently unavailable. Please 
+try again later.</div></div>`;
+          return;
+        }
+        
+        // Find the row that contains the dates
+>       let dateRowIdx = -1;
+        for (let r = 0; r < data.length; r++) {
+          if (data[r].some(cell => typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/))) {
+>           dateRowIdx = r;
+            break;
+          }
+        }
+        
+>       if (dateRowIdx === -1) {
+          app.innerHTML = `<div class="card"><div class="loading">Could not find dates in schedule.</div></div>`;
+          return;
+        }
+        
+        // Map each date to its column index
+        let days = [];
+        for (let c = 0; c < data[dateRowIdx].length; c++) {
+          let cell = data[dateRowIdx][c];
+          if (typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
+            let d = new Date(cell);
+            let formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            days.push({ dateStr: formatted, colIdx: c, categories: {} });
+          }
+        }
+        
+        // Extract events for each day, grouping by category
+        let currentCategory = "Events";
+        for (let r = dateRowIdx + 1; r < data.length; r++) {
+          if (data[r].every(cell => cell === "")) continue;
+          
+          // Detect category headers: A row with exactly one non-empty cell located in Column B (index 1)
+          let nonEmptyCells = data[r].filter(c => c !== "");
+          if (nonEmptyCells.length === 1 && typeof data[r][1] === 'string' && data[r][1].trim() !== "") {
+            currentCategory = data[r][1].trim();
+            continue;
+          }
+          
+          days.forEach(day => {
+            let eventCell = data[r][day.colIdx];
+            if (eventCell && eventCell.trim() !== "") {
+              if (!day.categories[currentCategory]) day.categories[currentCategory] = [];
+              day.categories[currentCategory].push(eventCell);
+            }
+          });
+        }
+
+
