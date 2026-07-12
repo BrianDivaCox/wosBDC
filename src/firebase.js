@@ -59,15 +59,30 @@ export function listenToAuth(callback) {
       const usersRef = ref(db, `users/${user.uid}`);
       onValue(usersRef, (snapshot) => {
         if (snapshot.exists()) {
-          callback(snapshot.val());
+          let data = snapshot.val();
+          data.uid = user.uid; // Inject UID for easy access
+          callback(data);
         } else {
           callback(null);
         }
-      }, { onlyOnce: true });
+      }); // Removed { onlyOnce: true } so UI live-updates on link/unlink
     } else {
       callback(null);
     }
   });
+}
+
+export async function linkAltAccount(uid, newGameId, currentLinks = []) {
+  if (currentLinks.length >= 2) throw new Error("You can only link a maximum of 2 alt accounts.");
+  if (currentLinks.includes(newGameId)) throw new Error("This account is already linked.");
+  
+  const updatedLinks = [...currentLinks, newGameId];
+  await set(ref(db, `users/${uid}/linkedGameIds`), updatedLinks);
+}
+
+export async function unlinkAltAccount(uid, gameIdToRemove, currentLinks = []) {
+  const updatedLinks = currentLinks.filter(id => id !== gameIdToRemove);
+  await set(ref(db, `users/${uid}/linkedGameIds`), updatedLinks);
 }
 
 export async function registerUser(email, password, gameId) {
