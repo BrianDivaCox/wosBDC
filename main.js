@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbz3ZY0vqyHEBozmbpvJO2C9s3yRdZsqrd5lDTpb8tmaf47hMbLCaG7xUAQ8eNv03js/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxXjDN5nXVsdojTudMtChy4ts6l4fckyKZGRTa7f689IiI8giejnzys4bnlIZaL28g/exec';
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -3448,4 +3448,6 @@ if (contactSidebarBtn) {
     }
   });
 }
+
+
 

@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.14.9] - 2026-07-12
+### Fixed
+- **Backend Sync**: Added forced Firebase sync for `LeaderBoards` and `WhiteOut Survival` sheets whenever a Bear Trap Donation is added via the Admin API. This fixes the issue where the "BT Donations" badge in player cards wouldn't update with the latest rankings until the nightly 1 AM sync.
+
+
 ## [1.14.8] - 2026-07-12
 ### Changed
 - **UI**: Renamed the sidebar title from "WhiteOut Dashboard" to "WOS Dashboard".

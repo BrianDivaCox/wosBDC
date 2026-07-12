@@ -1,0 +1,72 @@
+﻿
+      
+      const lbMap = {};
+      const db = window.firebaseDb;
+>     let btDonationsAllTime = null, btDonationsCurrent = null, bear1 = null, bear2 = null, bearBoth = null, 
+bearAllTime = null;
+      let otherLbs = [];
+      
+      if (lbRawData) {
+                  else if (t.includes('bear trap 2')) bear2 = {rank: pRank, score: pScore};
+                  else if (t.includes('both bear trap')) bearBoth = {rank: pRank, score: pScore};
+                  else if (t.includes('all-time bear donations')) btDonationsAllTime = {rank: pRank, score: pScore};
+>                 else if (t.includes('bear donations')) btDonationsCurrent = {rank: pRank, score: pScore};
+                  else otherLbs.push({ title, score: pScore, rank: pRank, emoji });
+                }
+                dr++;
+      if (!pRow) throw new Error("Player not found in Activity sheet.");
+      
+      // Generate HTML
+>     let html = window.generatePlayerProfileHtml(name, pRow, headers, colIsUpcoming, rosterMap[name], null, 
+dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, 
+true);
+      
+      resDiv.innerHTML = html;
+      
+          }
+          
+          let lbData = lbMap[chiefName];
+>         let bearBoth = null, bear1 = null, bear2 = null, bearAllTime = null, btDonationsAllTime = null, 
+btDonationsCurrent = null;
+          let otherLbs = [];
+          if (lbData) {
+              lbData.forEach(lb => {
+                  else if (t.includes('bear trap 2')) bear2 = lb;
+                  else if (t.includes('both bear trap')) bearBoth = lb;
+                  else if (t.includes('all-time bear donations')) btDonationsAllTime = lb;
+>                 else if (t.includes('bear donations')) btDonationsCurrent = lb;
+                  else otherLbs.push(lb);
+              });
+          }
+          
+>         let html = window.generatePlayerProfileHtml(chiefName, p, headers, colIsUpcoming, rosterMap[chiefName], 
+lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, 
+otherLbs, false);
+          container.innerHTML = html;
+        };
+        
+  window.views = views;
+  
+  
+> window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, rosterInfo, lbData, dynamicSD, 
+showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, isAdmin = 
+false) => {
+    let headerBadgesHtml = '';
+    if (rosterInfo) {
+      let gcVal = rosterInfo.giftCodes;
+         
+         headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px 
+solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; 
+font-weight:bold;">ðŸ» Bear Trap Wins: <span style="color:var(--text-main);">'+innerText+'</span></span>';
+      }
+>     if (btDonationsCurrent || btDonationsAllTime) {
+         let allTimeStr = btDonationsAllTime ? '#' + btDonationsAllTime.rank + ' (' + btDonationsAllTime.score + ') 
+All-Time' : '0 All-Time';
+         let currentScoreStr = 0;
+>        if (btDonationsCurrent) {
+>            currentScoreStr = '#' + btDonationsCurrent.rank + ' (' + btDonationsCurrent.score + ')';
+         }
+         let currentStr = currentScoreStr + ' Current';
+         let innerText = allTimeStr + ' | ' + currentStr;
+
+
