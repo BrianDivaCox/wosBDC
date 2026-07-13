@@ -1,17 +1,16 @@
 ﻿const fs = require('fs');
 let content = fs.readFileSync('main.js', 'utf8');
 
-const oldRosterBlock = `        const rosterMap = {};
+const oldAdminBlock = `        const players = [];
         if (rosterRawData && rosterRawData.length > 0) {
           for (let i = 1; i < rosterRawData.length; i++) {
             let name = rosterRawData[i][0];
             let id = rosterRawData[i][1];
-            if (name) {
-              rosterMap[name.toString().trim()] = {
-                giftCodes: rosterRawData[i][2], // Col C
-                timeActive: rosterRawData[i][4] // Col E
-              };
+            
+            if (name && name.toString().trim() !== "") {
+              players.push(name.toString().trim());
             }
+            
             if (name && id) {
                idToNameMap[id] = name.toString().trim();
                nameToIdMap[name.toString().trim()] = id.toString().trim();
@@ -19,20 +18,17 @@ const oldRosterBlock = `        const rosterMap = {};
           }
         }`;
 
-const newRosterBlock = `        const rosterMap = {};
+const newAdminBlock = `        const players = [];
         if (rosterRawData && rosterRawData.length > 0) {
           for (let i = 1; i < rosterRawData.length; i++) {
             let name = rosterRawData[i][0];
-            if (name) {
-              rosterMap[name.toString().trim()] = {
-                giftCodes: rosterRawData[i][2], // Col C
-                timeActive: rosterRawData[i][4] // Col E
-              };
+            if (name && name.toString().trim() !== "") {
+              players.push(name.toString().trim());
             }
           }
         }
         await refreshIdToNameMap();`;
 
-content = content.replace(oldRosterBlock, newRosterBlock);
+content = content.replace(oldAdminBlock, newAdminBlock);
 fs.writeFileSync('main.js', content, 'utf8');
-console.log("Updated roster block");
+console.log("Updated admin block");
