@@ -4,6 +4,19 @@ import { ref, onValue, get, set } from 'firebase/database'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxXjDN5nXVsdojTudMtChy4ts6l4fckyKZGRTa7f689IiI8giejnzys4bnlIZaL28g/exec';
 
+// --- Security Helpers ---
+window.escapeHTML = (str) => {
+  if (typeof str !== 'string') str = String(str || '');
+  return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+  }[tag]));
+};
+
+
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
 const closeSidebar = document.getElementById('closeSidebar');
