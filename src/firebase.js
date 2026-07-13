@@ -85,7 +85,7 @@ export async function unlinkAltAccount(uid, gameIdToRemove, currentLinks = []) {
   await set(ref(db, `users/${uid}/linkedGameIds`), updatedLinks);
 }
 
-export async function registerUser(email, password, gameId) {
+export async function registerUser(email, password, gameId, chiefName) {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
   
@@ -93,6 +93,7 @@ export async function registerUser(email, password, gameId) {
   await set(ref(db, `users/${user.uid}`), {
     email: user.email,
     gameId: gameId,
+    name: chiefName,
     createdAt: new Date().toISOString()
   });
   

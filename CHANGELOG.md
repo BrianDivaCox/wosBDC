@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.15.15] - 2026-07-13
+### Added
+- **Unified Registration System**: The website registration has been completely overhauled to eliminate double-data entry. The signup form now includes "Chief Name" and "Date Started". Upon successful registration, the dashboard automatically creates a Firebase Auth account AND secretly routes the data directly into the `giftcodebot` spreadsheet via a new Google Apps Script endpoint!
+
+
 ## [1.15.14] - 2026-07-13
 ### Added
 - **Cache-Busting Matrix**: Added aggressive `Cache-Control`, `Pragma`, and `Expires` meta tags directly into the root `index.html`. This creates a master hard-reset protocol to force all player browsers to bypass local caching and instantly pull the newest version of the site upon every reload!

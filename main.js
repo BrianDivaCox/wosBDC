@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxXjDN5nXVsdojTudMtChy4ts6l4fckyKZGRTa7f689IiI8giejnzys4bnlIZaL28g/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwvls2_2lrYjb51waqZkDIXW0Ra8mBq-W6RxA-kcaYwQQrKPs6IbJA_Z1IEl7TYA-g/exec';
 
 // --- Security Helpers ---
 window.escapeHTML = (str) => {
@@ -133,6 +133,8 @@ const authSubmitBtn = document.getElementById('authSubmitBtn');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
 const authGameId = document.getElementById('authGameId');
+const authChiefName = document.getElementById('authChiefName');
+const authDateStarted = document.getElementById('authDateStarted');
 const authErrorMsg = document.getElementById('authErrorMsg');
 const authModalTitle = document.getElementById('authModalTitle');
 
@@ -750,6 +752,8 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   if (isRegistering) {
     authModalTitle.textContent = 'Create Account';
     authGameId.style.display = 'block';
+    if(authChiefName) authChiefName.style.display = 'block';
+    if(authDateStarted) authDateStarted.style.display = 'block';
     authGameId.value = '';
     if(authChiefConfirm) authChiefConfirm.style.display = 'none';
     authSubmitBtn.textContent = 'Create Account';
@@ -758,6 +762,8 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   } else {
     authModalTitle.textContent = 'Sign In';
     authGameId.style.display = 'none';
+    if(authChiefName) authChiefName.style.display = 'none';
+    if(authDateStarted) authDateStarted.style.display = 'none';
     if(authChiefConfirm) authChiefConfirm.style.display = 'none';
     authSubmitBtn.textContent = 'Sign In';
     authToggleText.textContent = 'Need an account?';
@@ -799,6 +805,8 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
   const email = authEmail.value.trim().toLowerCase();
   const password = authPassword.value;
   const gameId = authGameId.value.trim();
+  const chiefName = authChiefName ? authChiefName.value.trim() : "";
+  const dateStarted = authDateStarted ? authDateStarted.value : "";
   
   if (!email || !password) {
     authErrorMsg.textContent = 'Email and password required.';
@@ -812,7 +820,16 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
     
     if (isRegistering) {
       if (!gameId) throw new Error('Game ID is required.');
-      await registerUser(email, password, gameId);
+      if (!chiefName) throw new Error('Chief Name is required.');
+      
+      await registerUser(email, password, gameId, chiefName);
+      
+      // Auto-post to giftcodebot Google Sheet via backend API
+      try {
+          const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}`;
+          fetch(url).catch(e => console.warn("Failed to ping GAS for registration", e));
+      } catch(e) {}
+
       window.showToast("Account created & signed in!", "success");
     } else {
       await loginUser(email, password);
