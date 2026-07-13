@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.15.26] - 2026-07-13
+### Fixed
+- **Admin Panel UI Sync Bug**: Fixed an issue in the Admin Panel where clicking to update a player's missed event (or Bear Trap donation) would instantly refresh their UI card *before* the backend had finished syncing the new data to Firebase. The UI now intelligently waits 3 seconds for the cloud database to finish synchronizing before reloading the player's card, guaranteeing the new changes are visible.
+
+
 ## [1.15.25] - 2026-07-13
 ### Changed
 - **Player Lookup**: Upgraded the Player Lookup tool (in the Admin panel and User Roster). Replaced the slow, clunky dropdown menu with a lightning-fast Autocomplete Search bar. The UI now filters players instantly as you type and automatically loads their profile when selected.
