@@ -1,168 +1,29 @@
 ﻿
-    }
+    if (window.liveData[sheetName]) return window.liveData[sheetName];
+    if (window.livePromises[sheetName]) return window.livePromises[sheetName];
     
-    try {
-      const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
-              fetchSheet("activity "),
->             fetchSheet("Chief's List"),
-              fetchSheet("LeaderBoards"),
-              fetchSheet("Showdown History"),
-              fetchSheet("Showdown")
-            ]);
-          
-          let usersSnap = null;
-          try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
-      
-      // Parse Maps
-      const rosterMap = {};
-      if (rosterRawData && rosterRawData.length > 0) {
-        for (let i = 1; i < rosterRawData.length; i++) {
-          let chief = rosterRawData[i][0];
-          if (chief) rosterMap[chief.toString().trim()] = { giftCodes: rosterRawData[i][2], timeActive: 
-rosterRawData[i][4] };
-        }
-      }
-      
-      const lbMap = {};
-      const db = window.firebaseDb;
-      let btDonationsAllTime = null, btDonationsCurrent = null, bear1 = null, bear2 = null, bearBoth = null, 
-bearAllTime = null;
-    
-    return window.livePromises[sheetName];
-  };
-  
-  // Immediately fetch mapping data to ensure auth UI is populated
-> fetchSheet("Chief's List").then(rosterRawData => {
-    if (rosterRawData && rosterRawData.length > 0) {
-      for (let i = 1; i < rosterRawData.length; i++) {
-        let name = rosterRawData[i][0];
-        let id = rosterRawData[i][1];
-        if (name && id) {
-           idToNameMap[id] = name.toString().trim();
-           nameToIdMap[name.toString().trim()] = id.toString().trim();
-        }
-      }
-      // Update navbar if user already loaded
-      if (currentUser && authSidebarBtn) {
-         authSidebarBtn.innerHTML = `ðŸ‘¤ ${idToNameMap[currentUser.gameId] || 'Account'}`;
-      }
-      // Update Account Hub if it is currently open
-      const accHubView = document.getElementById('accountHubView');
-      if (accHubView && currentUser) {
-         views.account(); // re-render account view with correct name
-      }
-    }
-  }).catch(console.error);
-      }
-      
-          try {
-        const [usersSnap, rosterRawData] = await Promise.all([
-          get(ref(db, 'users')),
->         fetchSheet("Chief's List")
-        ]);
-        const users = usersSnap.val() || {};
+    window.livePromises[sheetName] = new Promise((resolve, reject) => {
+      const sheetRef = ref(db, `sheets/${sheetName}`);
+>     window.liveListeners[sheetName] = onValue(sheetRef, (snapshot) => {
+        const data = snapshot.val();
+        const isUpdate = window.liveData[sheetName] !== undefined;
         
-        const players = [];
-        if (rosterRawData && rosterRawData.length > 0) {
-          for (let i = 1; i < rosterRawData.length; i++) {
-            let name = rosterRawData[i][0];
-            let id = rosterRawData[i][1];
-            
-            if (name && name.toString().trim() !== "") {
-              players.push(name.toString().trim());
-            }
-            
-            if (name && id) {
-               idToNameMap[id] = name.toString().trim();
-               nameToIdMap[name.toString().trim()] = id.toString().trim();
-            }
+        window.liveData[sheetName] = data;
+        
+        if (!isUpdate) {
+          resolve(data);
+        } else {
+          if (window.activeViewFunc) {
+            console.log(`Live sync: ${sheetName} updated. Re-rendering view...`);
+            window.activeViewFunc();
           }
         }
-        players.sort((a, b) => a.localeCompare(b));
-      }
-      
-      // Fetch roster so datalist has everyone, not just registered users
-      let rosterRawData = null;
-      try {
->       rosterRawData = await fetchSheet("Chief's List");
-      } catch (e) {
-        console.error("Failed to load roster for datalist", e);
-      }
-      
-      app.innerHTML = `
-        <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease; position:relative;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; 
-border-bottom:1px solid var(--border); padding-bottom:10px;">
-            <h2 style="color:var(--accent); margin:0; display:flex; align-items:center; gap:10px;">
-              ðŸ» Multi-BT Donations
-              <button onclick="document.getElementById('btLookupModal').style.display='block'" 
-style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--accent); padding:4px 8px; 
-border-radius:6px; cursor:pointer; font-size:12px; margin-left:10px;">ðŸ” Lookup</button>
-            </h2>
-            <button onclick="views.admin()" style="background:var(--bg-main); color:var(--text-main); border:1px solid 
-var(--border); padding:5px 12px; border-radius:6px; cursor:pointer;">Back to Admin</button>
-          </div>
-          
-          <!-- Quick Lookup Modal (Hidden by default) -->
-          <div id="btLookupModal" style="display:none; position:absolute; top:50px; left:0; width:100%; 
-background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); box-shadow:0 10px 25px 
-rgba(0,0,0,0.5); z-index:10; box-sizing:border-box;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-              <h3 style="margin:0; color:var(--text-main); font-size:16px;">ðŸ” Quick Lookup</h3>
-              <button onclick="document.getElementById('btLookupModal').style.display='none'" style="background:none; 
-border:none; color:var(--text-muted); cursor:pointer; font-size:20px;">&times;</button>
-            </div>
-    roster: async () => {
-      renderLoading("Loading Player Lookup");
-      try {
-        const [data, rosterRawData, lbRawData, sdHistoryRawData, sdCurrentRawData] = await Promise.all([
-              fetchSheet("activity "),
->             fetchSheet("Chief's List"),
-              fetchSheet("LeaderBoards"),
-              fetchSheet("Showdown History"),
-              fetchSheet("Showdown")
-            ]);
-          
-          let usersSnap = null;
-          try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
-        
-        if (!data || data.length < 2) throw new Error("No data found.");
-        
-        // Parse roster data into a lookup map (Col A -> { giftCodes: Col C, timeActive: Col E })
-        const rosterMap = {};
-        if (rosterRawData && rosterRawData.length > 0) {
-          for (let i = 1; i < rosterRawData.length; i++) {
-            let name = rosterRawData[i][0];
-            let id = rosterRawData[i][1];
-            if (name) {
-              rosterMap[name.toString().trim()] = {
-                giftCodes: rosterRawData[i][2], // Col C
-                timeActive: rosterRawData[i][4] // Col E
-  
-    
-    analytics: async () => {
-      renderLoading("Loading Analytics");
-      try {
->       const rosterRawData = await fetchSheet("Chief's List");
-        
-        if (!rosterRawData || rosterRawData.length < 2) throw new Error("No data found.");
-        
-        let giftCodesYes = 0;
-        let giftCodesNo = 0;
-        
-        // Parse roster data to count gift code redemptions
-        // Column C (index 2) holds the Gift Codes boolean
-        for (let i = 1; i < rosterRawData.length; i++) {
-          let name = rosterRawData[i][0];
-          if (name && name.toString().trim() !== "") {
-            let gcVal = rosterRawData[i][2];
-            if (gcVal !== undefined && gcVal !== null && gcVal !== "") {
-              let strVal = gcVal.toString().toLowerCase().trim();
-              if (gcVal === true || strVal === "true" || strVal === "âœ“" || strVal === "yes") {
-                giftCodesYes++;
-              } else if (gcVal === false || strVal === "false" || strVal === "âœ—" || strVal === "no") {
-                giftCodesNo++;
-              } else {
-                giftCodesNo++; // Treat any weird string as not signed up
+      }, async (error) => {
+        console.warn(`Cache miss for ${sheetName}, falling back to GAS`);
+        try {
+          const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
+          const text = await res.text();
+          let json;
+          try {
 
 
