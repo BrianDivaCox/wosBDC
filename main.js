@@ -1207,7 +1207,7 @@ const views = {
                   <div style="color:var(--text-muted); font-size:12px;">318843189</div>
                 </div>
                 ${Object.keys(window.systemAdmins).map(gid => {
-                   let n = idToNameMap[gid] || "Unknown Player";
+                   let n = idToNameMap[gid] || "Not Found";
                    return `
                    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
                      <div style="font-weight:bold; color:var(--text-main);">${n}</div>
@@ -1237,7 +1237,7 @@ const views = {
       `;
       
       for (const [uid, u] of Object.entries(users)) {
-        const cName = idToNameMap[u.gameId] || "Unknown";
+        const cName = idToNameMap[u.gameId] || "Not Found";
         const hasAvatar = avatarMap[u.gameId] ? true : false;
         const avatarSrc = avatarMap[u.gameId] || `images/${cName}.png`;
         
@@ -1264,7 +1264,7 @@ const views = {
         
         if (hasAlts) {
             u.linkedGameIds.forEach(altId => {
-                const altName = idToNameMap[altId] || "Unknown";
+                const altName = idToNameMap[altId] || "Not Found";
                 const altHasAvatar = avatarMap[altId] ? true : false;
                 const altAvatarSrc = avatarMap[altId] || `images/${altName}.png`;
                 html += `

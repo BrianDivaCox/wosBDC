@@ -1,29 +1,33 @@
 ﻿
-          if (!window.liveData[sheetName]) reject(err);
-        }
-      });
-    });
-    
-    return window.livePromises[sheetName];
-  };
-  
-  // Immediately fetch mapping data to ensure auth UI is populated
-  fetchSheet("Chief's List").then(rosterRawData => {
-    if (rosterRawData && rosterRawData.length > 0) {
-      for (let i = 1; i < rosterRawData.length; i++) {
-        let name = rosterRawData[i][0];
-        let id = rosterRawData[i][1];
-        if (name && id) {
->          idToNameMap[id] = name.toString().trim();
-           nameToIdMap[name.toString().trim()] = id.toString().trim();
-        }
-      }
-      // Update navbar if user already loaded
-      if (currentUser && authSidebarBtn) {
-         authSidebarBtn.innerHTML = `ðŸ‘¤ ${idToNameMap[currentUser.gameId] || 'Account'}`;
-      }
-      // Update Account Hub if it is currently open
-      const accHubView = document.getElementById('accountHubView');
-      if (accHubView && currentUser) {
+              window.showToast(`âœ… Successfully crowned ${name} as Champion! (New Total: ${res.newTotal})`, 
+"success");
+              window.searchPlayerFull(name); // Refresh UI
+          } else {
+>             alert(`Error: ${res ? res.message : 'Unknown backend error'}`);
+          }
+      } catch (e) {
+          alert(`Network Error: ${e.message}`);
+                    <div style="color:var(--text-muted); font-size:12px;">318843189</div>
+                  </div>
+                  ${Object.keys(window.systemAdmins).map(gid => {
+>                    let n = idToNameMap[gid] || "Unknown Player";
+                     return `
+                     <div style="display:flex; justify-content:space-between; align-items:center; 
+background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                       <div style="font-weight:bold; color:var(--text-main);">${n}</div>
+        `;
+        
+        for (const [uid, u] of Object.entries(users)) {
+>         const cName = idToNameMap[u.gameId] || "Unknown";
+          const hasAvatar = avatarMap[u.gameId] ? true : false;
+          const avatarSrc = avatarMap[u.gameId] || `images/${cName}.png`;
+          
+          
+          if (hasAlts) {
+              u.linkedGameIds.forEach(altId => {
+>                 const altName = idToNameMap[altId] || "Unknown";
+                  const altHasAvatar = avatarMap[altId] ? true : false;
+                  const altAvatarSrc = avatarMap[altId] || `images/${altName}.png`;
+                  html += `
 
 
