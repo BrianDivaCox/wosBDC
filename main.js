@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwvls2_2lrYjb51waqZkDIXW0Ra8mBq-W6RxA-kcaYwQQrKPs6IbJA_Z1IEl7TYA-g/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby4LRewrJ84Ly-9F1Xi745u9VXSxUoMdvoPmjGcD1GLkphVqvxOig0-jLdrArOboX8/exec';
 
 // --- Security Helpers ---
 window.escapeHTML = (str) => {
