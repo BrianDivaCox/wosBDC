@@ -2,6 +2,12 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.15.5] - 2026-07-13
+### Added
+- **Admin Refresh**: Added a "Refresh User List" button inside the Admin Panel -> Users tab to instantly pull down new Chief Names from the master database if players updated their info.
+- **Admin Alt Grouping**: The Admin Users list now beautifully indents and groups Linked Alt Accounts directly underneath their Main Account, complete with an `[ALT]` tag and connection details!
+
+
 ## [1.15.4] - 2026-07-12
 ### Changed
 - **Account Linking Limit**: Changed the maximum allowed Alt Accounts per email from 2 to 1 based on feedback.

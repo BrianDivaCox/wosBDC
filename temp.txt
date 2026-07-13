@@ -1,25 +1,42 @@
 ﻿
-    });
-  }
-  
-> export async function linkAltAccount(uid, newGameId, currentLinks = []) {
-    if (currentLinks.length >= 2) throw new Error("You can only link a maximum of 2 alt accounts.");
-    if (currentLinks.includes(newGameId)) throw new Error("This account is already linked.");
-    
-    const updatedLinks = [...currentLinks, newGameId];
-    await set(ref(db, `users/${uid}/linkedGameIds`), updatedLinks);
-  }
-  
-> export async function unlinkAltAccount(uid, gameIdToRemove, currentLinks = []) {
-    const updatedLinks = currentLinks.filter(id => id !== gameIdToRemove);
-    await set(ref(db, `users/${uid}/linkedGameIds`), updatedLinks);
-  }
-  
-  export async function registerUser(email, password, gameId) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
-    // Save user profile in Realtime Database mapped by UID
-    await set(ref(db, `users/${user.uid}`), {
+                  <tbody>
+        `;
+        
+>       for (const [uid, u] of Object.entries(users)) {
+          const cName = idToNameMap[u.gameId] || "Unknown";
+          const hasAvatar = avatarMap[u.gameId] ? true : false;
+          const avatarSrc = avatarMap[u.gameId] || `images/${cName}.png`;
+          
+          html += `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px; font-family:monospace; color:var(--accent);">${u.gameId}</td>
+              <td style="padding:10px; font-weight:bold; color:var(--text-main);">${cName}</td>
+              <td style="padding:10px; color:var(--text-muted); font-size:12px;">${u.email}</td>
+              <td style="padding:10px;">
+                <div style="width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--accent);">
+                  <img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover;" 
+onerror="this.onerror=null; this.style.display='none';">
+                </div>
+              </td>
+              <td style="padding:10px;">
+                ${hasAvatar ? `<button class="delete-avatar-btn" data-id="${u.gameId}" style="background:transparent; 
+border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; 
+cursor:pointer;">Delete Avatar</button>` : `<span style="color:var(--text-muted); font-size:12px;">Default</span>`}
+              </td>
+            </tr>
+          `;
+        }
+        
+        html += `</tbody></table></div></div>
+            </div>
+            
+            <!-- Tab 3: Settings -->
+            <div id="tab-settings" class="admin-tab-content" style="display:none;">
+              <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--danger); 
+margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <h3 style="margin:0; color:var(--danger);">Maintenance Mode</h3>
+                  <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Lock out all non-admin users 
+and display a maintenance screen.</p>
 
 
