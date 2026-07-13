@@ -1,29 +1,27 @@
 ﻿
-    if (window.liveData[sheetName]) return window.liveData[sheetName];
-    if (window.livePromises[sheetName]) return window.livePromises[sheetName];
-    
-    window.livePromises[sheetName] = new Promise((resolve, reject) => {
-      const sheetRef = ref(db, `sheets/${sheetName}`);
->     window.liveListeners[sheetName] = onValue(sheetRef, (snapshot) => {
-        const data = snapshot.val();
-        const isUpdate = window.liveData[sheetName] !== undefined;
-        
-        window.liveData[sheetName] = data;
-        
-        if (!isUpdate) {
-          resolve(data);
-        } else {
-          if (window.activeViewFunc) {
-            console.log(`Live sync: ${sheetName} updated. Re-rendering view...`);
-            window.activeViewFunc();
-          }
+  };
+  
+  // Immediately fetch mapping data to ensure auth UI is populated
+> fetchSheet("Chief's List").then(rosterRawData => {
+    if (rosterRawData && rosterRawData.length > 0) {
+      for (let i = 1; i < rosterRawData.length; i++) {
+        let name = rosterRawData[i][0];
+        let id = rosterRawData[i][1];
+        if (name && id) {
+           idToNameMap[id] = name.toString().trim();
+           nameToIdMap[name.toString().trim()] = id.toString().trim();
         }
-      }, async (error) => {
-        console.warn(`Cache miss for ${sheetName}, falling back to GAS`);
-        try {
-          const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
-          const text = await res.text();
-          let json;
-          try {
+      }
+      // Update navbar if user already loaded
+      if (currentUser && authSidebarBtn) {
+         authSidebarBtn.innerHTML = `ðŸ‘¤ ${idToNameMap[currentUser.gameId] || 'Account'}`;
+      }
+      // Update Account Hub if it is currently open
+      const accHubView = document.getElementById('accountHubView');
+      if (accHubView && currentUser) {
+         views.account(); // re-render account view with correct name
+      }
+    }
+  }).catch(console.error);
 
 

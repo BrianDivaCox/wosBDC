@@ -956,16 +956,7 @@ const fetchSheet = async (sheetName) => {
 };
 
 // Immediately fetch mapping data to ensure auth UI is populated
-fetchSheet("Chief's List").then(rosterRawData => {
-  if (rosterRawData && rosterRawData.length > 0) {
-    for (let i = 1; i < rosterRawData.length; i++) {
-      let name = rosterRawData[i][0];
-      let id = rosterRawData[i][1];
-      if (name && id) {
-         idToNameMap[id] = name.toString().trim();
-         nameToIdMap[name.toString().trim()] = id.toString().trim();
-      }
-    }
+refreshIdToNameMap().then(() => {
     // Update navbar if user already loaded
     if (currentUser && authSidebarBtn) {
        authSidebarBtn.innerHTML = `👤 ${idToNameMap[currentUser.gameId] || 'Account'}`;
@@ -975,7 +966,6 @@ fetchSheet("Chief's List").then(rosterRawData => {
     if (accHubView && currentUser) {
        views.account(); // re-render account view with correct name
     }
-  }
 }).catch(console.error);
 
 // --- Formatters ---
@@ -1072,6 +1062,12 @@ const views = {
             window.liveListeners["Chief's List"]();
             delete window.liveListeners["Chief's List"];
         }
+        delete window.liveData["giftcodebot"];
+        delete window.livePromises["giftcodebot"];
+        if (window.liveListeners["giftcodebot"]) {
+            window.liveListeners["giftcodebot"]();
+            delete window.liveListeners["giftcodebot"];
+        }
         await views.admin();
         
         // Ensure Users tab stays active
@@ -1103,18 +1099,13 @@ const views = {
       if (rosterRawData && rosterRawData.length > 0) {
         for (let i = 1; i < rosterRawData.length; i++) {
           let name = rosterRawData[i][0];
-          let id = rosterRawData[i][1];
           
           if (name && name.toString().trim() !== "") {
             players.push(name.toString().trim());
           }
-          
-          if (name && id) {
-             idToNameMap[id] = name.toString().trim();
-             nameToIdMap[name.toString().trim()] = id.toString().trim();
-          }
         }
       }
+      await refreshIdToNameMap();
       players.sort((a, b) => a.localeCompare(b));
       let playerOptions = `<option value="">-- Select a Chief --</option>`;
       players.forEach(p => {
@@ -2616,19 +2607,15 @@ const views = {
       if (rosterRawData && rosterRawData.length > 0) {
         for (let i = 1; i < rosterRawData.length; i++) {
           let name = rosterRawData[i][0];
-          let id = rosterRawData[i][1];
           if (name) {
             rosterMap[name.toString().trim()] = {
               giftCodes: rosterRawData[i][2], // Col C
               timeActive: rosterRawData[i][4] // Col E
             };
           }
-          if (name && id) {
-             idToNameMap[id] = name.toString().trim();
-             nameToIdMap[name.toString().trim()] = id.toString().trim();
-          }
         }
       }
+      await refreshIdToNameMap();
       
       // Parse Leaderboards data into a lookup map (Name -> [{title, score, emoji}])
       const lbMap = {};
