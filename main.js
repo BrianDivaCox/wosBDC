@@ -1212,9 +1212,10 @@ const views = {
               </div>
               
               <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <select id="uniSearchInput" style="flex:1; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
+                <input type="text" id="uniSearchInput" list="uniSearchDatalist" onchange="window.searchPlayerFull(this.value)" placeholder="Search Chief Name..." style="flex:1; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text;">
+                <datalist id="uniSearchDatalist">
                   ${playerOptions}
-                </select>
+                </datalist>
                 <button onclick="window.searchPlayerFull(document.getElementById('uniSearchInput').value)" style="background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:16px;">Search</button>
               </div>
               
