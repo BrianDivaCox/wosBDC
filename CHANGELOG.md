@@ -2,6 +2,11 @@
 
 All notable changes to the WhiteOut Survival BDC Dashboard will be documented in this file.
 
+## [1.15.6] - 2026-07-13
+### Changed
+- **Admin Alt Accordions**: The Alt grouping system in the Admin Users tab has been upgraded to a collapsible accordion! Alt accounts are now hidden by default to keep the main list clean. You can click the `▶️` arrow next to a Main account's Game ID to expand and view their linked Alts. The row also clearly displays a badge indicating `[1 Alt(s)]`.
+
+
 ## [1.15.5] - 2026-07-13
 ### Added
 - **Admin Refresh**: Added a "Refresh User List" button inside the Admin Panel -> Users tab to instantly pull down new Chief Names from the master database if players updated their info.
