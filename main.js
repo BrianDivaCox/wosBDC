@@ -80,7 +80,7 @@ document.querySelectorAll('.theme-card').forEach(card => {
     document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     
-    // Auto-close sidebar to see changes
+    // Aut&#x1F512;close sidebar to see changes
     closeSidebarFunc();
   });
 });
@@ -242,7 +242,7 @@ const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 let globalRosterRegisteredOnly = false;
 onValue(ref(db, 'config/rosterRegisteredOnly'), (snapshot) => {
   globalRosterRegisteredOnly = snapshot.val() || false;
-  // Auto-refresh roster if currently open
+  // Aut&#x1F512;refresh roster if currently open
   const profContainer = document.getElementById('playerProfileContainer');
   if (profContainer && views && typeof views.roster === 'function') {
       // It's the roster view, might want to re-render but not strictly necessary for real-time
@@ -824,7 +824,7 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
       
       await registerUser(email, password, gameId, chiefName);
       
-      // Auto-post to giftcodebot Google Sheet via backend API
+      // Aut&#x1F512;post to giftcodebot Google Sheet via backend API
       try {
           const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}`;
           fetch(url).catch(e => console.warn("Failed to ping GAS for registration", e));
@@ -1033,7 +1033,7 @@ const checkDeploymentStatus = async () => {
             devDeployBanner.style.display = 'block';
             devDeployBanner.style.backgroundColor = '#f59e0b';
             devDeployBanner.style.color = '#fff';
-            devDeployBanner.innerHTML = '🚀 Deployment in progress... Auto-refresh enabled.';
+            devDeployBanner.innerHTML = '🚀 Deployment in progress... Aut&#x1F512;refresh enabled.';
             lastDeployStatus = 'in_progress';
         }
       } else if (status === 'completed' && conclusion === 'success') {
@@ -1360,7 +1360,7 @@ const views = {
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <h3 style="margin:0; color:var(--text-main);">Dev Mode (Track Deployment)</h3>
-                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and auto-refreshes the page.</p>
+                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and aut&#x1F512;refreshes the page.</p>
                 <div id="github-deploy-status" style="margin-top:8px; font-weight:bold; font-size:13px; color:var(--text-muted);">
                   ⏳ Fetching status...
                 </div>
@@ -2891,7 +2891,7 @@ const views = {
       if (!currentUser) {
         contentHtml = `
           <div style="text-align:center; padding:40px 20px;">
-            <div style="font-size:48px; margin-bottom:20px;">o-</div>
+            <div style="font-size:48px; margin-bottom:20px;">&#x1F512;</div>
             <h3 style="color:var(--text-main); margin-bottom:10px;">Sign In Required</h3>
             <p style="color:var(--text-muted); margin-bottom:25px; font-size:15px; line-height:1.5;">You must be signed into the Dashboard to securely enable Auto Redeem Perks.</p>
             <button onclick="document.getElementById('authModal').style.display='block'; document.getElementById('authModalOverlay').style.display='block';" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">Sign In / Register</button>
@@ -2901,7 +2901,7 @@ const views = {
         const chiefName = currentUser.name || idToNameMap[currentUser.gameId] || "Unknown Chief";
         contentHtml = `
           <div style="text-align:center; padding:40px 20px;">
-            <div style="font-size:48px; margin-bottom:20px;">dY"?</div>
+            <div style="font-size:48px; margin-bottom:20px;">&#x1F381;</div>
             <h3 style="color:var(--text-main); margin-bottom:10px;">Enable Auto Redeem</h3>
             <p style="color:var(--text-muted); margin-bottom:25px; font-size:15px; line-height:1.5;">Welcome <strong>${chiefName}</strong>! Click below to securely link your Game ID (${currentUser.gameId}) to the Auto Redeem Bot. We will automatically fetch all new gift codes and inject them into your account!</p>
             <button id="optInPerksBtn" style="background:var(--success); color:var(--text-main); border:none; padding:14px 28px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px; transition:0.2s; box-shadow:0 4px 15px rgba(16,185,129,0.3);">1-Click Opt-In</button>
@@ -2913,7 +2913,7 @@ const views = {
       app.innerHTML = `
         <div class="card" style="display:flex; flex-direction:column; padding:0; overflow:hidden; animation: fadeIn 0.3s ease; max-width: 600px; margin: 40px auto;">
           <div style="padding:20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; justify-content:center; background:var(--bg-card);">
-            <span style="font-size:24px;">dYZ?</span>
+            <span style="font-size:24px;">&#x1F381;</span>
             <h2 style="margin:0; font-size:22px; color:var(--text-main);">Auto Redeem (Perks)</h2>
           </div>
           <div style="flex:1; width:100%; position:relative; background:var(--bg-main);">
@@ -3484,7 +3484,7 @@ allLinks.forEach(link => {
       targetEl.classList.add('active');
     }
     
-    // Auto-close the hamburger menu if it's open
+    // Aut&#x1F512;close the hamburger menu if it's open
     if (mobileMenu) mobileMenu.classList.remove('open');
     
     const target = targetEl.getAttribute('data-target');
@@ -3604,7 +3604,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   let metricsHtml = '<div style="margin-top: 25px;">';
   metricsHtml += '<h3 style="margin: 0 0 5px 0; color:var(--text-main); font-size:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">📅 Events Checklist</h3>';
   metricsHtml += '<p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming</p>';
-  metricsHtml += '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">';
+  metricsHtml += '<div style="display:grid; grid-template-columns: repeat(aut&#x1F512;fit, minmax(140px, 1fr)); gap:15px;">';
   
   let missedEvents = [];
   const supportedEvents = ["Championship", "Polar Terrors", "Mercenary Prestige", "Voter"];
