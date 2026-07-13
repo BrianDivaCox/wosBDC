@@ -144,6 +144,7 @@ export let avatarMap = {}; // Global cache for avatars
 // Global mappings
 export let idToNameMap = {};
 export let nameToIdMap = {};
+export let enrolledGameIds = new Set();
 
 export const refreshIdToNameMap = async () => {
     try {
@@ -158,8 +159,9 @@ export const refreshIdToNameMap = async () => {
                 let id = rosterRawData[i][1];
                 if (name && id) {
                     idToNameMap[id] = name.toString().trim();
-                    nameToIdMap[name.toString().trim()] = id.toString().trim();
-                }
+                      nameToIdMap[name.toString().trim()] = id.toString().trim();
+                      enrolledGameIds.add(id.toString().trim());
+                  }
             }
         }
         
@@ -169,8 +171,9 @@ export const refreshIdToNameMap = async () => {
                 let id = giftcodebotData[i][2]; 
                 if (name && id) {
                     idToNameMap[id] = name.toString().trim();
-                    nameToIdMap[name.toString().trim()] = id.toString().trim();
-                }
+                      nameToIdMap[name.toString().trim()] = id.toString().trim();
+                      enrolledGameIds.add(id.toString().trim());
+                  }
             }
         }
     } catch(e) { console.error("Error refreshing ID map:", e); }
