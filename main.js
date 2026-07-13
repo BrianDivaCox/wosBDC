@@ -2938,9 +2938,8 @@ const views = {
         if (isMainEnrolled || enrolledGameIds.has(currentUser.gameId.toString())) {
             contentHtml = `
               <div style="text-align:center; padding:40px 20px;">
-                <div style="font-size:48px; margin-bottom:20px;">&#x2705;</div>
                 <h3 style="color:var(--success); margin-bottom:10px;">Already Enrolled!</h3>
-                <p style="color:var(--text-muted); margin-bottom:25px; font-size:15px; line-height:1.5;">Your Game ID (<strong>${currentUser.gameId}</strong>) is already actively monitored by the Auto Redeem Bot.</p>
+                <p style="color:var(--text-muted); margin-bottom:25px; font-size:15px; line-height:1.5;">Chief <strong>${chiefName}</strong> is actively monitored by the Auto Redeem Bot.</p>
                 <button disabled style="background:transparent; color:var(--success); border:1px solid var(--success); padding:14px 28px; border-radius:8px; font-weight:bold; font-size:16px;">Active &#x2705;</button>
               </div>
             `;
