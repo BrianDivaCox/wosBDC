@@ -512,7 +512,7 @@ window.searchPlayerFull = async (name) => {
       }
     }
     
-    const lbMap = {};
+
     const db = window.firebaseDb;
     let btDonationsAllTime = null, btDonationsCurrent = null, bear1 = null, bear2 = null, bearBoth = null, bearAllTime = null;
     let otherLbs = [];
@@ -544,7 +544,7 @@ window.searchPlayerFull = async (name) => {
                 else if (typeof pScore === 'string' && !isNaN(pScore) && pScore.trim() !== "") pScore = Number(pScore).toLocaleString();
                 
                 let t = title.toLowerCase();
-                if (t.includes('all-time showdown')) {}
+                if (t.includes('all-time showdown')) { /* noop */ }
                 else if (t.includes('all-time bear trap')) bearAllTime = {rank: pRank, score: pScore};
                 else if (t.includes('bear trap 1')) bear1 = {rank: pRank, score: pScore};
                 else if (t.includes('bear trap 2')) bear2 = {rank: pRank, score: pScore};
@@ -864,7 +864,7 @@ if (versionBadge) versionBadge.addEventListener('click', async () => {
 
 // --- Routing & Views ---
 const app = document.getElementById('app');
-const navLinks = document.querySelectorAll('.nav-link');
+
 
 window.showToast = (message, type = 'success', sticky = false) => {
   const container = document.getElementById('toast-container');
@@ -940,9 +940,9 @@ const fetchSheet = async (sheetName) => {
           json = JSON.parse(text);
         } catch (e) {
           if (text.trim().startsWith('<')) {
-             throw new Error("Database API is currently unavailable.");
+             throw new Error("Database API is currently unavailable.", { cause: e });
           }
-          throw new Error("Invalid JSON response.");
+          throw new Error("Invalid JSON response.", { cause: e });
         }
         if (json.error) throw new Error(json.error);
         if (!window.liveData[sheetName]) resolve(json.data);
@@ -979,9 +979,9 @@ const formatCell = (cell) => {
 };
 
 // --- Dev Mode Deployment Tracker ---
-const devModeToggle = document.getElementById('devModeToggle');
+
 const devDeployBanner = document.getElementById('devDeployBanner');
-const devModeSlider = document.getElementById('devModeSlider');
+
 let devModePollingInterval = null;
 let lastDeployStatus = null;
 
@@ -1109,7 +1109,7 @@ const views = {
       players.sort((a, b) => a.localeCompare(b));
       let playerOptions = `<option value="">-- Select a Chief --</option>`;
       players.forEach(p => {
-        playerOptions += `<option value="${p}">${p}</option>`;
+        playerOptions += `<option value="${window.escapeHTML(p)}">${window.escapeHTML(p)}</option>`;
       });
 
       window.sendBroadcastPush = async () => {
@@ -1259,7 +1259,7 @@ const views = {
                 <tbody>
       `;
       
-      for (const [uid, u] of Object.entries(users)) {
+      for (const [, u] of Object.entries(users)) {
         const cName = idToNameMap[u.gameId] || "Not Found";
         const hasAvatar = avatarMap[u.gameId] ? true : false;
         const avatarSrc = avatarMap[u.gameId] || `images/${cName}.png`;
@@ -1649,7 +1649,7 @@ const views = {
         } else {
           resDiv.innerHTML = `<span style="color:var(--danger)">${res.message}</span>`;
         }
-      } catch(e) {
+      } catch {
         resDiv.innerHTML = `<span style="color:var(--danger)">Network error.</span>`;
       }
     };
@@ -1673,7 +1673,7 @@ const views = {
         } else {
           logDiv.innerHTML = '<span style="color:var(--text-muted)">No activity found.</span>';
         }
-      } catch(e) {
+      } catch {
         logDiv.innerHTML = `<span style="color:var(--danger)">Network error.</span>`;
       }
     };
@@ -1713,7 +1713,7 @@ const views = {
            } else {
              resultsHTML += `✅ <b>${entry.name}</b>: +${entry.amount} added.<br>`;
            }
-         } catch(e) {
+         } catch {
            resultsHTML += `❌ <b>${entry.name}</b>: Network error.<br>`;
          }
          completed++;
@@ -3599,7 +3599,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
 
 window.promptEditEvents = (name, missedEventsStr) => {
   let missedEvents = [];
-  try { missedEvents = JSON.parse(missedEventsStr); } catch (e) {}
+  try { missedEvents = JSON.parse(missedEventsStr); } catch { /* ignore */ }
   
   if (missedEvents.length === 0) {
     if (window.showToast) { window.showToast("This player has no supported missing events this week.", "info"); } else { alert("This player has no supported missing events this week."); }
