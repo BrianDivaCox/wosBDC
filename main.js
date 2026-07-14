@@ -683,7 +683,7 @@ listenToAuth((user) => {
   
   if (user) {
     let name = idToNameMap[user.gameId] || 'Account';
-    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${name}`;
+    if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 ${name}'s Profile`;
     if(adminSidebarBtn && window.isAdminUser(user)) {
       adminSidebarBtn.style.display = 'block';
     } else if (adminSidebarBtn) {
@@ -990,7 +990,8 @@ const fetchSheet = async (sheetName) => {
 refreshIdToNameMap().then(() => {
     // Update navbar if user already loaded
     if (currentUser && authSidebarBtn) {
-       authSidebarBtn.innerHTML = `👤 ${idToNameMap[currentUser.gameId] || 'Account'}`;
+       let uName = idToNameMap[currentUser.gameId] || 'Account';
+       authSidebarBtn.innerHTML = `👤 ${uName}'s Profile`;
     }
     // Update Account Hub if it is currently open
     const accHubView = document.getElementById('accountHubView');
