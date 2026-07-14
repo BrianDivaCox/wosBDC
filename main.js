@@ -940,15 +940,23 @@ window.liveData = {};
       // Global fallback to manually bypass Firebase and query Google Sheets directly
       window.forceRefreshTodaysActivity = async (widget) => {
         if (!widget) return;
-        const container = widget.querySelector('.bear-trap-logs-container');
-        if (container) container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted);">Fetching directly from Google Sheets...</div>';
+        const container = widget.querySelector('.bear-trap-logs-content-area');
+        if (container) {
+            container.classList.remove('hidden'); // auto open it when refreshed
+            container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted);">Fetching directly from Google Sheets...</div>';
+        }
         
         try {
           const res = await fetch(API_BASE_URL + '?api=adminLog').then(r => r.json());
           if (res.success && res.data && res.data.length > 0) {
             let html = '';
-            // Only show today's logs
-            const todaysLogs = res.data; // getAdminLog already returns the last 10
+            const todayStr = (new Date().getMonth() + 1) + '/' + new Date().getDate();
+            const todaysLogs = res.data.filter(log => log.timestamp.split(' ')[0] === todayStr);
+            
+            const headerTextSpan = widget.querySelector('span');
+            if (headerTextSpan) {
+                headerTextSpan.innerHTML = `&#128197; View Today's Activity (${todaysLogs.length} Update${todaysLogs.length !== 1 ? 's' : ''})`;
+            }
             
             todaysLogs.forEach(log => {
               html += `
@@ -2552,7 +2560,7 @@ const views = {
                 <span style="color:var(--text-muted);">&#9660;</span>
               </div>
             </button>
-            <div class="hidden" style="padding:0 15px 15px 15px; border-top:1px solid var(--border);">
+            <div class="hidden bear-trap-logs-content-area" style="padding:0 15px 15px 15px; border-top:1px solid var(--border);">
               <ul style="list-style:none; padding:0; margin:0; margin-top:10px;">`;
               
           todaysLogs.forEach(log => {
