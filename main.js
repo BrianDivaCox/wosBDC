@@ -2035,6 +2035,15 @@ const views = {
       linkedHtml += `</div>`;
       
       let currentChiefName = idToNameMap[currentUser.gameId] || `Unknown Chief`;
+      
+      let adminBadgeHtml = '';
+      let accLevel = window.getAdminLevel(currentUser);
+      if (accLevel) {
+          let lvlColor = (accLevel === "R5") ? "#FFD700" : "var(--accent)";
+          let lvlBg = (accLevel === "R5") ? "rgba(255,215,0,0.1)" : "rgba(52,152,219,0.1)";
+          adminBadgeHtml = `<span style="font-size:12px; color:${lvlColor}; background:${lvlBg}; border:1px solid ${lvlBg}; padding:2px 6px; border-radius:6px; font-weight:bold; display:inline-flex; align-items:center; gap:4px; margin-left:10px; vertical-align:middle; text-shadow:none;">👑 ${accLevel}</span>`;
+      }
+      
       let isMainEnrolled = false;
       let joinedDateStr = "N/A";
       
@@ -2096,7 +2105,7 @@ const views = {
                     <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%; font-size:32px; font-weight:bold; color:#fff;">${currentChiefName.charAt(0).toUpperCase()}</div>
                 </div>
                 <div style="overflow:hidden;">
-                    <h2 class="id-card-name" style="margin:0 0 5px 0; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 4px rgba(0,0,0,0.5); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${window.escapeHTML(currentChiefName)}</h2>
+                    <h2 class="id-card-name" style="margin:0 0 5px 0; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 4px rgba(0,0,0,0.5); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${window.escapeHTML(currentChiefName)}${adminBadgeHtml}</h2>
                     <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.3); padding:4px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
                         <span style="color:var(--accent); font-size:12px; font-weight:bold;">ID:</span>
                         <span style="color:var(--text-main); font-family:monospace; font-size:14px; letter-spacing:1px;">${currentUser.gameId}</span>
