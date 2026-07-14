@@ -4,6 +4,16 @@ import { ref, onValue, get, set } from 'firebase/database'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzt15bebxz5YAnyG8_12XyRjr3JlEWpKw2f2x9v89EaSUF8y-P6KK4853gUKELJg6s/exec';
 
+window.getFurnaceIconHtml = (level) => {
+    if (!level || level === "N/A") return '🔥 ' + level;
+    let lv = parseInt(level, 10);
+    if (isNaN(lv)) return '🔥 ' + level;
+    if (lv <= 30) return `🔥 Lv ${lv}`;
+    let n = Math.floor((lv - 30) / 5);
+    let url = `https://gof-formal-avatar.akamaized.net/img/icon/stove_lv_${n}.png`;
+    return `<img src="${url}" style="width:20px; height:20px; vertical-align:middle; margin-right:4px;" /> Lv ${lv}`;
+};
+
 // --- Security Helpers ---
 window.escapeHTML = (str) => {
   if (typeof str !== 'string') str = String(str || '');
@@ -2150,7 +2160,7 @@ const views = {
                 </div>
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
                     <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Furnace Level</span>
-                    <span style="color:var(--accent); font-weight:bold; font-size:15px; text-align:right;">🔥 ${furnaceLevelStr}</span>
+                    <span style="color:var(--accent); font-weight:bold; font-size:15px; text-align:right; display:flex; align-items:center;">${window.getFurnaceIconHtml(furnaceLevelStr)}</span>
                 </div>
                 
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
@@ -3885,7 +3895,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   if (rosterInfo) {
     let flVal = rosterInfo.furnaceLevel;
     if (flVal && flVal.toString().trim() !== "") {
-       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Lv ' + flVal + '</span>';
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold; display:inline-flex; align-items:center;">' + window.getFurnaceIconHtml(flVal) + '</span>';
     }
     let gcVal = rosterInfo.giftCodes;
     if (gcVal === true || gcVal === 'TRUE' || (typeof gcVal === 'string' && gcVal.toLowerCase().trim() === 'true')) {
