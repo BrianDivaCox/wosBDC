@@ -206,13 +206,13 @@ window.unlinkAltAccountPrompt = async (gid) => {
 };
 
 window.getAdminLevel = (user) => {
-  if (!user) return false;
-  if (user.gameId === 318843189) return "R5"; // Root admin
-  const val = window.systemAdmins[user.gameId];
-  if (val === true || val === "R5") return "R5"; // Legacy support defaults to R5
-  if (val === "R4") return "R4";
-  return false;
-};
+    if (!user || !user.gameId) return false;
+    if (Number(user.gameId) === 318843189) return "R5"; // Root admin
+    const val = window.systemAdmins[user.gameId];
+    if (val === true || val === "R5") return "R5"; // Legacy support defaults to R5
+    if (val === "R4") return "R4";
+    return false;
+  };
 
 window.isAdminUser = (user) => {
   return window.getAdminLevel(user) !== false;
@@ -4011,12 +4011,13 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   
     let adminBadgeHtml = '';
     let gid = nameToIdMap[chiefName];
-    if (gid && window.systemAdmins && window.systemAdmins[gid]) {
-        let level = window.systemAdmins[gid];
-        let lvlStr = (level === true || level === "R5") ? "R5" : "R4";
-        let lvlColor = (lvlStr === "R5") ? "#FFD700" : "var(--accent)";
-        let lvlBg = (lvlStr === "R5") ? "rgba(255,215,0,0.1)" : "rgba(52,152,219,0.1)";
-        adminBadgeHtml = `<span style="font-size:12px; color:${lvlColor}; background:${lvlBg}; border:1px solid ${lvlBg}; padding:2px 6px; border-radius:6px; font-weight:bold; display:flex; align-items:center; gap:4px; margin-left:5px;">👑 ${lvlStr}</span>`;
+    if (gid) {
+        let level = window.getAdminLevel({ gameId: gid });
+        if (level) {
+            let lvlColor = (level === "R5") ? "#FFD700" : "var(--accent)";
+            let lvlBg = (level === "R5") ? "rgba(255,215,0,0.1)" : "rgba(52,152,219,0.1)";
+            adminBadgeHtml = `<span style="font-size:12px; color:${lvlColor}; background:${lvlBg}; border:1px solid ${lvlBg}; padding:2px 6px; border-radius:6px; font-weight:bold; display:flex; align-items:center; gap:4px; margin-left:5px;">👑 ${level}</span>`;
+        }
     }
     
     let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px; flex-wrap:wrap;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1); flex-shrink:0;">' + avatarImgHtml + '</div><div style="flex:1; min-width:200px;"><div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px; word-break:break-word;">' + chiefName + adminBadgeHtml + '</h2>' + adminBarHtml + '</div>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
