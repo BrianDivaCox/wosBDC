@@ -276,7 +276,7 @@ body {
   padding: 8px 10px;
   border-radius: 8px;
   border: 2px solid transparent;
-  background: var(--bg-card);
+  background: var(--card-bg);
   cursor: pointer;
   transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
@@ -569,4 +569,28 @@ tr:hover td {
     .account-hub-buttons {
         flex-direction: column !important;
     }
+}
+
+.theme-card[data-theme="light"] {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+.theme-card[data-theme="light"] .theme-label {
+  color: #0f172a;
+}
+
+.theme-card[data-theme="midnight"] {
+  background: #1e293b;
+  border-color: #334155;
+}
+.theme-card[data-theme="midnight"] .theme-label {
+  color: #f8fafc;
+}
+
+.theme-card[data-theme="ombre"] {
+  background: #1a0b2e;
+  border-color: #701a75;
+}
+.theme-card[data-theme="ombre"] .theme-label {
+  color: #e9d5ff;
 }
