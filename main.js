@@ -972,6 +972,7 @@ window.liveData = {};
       };
 
 window.cleanupFirebaseListeners = () => {};
+window.liveListeners = {};
 window.livePromises = {};
 window.activeViewFunc = null;
 
@@ -1479,7 +1480,7 @@ const views = {
           <div id="tab-logs" class="admin-tab-content" style="display:none;">
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:15px;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; color:var(--text-main);">📋 Admin Activity Logs</h3><button onclick="window.fetchAdminLog()" style="background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:bold; font-size:12px;">🔄 Refresh</button>
+                <h3 style="margin:0; color:var(--text-main);">&#128203; Admin Activity Logs</h3><button onclick="window.fetchAdminLog()" style="background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:bold; font-size:12px;">&#128259; Refresh</button>
                 <div style="display:flex; gap:10px;">
                   <select id="adminLogFilter" onchange="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
                     <option value="">All Admins</option>
@@ -2545,10 +2546,10 @@ const views = {
           
           let logHtml = `<div class="bear-trap-logs-container" style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
             <button onclick="this.nextElementSibling.classList.toggle('hidden')" style="width:100%; background:transparent; border:none; padding:12px 15px; color:var(--text-main); font-weight:bold; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-              <span>📅 View Today's Activity (${todaysLogs.length} Update${todaysLogs.length > 1 ? 's' : ''})</span>
+              <span>&#128197; View Today's Activity (${todaysLogs.length} Update${todaysLogs.length > 1 ? 's' : ''})</span>
               <div style="display:flex; gap:10px; align-items:center;">
-                <span onclick="event.stopPropagation(); window.forceRefreshTodaysActivity(this.closest('.bear-trap-activity-widget'))" style="background:var(--accent); color:white; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">🔄 Refresh</span>
-                <span style="color:var(--text-muted);">▼</span>
+                <span onclick="event.stopPropagation(); window.forceRefreshTodaysActivity(this.closest('.bear-trap-activity-widget'))" style="background:var(--accent); color:white; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">&#128259; Refresh</span>
+                <span style="color:var(--text-muted);">&#9660;</span>
               </div>
             </button>
             <div class="hidden" style="padding:0 15px 15px 15px; border-top:1px solid var(--border);">
