@@ -1428,7 +1428,10 @@ const views = {
               </div>
               
               <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <input type="text" id="uniSearchInput" list="uniSearchDatalist" onchange="window.searchPlayerFull(this.value)" placeholder="Search Chief Name..." style="flex:1; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text;">
+                <div style="position:relative; flex:1; display:flex; align-items:center;">
+                  <input type="text" id="uniSearchInput" list="uniSearchDatalist" onchange="window.searchPlayerFull(this.value)" placeholder="Search Chief Name..." style="width:100%; padding:10px 40px 10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box;">
+                  <button onclick="document.getElementById('uniSearchInput').value=''; window.searchPlayerFull(''); document.getElementById('uniSearchInput').focus();" style="position:absolute; right:8px; background:transparent; border:none; color:var(--danger); font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; border-radius:50%;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">✖</button>
+                </div>
                 <datalist id="uniSearchDatalist">
                   ${playerOptions}
                 </datalist>
@@ -3103,7 +3106,10 @@ const views = {
                       <div class="card-title" style="margin-bottom:15px; font-size:24px;">🕵️‍♂️ Player Lookup</div>
 
                       <div style="display:flex; justify-content:center; align-items:center;">
-                        <input type="text" id="playerLookupSelect" list="playerLookupDatalist" placeholder="Search Chief Name..." style="width:100%; max-width:400px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text;">
+                        <div style="position:relative; width:100%; max-width:400px; display:flex; align-items:center;">
+                          <input type="text" id="playerLookupSelect" list="playerLookupDatalist" placeholder="Search Chief Name..." style="width:100%; padding:12px 40px 12px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box;">
+                          <button onclick="let input = document.getElementById('playerLookupSelect'); input.value=''; input.dispatchEvent(new Event('input')); input.focus();" style="position:absolute; right:10px; background:transparent; border:none; color:var(--danger); font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:28px; height:28px; padding:0; border-radius:50%;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">✖</button>
+                        </div>
                         <datalist id="playerLookupDatalist">
                           <!-- Options rendered via JS -->
                         </datalist>
