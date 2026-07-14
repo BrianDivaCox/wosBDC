@@ -578,3 +578,51 @@ tr:hover td {
 
 .hidden { display: none !important; }
 
+/* --- Account Hub Mobile Adjustments --- */
+.id-card-container {
+    padding: 25px;
+}
+.id-card-header {
+    gap: 20px;
+}
+.id-card-avatar {
+    width: 80px;
+    height: 80px;
+}
+.id-card-name {
+    font-size: 24px;
+}
+.id-card-stat-row {
+    flex-wrap: nowrap;
+}
+.account-hub-buttons {
+    flex-direction: row;
+}
+
+@media (max-width: 450px) {
+    .id-card-container {
+        padding: 15px !important;
+    }
+    .id-card-header {
+        gap: 12px !important;
+    }
+    .id-card-avatar {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    .id-card-name {
+        font-size: 18px !important;
+    }
+    .id-card-stat-row {
+        flex-wrap: wrap !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+    }
+    .id-card-stat-row > span:last-child {
+        text-align: left !important;
+    }
+    .account-hub-buttons {
+        flex-direction: column !important;
+    }
+}

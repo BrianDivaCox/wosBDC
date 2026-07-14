@@ -1896,18 +1896,18 @@ const views = {
         <h2 style="color:var(--text-main); margin-top:0;">Account Hub</h2>
         
         <!-- Premium ID Card -->
-        <div style="position:relative; width:100%; max-width:400px; margin:0 auto 30px auto; background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border:1px solid rgba(56,189,248,0.3); border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(56,189,248,0.1); overflow:hidden; padding:25px; backdrop-filter:blur(10px); text-align:left;">
+        <div class="id-card-container" style="position:relative; width:100%; max-width:400px; margin:0 auto 30px auto; background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border:1px solid rgba(56,189,248,0.3); border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(56,189,248,0.1); overflow:hidden; backdrop-filter:blur(10px); text-align:left;">
             
             <!-- Glowing accent line at top -->
             <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:var(--accent); box-shadow:0 0 10px var(--accent);"></div>
             
-            <div style="display:flex; align-items:center; gap:20px; margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:20px; position:relative; z-index:2;">
-                <div style="width:80px; height:80px; border-radius:12px; overflow:hidden; border:2px solid var(--accent); box-shadow:0 4px 15px rgba(0,0,0,0.3); background:var(--bg-secondary); flex-shrink:0;">
+            <div class="id-card-header" style="display:flex; align-items:center; margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:20px; position:relative; z-index:2;">
+                <div class="id-card-avatar" style="border-radius:12px; overflow:hidden; border:2px solid var(--accent); box-shadow:0 4px 15px rgba(0,0,0,0.3); background:var(--bg-secondary); flex-shrink:0;">
                     <img id="accountHubAvatarImg" src="${avatarSrc}" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width:100%; height:100%; object-fit:cover;" />
                     <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%; font-size:32px; font-weight:bold; color:#fff;">${currentChiefName.charAt(0).toUpperCase()}</div>
                 </div>
                 <div style="overflow:hidden;">
-                    <h2 style="margin:0 0 5px 0; color:#fff; font-size:24px; letter-spacing:0.5px; text-shadow:0 2px 4px rgba(0,0,0,0.5); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${window.escapeHTML(currentChiefName)}</h2>
+                    <h2 class="id-card-name" style="margin:0 0 5px 0; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 4px rgba(0,0,0,0.5); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${window.escapeHTML(currentChiefName)}</h2>
                     <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.3); padding:4px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
                         <span style="color:var(--accent); font-size:12px; font-weight:bold;">ID:</span>
                         <span style="color:var(--text-main); font-family:monospace; font-size:14px; letter-spacing:1px;">${currentUser.gameId}</span>
@@ -1916,12 +1916,12 @@ const views = {
             </div>
             
             <div style="display:flex; flex-direction:column; gap:15px; margin-bottom:25px; position:relative; z-index:2;">
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 15px; border-radius:8px;">
+                <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 15px; border-radius:8px;">
                     <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Joined Date</span>
                     <span style="color:#fff; font-weight:bold; font-size:15px;">${joinedDateStr}</span>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 15px; border-radius:8px;">
+                <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 15px; border-radius:8px;">
                     <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Time Active</span>
                     <span style="color:var(--accent); font-weight:bold; font-size:13px; text-align:right;">${timeActiveStr}</span>
                 </div>
