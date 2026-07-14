@@ -581,6 +581,7 @@ tr:hover td {
 /* --- Account Hub Mobile Adjustments --- */
 .id-card-container {
     padding: 20px;
+    box-sizing: border-box;
 }
 .id-card-header {
     gap: 15px;
