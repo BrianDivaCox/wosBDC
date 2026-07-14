@@ -22,17 +22,6 @@
   --border: #e2e8f0;
 }
 
-[data-theme="oled"] {
-  --bg-main: #000000;
-  --card-bg: #09090b;
-  --text-main: #fafafa;
-  --text-muted: #a1a1aa;
-  --accent: #f43f5e;
-  --accent-hover: #e11d48;
-  --success: #10b981;
-  --danger: #ef4444;
-  --border: #27272a;
-}
 
 [data-theme="ombre"] {
   --bg-main: #0b051a;
@@ -46,53 +35,7 @@
   --border: #701a75; /* Deep Magenta */
 }
 
-[data-theme="ocean"] {
-  --bg-main: #042f2e;
-  --card-bg: #0f766e;
-  --text-main: #ccfbf1;
-  --text-muted: #5eead4;
-  --accent: #2dd4bf;
-  --accent-hover: #14b8a6;
-  --success: #4ade80;
-  --danger: #ef4444;
-  --border: #115e59;
-}
 
-[data-theme="mermaid"] {
-  --bg-main: #0f172a; /* Deep oceanic slate */
-  --card-bg: #2e1065; /* Rich purple */
-  --text-main: #ccfbf1; /* Seafoam tinted white */
-  --text-muted: #a78bfa; /* Soft violet */
-  --accent: #d946ef; /* Vibrant magenta */
-  --accent-hover: #c026d3;
-  --success: #2dd4bf; /* Teal / Seafoam */
-  --danger: #ec4899; /* Bright pink */
-  --border: #4c1d95; /* Deep indigo */
-}
-
-[data-theme="forest"] {
-  --bg-main: #052e16;
-  --card-bg: #14532d;
-  --text-main: #dcfce7;
-  --text-muted: #86efac;
-  --accent: #4ade80;
-  --accent-hover: #22c55e;
-  --success: #10b981;
-  --danger: #ef4444;
-  --border: #166534;
-}
-
-[data-theme="beta"] {
-  --bg-main: #050505; /* Black */
-  --card-bg: #111111; /* Dark Charcoal */
-  --text-main: #e2e8f0;
-  --text-muted: #94a3b8;
-  --accent: #3b82f6; /* Blue */
-  --accent-hover: #ef4444; /* Red hover */
-  --success: #22c55e; /* Green */
-  --danger: #ef4444; /* Red */
-  --border: #7f1d1d; /* Dark Red */
-}
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
