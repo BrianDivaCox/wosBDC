@@ -580,17 +580,17 @@ tr:hover td {
 
 /* --- Account Hub Mobile Adjustments --- */
 .id-card-container {
-    padding: 25px;
+    padding: 20px;
 }
 .id-card-header {
-    gap: 20px;
+    gap: 15px;
 }
 .id-card-avatar {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
 }
 .id-card-name {
-    font-size: 24px;
+    font-size: 20px;
 }
 .id-card-stat-row {
     flex-wrap: nowrap;
@@ -607,8 +607,8 @@ tr:hover td {
         gap: 12px !important;
     }
     .id-card-avatar {
-        width: 60px !important;
-        height: 60px !important;
+        width: 50px !important;
+        height: 50px !important;
     }
     .id-card-name {
         font-size: 18px !important;
@@ -617,7 +617,7 @@ tr:hover td {
         flex-wrap: wrap !important;
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 4px !important;
+        gap: 2px !important;
     }
     .id-card-stat-row > span:last-child {
         text-align: left !important;
