@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby4LRewrJ84Ly-9F1Xi745u9VXSxUoMdvoPmjGcD1GLkphVqvxOig0-jLdrArOboX8/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxl50I3AaE0229udEw3-z62WPUnWp9SDQZv87Q9DSbi2o3pUApyWasFPv3hZBqozp4/exec';
 
 // --- Security Helpers ---
 window.escapeHTML = (str) => {
@@ -3698,13 +3698,22 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
        headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🐻 Bear Trap Wins: <span style="color:var(--text-main);">'+innerText+'</span></span>';
     }
     let btColIndex = -1;
+    let btAllTimeColIndex = -1;
     if (headers) {
         btColIndex = headers.findIndex(h => typeof h === 'string' && h.toLowerCase().trim() === 'total bt donations');
+        btAllTimeColIndex = headers.findIndex(h => typeof h === 'string' && h.toLowerCase().trim() === 'all-time bt donations');
     }
     let hasFallbackCurrent = (btColIndex !== -1 && p && p[btColIndex] !== undefined && p[btColIndex] !== "");
+    let hasFallbackAllTime = (btAllTimeColIndex !== -1 && p && p[btAllTimeColIndex] !== undefined && p[btAllTimeColIndex] !== "");
 
-    if (btDonationsCurrent || btDonationsAllTime || hasFallbackCurrent) {
-         let allTimeStr = btDonationsAllTime ? '#' + btDonationsAllTime.rank + ' (' + btDonationsAllTime.score + ') All-Time' : '0 All-Time';
+    if (btDonationsCurrent || btDonationsAllTime || hasFallbackCurrent || hasFallbackAllTime) {
+         let allTimeStr = '0 All-Time';
+         if (btDonationsAllTime) {
+             allTimeStr = '#' + btDonationsAllTime.rank + ' (' + btDonationsAllTime.score + ') All-Time';
+         } else if (hasFallbackAllTime) {
+             allTimeStr = '(' + p[btAllTimeColIndex].toString() + ') All-Time';
+         }
+
          let currentScoreStr = "0";
          if (btDonationsCurrent) {
              currentScoreStr = '#' + btDonationsCurrent.rank + ' (' + btDonationsCurrent.score + ')';
