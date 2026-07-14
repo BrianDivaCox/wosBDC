@@ -203,18 +203,25 @@ window.unlinkAltAccountPrompt = async (gid) => {
     }
 };
 
-window.isAdminUser = (user) => {
+window.getAdminLevel = (user) => {
   if (!user) return false;
-  if (user.gameId === 318843189) return true;
-  return window.systemAdmins[user.gameId] === true;
+  if (user.gameId === 318843189) return "R5"; // Root admin
+  const val = window.systemAdmins[user.gameId];
+  if (val === true || val === "R5") return "R5"; // Legacy support defaults to R5
+  if (val === "R4") return "R4";
+  return false;
 };
 
-window.grantAdmin = async (gameId) => {
-  if (!window.isAdminUser(currentUser)) return;
-  if (!confirm(`Are you sure you want to GRANT admin access to Game ID ${gameId}?`)) return;
+window.isAdminUser = (user) => {
+  return window.getAdminLevel(user) !== false;
+};
+
+window.grantAdmin = async (gameId, level = 'R5') => {
+  if (window.getAdminLevel(currentUser) !== 'R5') return;
+  if (!confirm(`Are you sure you want to GRANT ${level} admin access to Game ID ${gameId}?`)) return;
   try {
-    await set(ref(db, `config/admins/${gameId}`), true);
-    window.showToast('Admin access granted', 'success');
+    await set(ref(db, `config/admins/${gameId}`), level);
+    window.showToast(`${level} access granted`, 'success');
     if (document.getElementById('adminHubView')) views.admin(); // refresh admin panel if open
   } catch (e) {
     alert(e.message);
@@ -222,7 +229,7 @@ window.grantAdmin = async (gameId) => {
 };
 
 window.revokeAdmin = async (gameId) => {
-  if (!window.isAdminUser(currentUser)) return;
+  if (window.getAdminLevel(currentUser) !== 'R5') return;
   if (gameId == 318843189) { alert("Cannot revoke Root Admin."); return; }
   if (!confirm(`Are you sure you want to REVOKE admin access for Game ID ${gameId}?`)) return;
   try {
@@ -1165,6 +1172,8 @@ const views = {
       return;
     }
     
+    const isR5 = window.getAdminLevel(currentUser) === 'R5';
+    
         try {
       const [usersSnap, rosterRawData] = await Promise.all([
         get(ref(db, 'users')),
@@ -1251,15 +1260,15 @@ const views = {
                      let playerName = row[2] || '';
                      let amount = row[3] || '';
                      let newTotal = row[4] !== undefined ? row[4] : '';
-                     tbodyHtml += `
-                       <tr class="admin-log-row" data-admin="${adminName.toLowerCase()}" style="border-bottom:1px solid var(--border);">
-                         <td style="padding:10px; font-size:13px; color:var(--text-muted);">${dStr}</td>
-                         <td style="padding:10px; font-weight:bold; color:var(--accent);">${adminName}</td>
-                         <td style="padding:10px; font-weight:bold; color:var(--text-main);">${playerName}</td>
-                         <td style="padding:10px; color:var(--text-main);">${amount}</td>
-                         <td style="padding:10px; font-weight:bold; color:var(--success);">${newTotal}</td>
-                       </tr>
-                     `;
+                       tbodyHtml += `
+                         <tr class="admin-log-row" data-admin="${adminName.toLowerCase()}" data-timestamp="${d.getTime()}" style="border-bottom:1px solid var(--border);">
+                           <td style="padding:10px; font-size:13px; color:var(--text-muted);">${dStr}</td>
+                           <td style="padding:10px; font-weight:bold; color:var(--accent);">${adminName}</td>
+                           <td style="padding:10px; font-weight:bold; color:var(--text-main);">${playerName}</td>
+                           <td style="padding:10px; color:var(--text-main);">${amount}</td>
+                           <td style="padding:10px; font-weight:bold; color:var(--success);">${newTotal}</td>
+                         </tr>
+                       `;
                   }
                }
             }
@@ -1294,8 +1303,8 @@ const views = {
           <!-- Tab Navigation -->
           <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:10px;">
             <button class="admin-tab-btn active" data-tab="tab-tools" style="background:none; border:none; color:var(--accent); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid var(--accent);">🛠️ Daily Tools</button>
-            <button class="admin-tab-btn" data-tab="tab-users" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">👥 Users</button>
-            <button class="admin-tab-btn" data-tab="tab-settings" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">⚙️ Settings</button>
+            ${isR5 ? `<button class="admin-tab-btn" data-tab="tab-users" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">👥 Users</button>
+            <button class="admin-tab-btn" data-tab="tab-settings" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">⚙️ Settings</button>` : ''}
             <button class="admin-tab-btn" data-tab="tab-logs" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">📋 Logs</button>
           </div>
           
@@ -1327,6 +1336,7 @@ const views = {
             </div>
 
             <!-- Push Notification Broadcast -->
+            ${isR5 ? `
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
               <h3 style="margin:0 0 5px 0; color:var(--accent);">Broadcast Push Notification</h3>
               <p style="margin:0 0 15px 0; font-size:12px; color:var(--text-muted);">Send an instant alert to all registered devices.</p>
@@ -1335,8 +1345,12 @@ const views = {
               <button onclick="window.sendBroadcastPush()" style="background:var(--danger); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%;">Send Alert 🚀</button>
               <div id="adminPushStatus" style="font-size:12px; font-weight:bold; margin-top:10px; text-align:center;"></div>
             </div>
+            ` : ''}
           </div>
-          
+      `;
+      
+      if (isR5) {
+          html += `
           <!-- Tab 2: Users -->
           <div id="tab-users" class="admin-tab-content" style="display:none;">
             <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
@@ -1448,8 +1462,12 @@ const views = {
       
       html += `</tbody></table></div></div>
           </div>
-          
+          `;
+      }
+      
+      html += `
           <!-- Tab 3: Settings -->
+          ${isR5 ? `
           <div id="tab-settings" class="admin-tab-content" style="display:none;">
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--danger); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
               <div>
@@ -1485,6 +1503,7 @@ const views = {
               </div>
             </div>
           </div>
+          ` : ''}
           
           <!-- Tab 4: Logs -->
           <div id="tab-logs" class="admin-tab-content" style="display:none;">
@@ -1492,6 +1511,12 @@ const views = {
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="margin:0; color:var(--text-main);">&#128203; Admin Activity Logs</h3><button onclick="window.fetchAdminLog()" style="background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:bold; font-size:12px;">&#128259; Refresh</button>
                 <div style="display:flex; gap:10px;">
+                  <select id="adminLogDateFilter" onchange="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="7days">Last 7 Days</option>
+                  </select>
                   <select id="adminLogFilter" onchange="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
                     <option value="">All Admins</option>
                   </select>
@@ -1599,12 +1624,29 @@ const views = {
       window.filterAdminLogs = () => {
          const search = document.getElementById('adminLogSearch').value.toLowerCase();
          const adminFilter = document.getElementById('adminLogFilter').value.toLowerCase();
+         const dateFilter = document.getElementById('adminLogDateFilter').value;
+         
+         const now = new Date();
+         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+         const yesterdayStart = todayStart - (24 * 60 * 60 * 1000);
+         const sevenDaysStart = todayStart - (7 * 24 * 60 * 60 * 1000);
          
          document.querySelectorAll('.admin-log-row').forEach(row => {
             const matchesSearch = row.innerText.toLowerCase().includes(search);
             const matchesAdmin = adminFilter === '' || row.getAttribute('data-admin') === adminFilter;
             
-            if (matchesSearch && matchesAdmin) {
+            let matchesDate = true;
+            const rowTime = parseInt(row.getAttribute('data-timestamp') || '0', 10);
+            
+            if (dateFilter === 'today') {
+               matchesDate = rowTime >= todayStart;
+            } else if (dateFilter === 'yesterday') {
+               matchesDate = rowTime >= yesterdayStart && rowTime < todayStart;
+            } else if (dateFilter === '7days') {
+               matchesDate = rowTime >= sevenDaysStart;
+            }
+            
+            if (matchesSearch && matchesAdmin && matchesDate) {
                row.style.display = '';
             } else {
                row.style.display = 'none';
@@ -3850,11 +3892,12 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   if (isAdmin) {
     let missedJson = encodeURIComponent(JSON.stringify(missedEvents));
     let adminActionBtn = '';
-    if (playerGameId) {
+    if (playerGameId && window.getAdminLevel(currentUser) === 'R5') {
         if (window.isAdminUser({gameId: parseInt(playerGameId)})) {
             adminActionBtn = `<button onclick="window.revokeAdmin('${playerGameId}')" style="background:rgba(231,76,60,0.1); color:var(--danger); border:1px solid rgba(231,76,60,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; width:100%; transition: 0.2s;" onmouseover="this.style.background='rgba(231,76,60,0.2)'" onmouseout="this.style.background='rgba(231,76,60,0.1)'">❌ Revoke Admin</button>`;
         } else {
-            adminActionBtn = `<button onclick="window.grantAdmin('${playerGameId}')" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; width:100%; transition: 0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">🛡️ Grant Admin</button>`;
+            adminActionBtn = `<button onclick="window.grantAdmin('${playerGameId}', 'R5')" style="background:rgba(255,215,0,0.1); color:#FFD700; border:1px solid rgba(255,215,0,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; width:100%; transition: 0.2s;" onmouseover="this.style.background='rgba(255,215,0,0.2)'" onmouseout="this.style.background='rgba(255,215,0,0.1)'">👑 Grant R5 (Leader)</button>
+                              <button onclick="window.grantAdmin('${playerGameId}', 'R4')" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; width:100%; transition: 0.2s; margin-top:5px;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">🛡️ Grant R4 (Officer)</button>`;
         }
     }
     
