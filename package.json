@@ -1,6 +1,6 @@
 {
   "name": "wos-public-website",
-  "version": "1.15.38",
+  "version": "1.15.40",
   "private": true,
   "type": "module",
   "scripts": {
