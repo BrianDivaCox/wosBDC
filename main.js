@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzC8bAQYm7HlvyovZ8JLPF6Aa8kR13pw7N2N6_l9ASo0_bJqEVgGlYVQBM1u5fXrwQ/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbza_zOSCCX244uFfPtE8DWlKHtlCv8193dXZ5nhUsHwM4-1b5AGbFwxiHJxMvXZA_I/exec';
 
 // --- Security Helpers ---
 window.escapeHTML = (str) => {
@@ -985,6 +985,25 @@ window.livePromises = {};
 window.activeViewFunc = null;
 
 const fetchSheet = async (sheetName) => {
+  if (sheetName === 'activity ' || sheetName === 'LeaderBoards') {
+    if (window.liveData[sheetName]) return window.liveData[sheetName];
+    if (window.livePromises[sheetName]) return window.livePromises[sheetName];
+    window.livePromises[sheetName] = new Promise(async (resolve, reject) => {
+        try {
+            console.log(`Bypassing Firebase for ${sheetName}, fetching directly from GAS`);
+            const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
+            const text = await res.text();
+            let json = JSON.parse(text);
+            window.liveData[sheetName] = json.data;
+            resolve(json.data);
+        } catch(e) {
+            console.error(`Failed to fetch ${sheetName} from GAS`, e);
+            reject(e);
+        }
+    });
+    return window.livePromises[sheetName];
+  }
+
   if (window.liveData[sheetName]) return window.liveData[sheetName];
   if (window.livePromises[sheetName]) return window.livePromises[sheetName];
   
@@ -3941,6 +3960,8 @@ window.promptEditEvents = (name, missedEventsStr) => {
     
     window.showToast("Updates complete!", "success", true);
     window.sheetCache = {}; 
+    window.liveData['LeaderBoards'] = null; window.livePromises['LeaderBoards'] = null;
+    window.liveData['activity '] = null; window.livePromises['activity '] = null;
     if (document.getElementById('uniSearchInput')) {
       window.searchPlayerFull(name); 
     } else {
@@ -3961,6 +3982,8 @@ window.promptBearTrap = async (name) => {
     if (res.success) {
       window.showToast("Successfully added! New Total: " + res.newTotal, "success", true);
       window.sheetCache = {}; 
+      window.liveData['LeaderBoards'] = null; window.livePromises['LeaderBoards'] = null;
+      window.liveData['activity '] = null; window.livePromises['activity '] = null;
       if (document.getElementById('uniSearchInput')) {
         window.searchPlayerFull(name);
       } else {
