@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
+    "start": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "emergency-sync": "node manual_sync.cjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

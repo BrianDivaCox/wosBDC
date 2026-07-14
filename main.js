@@ -985,24 +985,7 @@ window.livePromises = {};
 window.activeViewFunc = null;
 
 const fetchSheet = async (sheetName) => {
-  if (sheetName === 'activity ' || sheetName === 'LeaderBoards') {
-    if (window.liveData[sheetName]) return window.liveData[sheetName];
-    if (window.livePromises[sheetName]) return window.livePromises[sheetName];
-    window.livePromises[sheetName] = new Promise(async (resolve, reject) => {
-        try {
-            console.log(`Bypassing Firebase for ${sheetName}, fetching directly from GAS`);
-            const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
-            const text = await res.text();
-            let json = JSON.parse(text);
-            window.liveData[sheetName] = json.data;
-            resolve(json.data);
-        } catch(e) {
-            console.error(`Failed to fetch ${sheetName} from GAS`, e);
-            reject(e);
-        }
-    });
-    return window.livePromises[sheetName];
-  }
+
 
   if (window.liveData[sheetName]) return window.liveData[sheetName];
   if (window.livePromises[sheetName]) return window.livePromises[sheetName];
