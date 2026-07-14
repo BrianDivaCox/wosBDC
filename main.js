@@ -2958,9 +2958,12 @@ const views = {
         let html = `<div class="card" style="margin-bottom:20px; text-align:center;">
                       <div class="card-title" style="margin-bottom:15px; font-size:24px;">🕵️‍♂️ Player Lookup</div>
 
-                      <select id="playerLookupSelect" style="width:100%; max-width:400px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:pointer;">
-                        <!-- Options rendered via JS -->
-                      </select>
+                      <div style="display:flex; justify-content:center; align-items:center;">
+                        <input type="text" id="playerLookupSelect" list="playerLookupDatalist" placeholder="Search Chief Name..." style="width:100%; max-width:400px; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text;">
+                        <datalist id="playerLookupDatalist">
+                          <!-- Options rendered via JS -->
+                        </datalist>
+                      </div>
                     </div>
                     
                     <div id="playerProfileContainer">
@@ -2977,7 +2980,10 @@ const views = {
         
         const renderDropdownOptions = () => {
             const onlyReg = globalRosterRegisteredOnly || (regToggle && regToggle.checked);
-            let optsHtml = '<option value="">-- Select a Chief --</option>';
+            let optsHtml = '';
+            
+            const datalist = document.getElementById('playerLookupDatalist');
+            
             players.forEach((p, i) => {
                 let name = p[0].toString().trim();
                 let isReg = false;
@@ -2987,22 +2993,24 @@ const views = {
                 if (onlyReg && !isReg) return;
                 
                 let nt = /^[ -~]*$/.test(name) ? 'class="notranslate"' : '';
-                optsHtml += `<option value="${i}" ${nt}>${name}${isReg ? ' (✅)' : ''}</option>`;
+                optsHtml += `<option value="${name}" ${nt}>${isReg ? '(✅) ' : ''}${name}</option>`;
             });
-            select.innerHTML = optsHtml;
+            if (datalist) datalist.innerHTML = optsHtml;
         };
         
         renderDropdownOptions();
       
-      const renderCardForChief = (idx) => {
-        if (idx === "") {
+      const renderCardForChief = (chiefName) => {
+        if (!chiefName || chiefName.trim() === "") {
           container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:40px; font-size:16px;">Select a player to view their activity profile.</div>`;
           window.currentRosterChiefName = null;
           return;
         }
         
-        const p = players[idx];
-        const chiefName = p[0].toString().trim();
+        const p = players.find(row => row[0].toString().trim().toLowerCase() === chiefName.toLowerCase().trim());
+        if (!p) return; // ignore invalid names
+        chiefName = p[0].toString().trim(); // use correct casing
+        
         window.currentRosterChiefName = chiefName;
         
         let dynamicSD = null;
@@ -3036,10 +3044,10 @@ const views = {
       });
       
       if (window.currentRosterChiefName) {
-        let idx = players.findIndex(p => p[0].toString().trim() === window.currentRosterChiefName);
-        if (idx !== -1) {
-          select.value = idx;
-          renderCardForChief(idx);
+        let p = players.find(row => row[0].toString().trim() === window.currentRosterChiefName);
+        if (p) {
+          select.value = window.currentRosterChiefName;
+          renderCardForChief(window.currentRosterChiefName);
         }
       }
       
