@@ -537,7 +537,7 @@ window.searchPlayerFull = async (name) => {
       for (let r = 0; r < lbRawData.length; r++) {
         for (let c = 0; c < lbRawData[r].length; c++) {
           let cell = lbRawData[r][c];
-          if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || cell.toLowerCase().includes('all-time bear donations'))) {
+          if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || (cell.toLowerCase().includes('all-time') && (cell.toLowerCase().includes('bear') || cell.toLowerCase().includes('bt')) && cell.toLowerCase().includes('donation')))) {
             let title = cell.replace(/leaderboard/i, '').trim();
             let emoji = "🏆";
             if (title.toLowerCase().includes("bear")) emoji = "🐻";
@@ -565,8 +565,8 @@ window.searchPlayerFull = async (name) => {
                 else if (t.includes('bear trap 1')) bear1 = {rank: pRank, score: pScore};
                 else if (t.includes('bear trap 2')) bear2 = {rank: pRank, score: pScore};
                 else if (t.includes('both bear trap')) bearBoth = {rank: pRank, score: pScore};
-                else if (t.includes('all-time bear donations')) btDonationsAllTime = {rank: pRank, score: pScore};
-                else if (t.includes('bear donations')) btDonationsCurrent = {rank: pRank, score: pScore};
+                else if ((t.includes('all-time') && (t.includes('bear') || t.includes('bt')) && t.includes('donation'))) btDonationsAllTime = {rank: pRank, score: pScore};
+                else if (((t.includes('bear') || t.includes('bt')) && t.includes('donation'))) btDonationsCurrent = {rank: pRank, score: pScore};
                 else otherLbs.push({ title, score: pScore, rank: pRank, emoji });
               }
               dr++;
@@ -2328,7 +2328,7 @@ const views = {
       for (let r = 0; r < data.length; r++) {
         for (let c = 0; c < data[r].length; c++) {
           let cell = data[r][c];
-          if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || cell.toLowerCase().includes('all-time bear donations'))) {
+          if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || (cell.toLowerCase().includes('all-time') && (cell.toLowerCase().includes('bear') || cell.toLowerCase().includes('bt')) && cell.toLowerCase().includes('donation')))) {
             let title = cell;
             let headers = [];
             let hc = c;
@@ -2465,7 +2465,7 @@ const views = {
           html += `</tr>`;
         });
         
-        if (board.title.toLowerCase().includes('bear donations')) {
+        if (((board.title.toLowerCase().includes('bear') || board.title.toLowerCase().includes('bt')) && board.title.toLowerCase().includes('donation'))) {
            // We'll append the widget placeholder specifically under the Bear Donations board
            html += `<div id="bearTrapActivityWidget-${board.title.replace(/\s+/g, '')}" class="bear-trap-activity-widget" style="margin-top: 15px;"></div>`;
         }
@@ -2756,7 +2756,7 @@ const views = {
         for (let r = 0; r < lbRawData.length; r++) {
           for (let c = 0; c < lbRawData[r].length; c++) {
             let cell = lbRawData[r][c];
-            if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || cell.toLowerCase().includes('all-time bear donations'))) {
+            if (typeof cell === 'string' && (cell.toLowerCase().includes('leaderboard') || (cell.toLowerCase().includes('all-time') && (cell.toLowerCase().includes('bear') || cell.toLowerCase().includes('bt')) && cell.toLowerCase().includes('donation')))) {
               let title = cell.replace(/leaderboard/i, '').trim();
               let emoji = "🏆";
               if (title.toLowerCase().includes("bear")) emoji = "🐻";
@@ -2964,8 +2964,8 @@ const views = {
                 else if (t.includes('bear trap 1')) bear1 = lb;
                 else if (t.includes('bear trap 2')) bear2 = lb;
                 else if (t.includes('both bear trap')) bearBoth = lb;
-                else if (t.includes('all-time bear donations')) btDonationsAllTime = lb;
-                else if (t.includes('bear donations')) btDonationsCurrent = lb;
+                else if (t.includes('all-time') && (t.includes('bear') || t.includes('bt')) && t.includes('donation')) btDonationsAllTime = lb;
+                else if ((t.includes('bear') || t.includes('bt')) && t.includes('donation')) btDonationsCurrent = lb;
                 else otherLbs.push(lb);
             });
         }
