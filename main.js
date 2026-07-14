@@ -2090,7 +2090,7 @@ const views = {
           }
       }
       
-      let timeActiveStr = "N/A";
+
       const rosterRawData = window.liveData["Chief's List"];
       if (rosterRawData && rosterRawData.length > 0) {
           for (let i = 1; i < rosterRawData.length; i++) {
