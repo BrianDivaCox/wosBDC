@@ -2071,6 +2071,8 @@ const views = {
       
       let isMainEnrolled = false;
       let joinedDateStr = "N/A";
+      let timeActiveStr = "N/A";
+      let furnaceLevelStr = "N/A";
       
       const gcb = window.liveData['giftcodebot'];
       if (gcb && gcb.length > 1) {
@@ -2093,14 +2095,17 @@ const views = {
       if (rosterRawData && rosterRawData.length > 0) {
           for (let i = 1; i < rosterRawData.length; i++) {
               if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim() === currentChiefName) {
-                  if (rosterRawData[i][3]) {
+                  if (rosterRawData[i][2]) {
+                      furnaceLevelStr = rosterRawData[i][2].toString();
+                  }
+                  if (rosterRawData[i][4]) {
                        try {
-                          const d = new Date(rosterRawData[i][3]);
+                          const d = new Date(rosterRawData[i][4]);
                           if (!isNaN(d)) joinedDateStr = d.toLocaleDateString();
                        } catch(e){}
                   }
-                  if (rosterRawData[i][4]) {
-                      timeActiveStr = rosterRawData[i][4].toString();
+                  if (rosterRawData[i][5]) {
+                      timeActiveStr = rosterRawData[i][5].toString();
                   }
                   break;
               }
@@ -2142,6 +2147,10 @@ const views = {
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
                     <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Joined Date</span>
                     <span style="color:#fff; font-weight:bold; font-size:15px;">${joinedDateStr}</span>
+                </div>
+                <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
+                    <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Furnace Level</span>
+                    <span style="color:var(--accent); font-weight:bold; font-size:15px; text-align:right;">🔥 ${furnaceLevelStr}</span>
                 </div>
                 
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
@@ -2968,8 +2977,10 @@ const views = {
           let name = rosterRawData[i][0];
           if (name) {
             rosterMap[name.toString().trim()] = {
-              giftCodes: rosterRawData[i][2], // Col C
-              timeActive: rosterRawData[i][4] // Col E
+              furnaceLevel: rosterRawData[i][2], // Col C
+              giftCodes: rosterRawData[i][3], // Col D
+              joinedDate: rosterRawData[i][4], // Col E
+              timeActive: rosterRawData[i][5] // Col F
             };
           }
         }
@@ -3629,7 +3640,7 @@ const views = {
       for (let i = 1; i < rosterRawData.length; i++) {
         let name = rosterRawData[i][0];
         if (name && name.toString().trim() !== "") {
-          let gcVal = rosterRawData[i][2];
+          let gcVal = rosterRawData[i][3];
           if (gcVal !== undefined && gcVal !== null && gcVal !== "") {
             let strVal = gcVal.toString().toLowerCase().trim();
             if (gcVal === true || strVal === "true" || strVal === "✓" || strVal === "yes") {
@@ -3872,6 +3883,10 @@ window.views = views;
 window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, rosterInfo, lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, isAdmin = false) => {
   let headerBadgesHtml = '';
   if (rosterInfo) {
+    let flVal = rosterInfo.furnaceLevel;
+    if (flVal && flVal.toString().trim() !== "") {
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">🔥 Lv ' + flVal + '</span>';
+    }
     let gcVal = rosterInfo.giftCodes;
     if (gcVal === true || gcVal === 'TRUE' || (typeof gcVal === 'string' && gcVal.toLowerCase().trim() === 'true')) {
        headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--success) 15%, transparent); border:1px solid var(--success); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">✅ All Gift Codes</span>';
