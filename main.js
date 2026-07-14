@@ -937,7 +937,41 @@ const renderError = (err) => {
 };
 
 window.liveData = {};
-window.liveListeners = {};
+      // Global fallback to manually bypass Firebase and query Google Sheets directly
+      window.forceRefreshTodaysActivity = async (widget) => {
+        if (!widget) return;
+        const container = widget.querySelector('.bear-trap-logs-container');
+        if (container) container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted);">Fetching directly from Google Sheets...</div>';
+        
+        try {
+          const res = await fetch(API_BASE_URL + '?api=adminLog').then(r => r.json());
+          if (res.success && res.data && res.data.length > 0) {
+            let html = '';
+            // Only show today's logs
+            const todaysLogs = res.data; // getAdminLog already returns the last 10
+            
+            todaysLogs.forEach(log => {
+              html += `
+                <div style="padding:10px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-weight:bold; color:var(--text-main); font-size:14px;">${log.name}</div>
+                    <div style="font-size:11px; color:var(--text-muted);">${log.timestamp} • ${log.email}</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="color:var(--success); font-weight:bold; font-size:14px;">+${log.amount}</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Total: ${log.newTotal}</div>
+                  </div>
+                </div>
+              `;
+            });
+            if (container) container.innerHTML = html || '<div style="padding:15px; text-align:center; color:var(--text-muted);">No activity recently.</div>';
+          }
+        } catch(e) {
+          if (container) container.innerHTML = '<div style="padding:15px; text-align:center; color:var(--danger);">Error fetching from Sheets.</div>';
+        }
+      };
+
+window.cleanupFirebaseListeners = () => {};
 window.livePromises = {};
 window.activeViewFunc = null;
 
@@ -1184,6 +1218,62 @@ const views = {
         }
       };
       
+      // Global function to manually fetch the freshest Admin Log from Sheets API
+      window.fetchAdminLog = async () => {
+        const tb = document.getElementById('adminLogsTableBody');
+        if (!tb) return;
+        tb.innerHTML = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">Fetching directly from Google Sheets...</td></tr>`;
+        try {
+          const res = await fetch(API_BASE_URL + '?api=getSheetData&sheetName=Admin Log').then(r => r.json());
+          if (res.success && res.data) {
+            const logsData = res.data;
+            let tbodyHtml = '';
+            let uniqueAdmins = new Set();
+            if (logsData && logsData.length > 1) {
+               for (let i = logsData.length - 1; i >= 1; i--) {
+                  let row = logsData[i];
+                  if (row && row[0]) {
+                     let d = new Date(row[0]);
+                     let dStr = d.toLocaleString([], {month:'numeric', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'});
+                     let adminName = row[1] || '';
+                     if (adminName) uniqueAdmins.add(adminName);
+                     let playerName = row[2] || '';
+                     let amount = row[3] || '';
+                     let newTotal = row[4] !== undefined ? row[4] : '';
+                     tbodyHtml += `
+                       <tr class="admin-log-row" data-admin="${adminName.toLowerCase()}" style="border-bottom:1px solid var(--border);">
+                         <td style="padding:10px; font-size:13px; color:var(--text-muted);">${dStr}</td>
+                         <td style="padding:10px; font-weight:bold; color:var(--accent);">${adminName}</td>
+                         <td style="padding:10px; font-weight:bold; color:var(--text-main);">${playerName}</td>
+                         <td style="padding:10px; color:var(--text-main);">${amount}</td>
+                         <td style="padding:10px; font-weight:bold; color:var(--success);">${newTotal}</td>
+                       </tr>
+                     `;
+                  }
+               }
+            }
+            if (tbodyHtml === '') tbodyHtml = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">No logs found.</td></tr>`;
+            tb.innerHTML = tbodyHtml;
+            
+            const adminSelect = document.getElementById('adminLogFilter');
+            if (adminSelect) {
+               const currentSelection = adminSelect.value;
+               let selectHtml = '<option value="">All Admins</option>';
+               Array.from(uniqueAdmins).sort().forEach(admin => {
+                  selectHtml += `<option value="${admin.toLowerCase()}">${admin}</option>`;
+               });
+               adminSelect.innerHTML = selectHtml;
+               adminSelect.value = currentSelection;
+            }
+          }
+        } catch(err) {
+          tb.innerHTML = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--danger);">Error fetching logs. Check console.</td></tr>`;
+        }
+      };
+      
+      // Initial fetch
+      window.fetchAdminLog();
+      
       let html = `
         <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -1389,7 +1479,7 @@ const views = {
           <div id="tab-logs" class="admin-tab-content" style="display:none;">
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:15px;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; color:var(--text-main);">📋 Admin Activity Logs</h3>
+                <h3 style="margin:0; color:var(--text-main);">📋 Admin Activity Logs</h3><button onclick="window.fetchAdminLog()" style="background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:bold; font-size:12px;">🔄 Refresh</button>
                 <div style="display:flex; gap:10px;">
                   <select id="adminLogFilter" onchange="window.filterAdminLogs()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
                     <option value="">All Admins</option>
@@ -1493,54 +1583,6 @@ const views = {
              alert(err.message);
           }
         });
-      });
-      
-      // Firebase listener for Logs tab
-      const adminLogRef = ref(db, 'sheets/Admin Log');
-      onValue(adminLogRef, (snapshot) => {
-        if (!document.getElementById('adminLogsTableBody')) return;
-        const logsData = snapshot.val();
-        let tbodyHtml = '';
-        let uniqueAdmins = new Set();
-        
-        if (logsData && logsData.length > 1) {
-           for (let i = logsData.length - 1; i >= 1; i--) {
-              let row = logsData[i];
-              if (row && row[0]) {
-                 let d = new Date(row[0]);
-                 let dStr = d.toLocaleString([], {month:'numeric', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'});
-                 let adminName = row[1] || '';
-                 if (adminName) uniqueAdmins.add(adminName);
-                 let playerName = row[2] || '';
-                 let amount = row[3] || '';
-                 let newTotal = row[4] !== undefined ? row[4] : '';
-                 tbodyHtml += `
-                   <tr class="admin-log-row" data-admin="${adminName.toLowerCase()}" style="border-bottom:1px solid var(--border);">
-                     <td style="padding:10px; font-size:13px; color:var(--text-muted);">${dStr}</td>
-                     <td style="padding:10px; font-weight:bold; color:var(--accent);">${adminName}</td>
-                     <td style="padding:10px; font-weight:bold; color:var(--text-main);">${playerName}</td>
-                     <td style="padding:10px; color:var(--text-main);">${amount}</td>
-                     <td style="padding:10px; font-weight:bold; color:var(--success);">${newTotal}</td>
-                   </tr>
-                 `;
-              }
-           }
-        }
-        
-        if (tbodyHtml === '') tbodyHtml = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">No logs found.</td></tr>`;
-        document.getElementById('adminLogsTableBody').innerHTML = tbodyHtml;
-        
-        // Populate Admin Filter Dropdown
-        const adminSelect = document.getElementById('adminLogFilter');
-        if (adminSelect) {
-           const currentSelection = adminSelect.value;
-           let selectHtml = '<option value="">All Admins</option>';
-           Array.from(uniqueAdmins).sort().forEach(admin => {
-              selectHtml += `<option value="${admin.toLowerCase()}">${admin}</option>`;
-           });
-           adminSelect.innerHTML = selectHtml;
-           adminSelect.value = currentSelection || '';
-        }
       });
       
       window.filterAdminLogs = () => {
@@ -1744,7 +1786,7 @@ const views = {
            } else if (res && res.message) {
              resultsHTML += `❌ ${res.message}<br>`;
            } else {
-             resultsHTML += `✅ <b>${entry.name}</b>: +${entry.amount} added.<br>`;
+             resultsHTML += `✅ <b>${entry.name}</b>: +${res.amount} added.<br>`;
            }
          } catch {
            resultsHTML += `❌ <b>${entry.name}</b>: Network error.<br>`;
@@ -2501,10 +2543,13 @@ const views = {
           
           todaysLogs.reverse(); // Newest first
           
-          let logHtml = `<div style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+          let logHtml = `<div class="bear-trap-logs-container" style="background:var(--bg-main); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
             <button onclick="this.nextElementSibling.classList.toggle('hidden')" style="width:100%; background:transparent; border:none; padding:12px 15px; color:var(--text-main); font-weight:bold; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
               <span>📅 View Today's Activity (${todaysLogs.length} Update${todaysLogs.length > 1 ? 's' : ''})</span>
-              <span style="color:var(--text-muted);">▼</span>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span onclick="event.stopPropagation(); window.forceRefreshTodaysActivity(this.closest('.bear-trap-activity-widget'))" style="background:var(--accent); color:white; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">🔄 Refresh</span>
+                <span style="color:var(--text-muted);">▼</span>
+              </div>
             </button>
             <div class="hidden" style="padding:0 15px 15px 15px; border-top:1px solid var(--border);">
               <ul style="list-style:none; padding:0; margin:0; margin-top:10px;">`;
