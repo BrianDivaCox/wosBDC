@@ -1845,20 +1845,98 @@ const views = {
       }
       linkedHtml += `</div>`;
       
-      let currentChiefName = idToNameMap[currentUser.gameId] || `Game ID: ${currentUser.gameId}`;
+      let currentChiefName = idToNameMap[currentUser.gameId] || `Unknown Chief`;
+      let isMainEnrolled = false;
+      let joinedDateStr = "N/A";
+      
+      const gcb = window.liveData['giftcodebot'];
+      if (gcb && gcb.length > 1) {
+          for (let i = 1; i < gcb.length; i++) {
+              if (gcb[i] && gcb[i][2] && gcb[i][2].toString().trim() === currentUser.gameId.toString().trim()) {
+                  isMainEnrolled = true;
+                  if (gcb[i][3]) {
+                      try {
+                          const d = new Date(gcb[i][3]);
+                          if (!isNaN(d)) joinedDateStr = d.toLocaleDateString();
+                      } catch(e) {}
+                  }
+                  break;
+              }
+          }
+      }
+      
+      let timeActiveStr = "N/A";
+      const rosterRawData = window.liveData["Chief's List"];
+      if (rosterRawData && rosterRawData.length > 0) {
+          for (let i = 1; i < rosterRawData.length; i++) {
+              if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim() === currentChiefName) {
+                  if (rosterRawData[i][3]) {
+                       try {
+                          const d = new Date(rosterRawData[i][3]);
+                          if (!isNaN(d)) joinedDateStr = d.toLocaleDateString();
+                       } catch(e){}
+                  }
+                  if (rosterRawData[i][4]) {
+                      timeActiveStr = rosterRawData[i][4].toString();
+                  }
+                  break;
+              }
+          }
+      }
+
+      const avatarSrc = avatarMap[currentUser.gameId] || `images/${currentChiefName}.png`;
+      const isEnrolled = isMainEnrolled || enrolledGameIds.has(currentUser.gameId.toString());
+
+      const botStatusHtml = isEnrolled 
+          ? `<div style="background:rgba(16,185,129,0.1); border:1px solid var(--success); color:var(--success); padding:8px 16px; border-radius:8px; font-weight:bold; font-size:14px; display:inline-flex; align-items:center; gap:8px;">&#x2705; Active Bot Link</div>`
+          : `<div style="background:rgba(239,68,68,0.1); border:1px solid var(--danger); color:var(--danger); padding:8px 16px; border-radius:8px; font-weight:bold; font-size:14px; display:inline-flex; align-items:center; gap:8px;">&#x274C; No Bot Link</div>`;
     
     app.innerHTML = `
       <div id="accountHubView" class="card" style="max-width:600px; margin:0 auto; text-align:center;">
         <h2 style="color:var(--text-main); margin-top:0;">Account Hub</h2>
-        <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
-          <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:10px;">
-            <div style="width:80px; height:80px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold; margin-bottom:10px; overflow:hidden; border:2px solid var(--border);">
-              <img id="accountHubAvatarImg" src="${avatarMap[currentUser.gameId] || `images/${currentChiefName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${currentChiefName.charAt(0).toUpperCase()}</div>
+        
+        <!-- Premium ID Card -->
+        <div style="position:relative; width:100%; max-width:400px; margin:0 auto 30px auto; background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border:1px solid rgba(56,189,248,0.3); border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(56,189,248,0.1); overflow:hidden; padding:25px; backdrop-filter:blur(10px); text-align:left;">
+            
+            <!-- Glowing accent line at top -->
+            <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:var(--accent); box-shadow:0 0 10px var(--accent);"></div>
+            
+            <div style="display:flex; align-items:center; gap:20px; margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:20px; position:relative; z-index:2;">
+                <div style="width:80px; height:80px; border-radius:12px; overflow:hidden; border:2px solid var(--accent); box-shadow:0 4px 15px rgba(0,0,0,0.3); background:var(--bg-secondary); flex-shrink:0;">
+                    <img id="accountHubAvatarImg" src="${avatarSrc}" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width:100%; height:100%; object-fit:cover;" />
+                    <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%; font-size:32px; font-weight:bold; color:#fff;">${currentChiefName.charAt(0).toUpperCase()}</div>
+                </div>
+                <div style="overflow:hidden;">
+                    <h2 style="margin:0 0 5px 0; color:#fff; font-size:24px; letter-spacing:0.5px; text-shadow:0 2px 4px rgba(0,0,0,0.5); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${window.escapeHTML(currentChiefName)}</h2>
+                    <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.3); padding:4px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
+                        <span style="color:var(--accent); font-size:12px; font-weight:bold;">ID:</span>
+                        <span style="color:var(--text-main); font-family:monospace; font-size:14px; letter-spacing:1px;">${currentUser.gameId}</span>
+                    </div>
+                </div>
             </div>
-            <div style="font-size:18px; font-weight:bold; color:var(--accent);">${currentChiefName}</div>
-          </div>
-          <div style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">${currentUser.email}</div>
+            
+            <div style="display:flex; flex-direction:column; gap:15px; margin-bottom:25px; position:relative; z-index:2;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 15px; border-radius:8px;">
+                    <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Joined Date</span>
+                    <span style="color:#fff; font-weight:bold; font-size:15px;">${joinedDateStr}</span>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 15px; border-radius:8px;">
+                    <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Time Active</span>
+                    <span style="color:var(--accent); font-weight:bold; font-size:13px; text-align:right;">${timeActiveStr}</span>
+                </div>
+            </div>
+            
+            <div style="text-align:center; margin-top:25px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.05); position:relative; z-index:2;">
+                ${botStatusHtml}
+            </div>
+            
+            <!-- Watermark -->
+            <div style="position:absolute; bottom:-20px; right:-20px; font-size:120px; opacity:0.04; pointer-events:none; transform:rotate(-15deg); z-index:1;">&#x2744;&#xFE0F;</div>
+        </div>
+        
+        <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
+          <div style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Email: ${currentUser.email}</div>
           
           <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
             <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">🖼️ Profile Picture</h3>
