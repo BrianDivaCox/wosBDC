@@ -193,7 +193,8 @@ onValue(ref(db, 'config/admins'), (snap) => {
 });
 
 window.unlinkAltAccountPrompt = async (gid) => {
-    if (!confirm(`Are you sure you want to unlink Game ID ${gid}?`)) return;
+    const confirmed = await window.customConfirm(`Are you sure you want to unlink Game ID ${gid}?`);
+    if (!confirmed) return;
     try {
         await unlinkAltAccount(currentUser.uid, gid.toString().trim(), currentUser.linkedGameIds || []);
         if(window.showToast) window.showToast("Account unlinked.", "success");
@@ -218,28 +219,32 @@ window.isAdminUser = (user) => {
 
 window.grantAdmin = async (gameId, level = 'R5') => {
   if (window.getAdminLevel(currentUser) !== 'R5') return;
-  if (!confirm(`Are you sure you want to GRANT ${level} admin access to Game ID ${gameId}?`)) return;
+  
+  const confirmed = await window.customConfirm(`Are you sure you want to GRANT ${level} admin access to Game ID ${gameId}?`);
+  if (!confirmed) return;
+  
   try {
     await set(ref(db, `config/admins/${gameId}`), level);
     window.showToast(`${level} access granted`, 'success');
     if (document.getElementById('adminHubView')) views.admin(); // refresh admin panel if open
   } catch (e) {
-    alert(e.message);
+    if (window.showToast) window.showToast(e.message, "error");
   }
 };
 
 window.revokeAdmin = async (gameId) => {
   if (window.getAdminLevel(currentUser) !== 'R5') return;
-  if (gameId == 318843189) { alert("Cannot revoke Root Admin."); return; }
-  if (!confirm(`Are you sure you want to REVOKE admin access for Game ID ${gameId}?`)) return;
+  if (gameId == 318843189) { if (window.showToast) window.showToast("Cannot revoke Root Admin.", "error"); return; }
+  
+  const confirmed = await window.customConfirm(`Are you sure you want to REVOKE admin access for Game ID ${gameId}?`);
+  if (!confirmed) return;
+  
   try {
-    const updates = {};
-    updates[`config/admins/${gameId}`] = null;
-    await update(ref(db), updates);
+    await set(ref(db, `config/admins/${gameId}`), null);
     window.showToast('Admin access revoked', 'error');
-    if (document.getElementById('adminHubView')) views.admin();
+    if (document.getElementById('adminHubView')) views.admin(); // refresh admin panel if open
   } catch (e) {
-    alert(e.message);
+    if (window.showToast) window.showToast(e.message, "error");
   }
 };
 
@@ -904,6 +909,71 @@ if (versionBadge) versionBadge.addEventListener('click', async () => {
 const app = document.getElementById('app');
 
 
+window.customConfirm = (message) => {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.2s; backdrop-filter:blur(3px);';
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background:var(--bg-main); padding:25px; border-radius:12px; max-width:400px; width:90%; border:1px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center; transform:scale(0.95); animation:zoomIn 0.2s forwards;';
+        
+        const text = document.createElement('p');
+        text.style.cssText = 'margin:0 0 20px 0; color:var(--text-main); font-size:16px; font-weight:bold;';
+        text.innerText = message;
+        
+        const btnContainer = document.createElement('div');
+        btnContainer.style.cssText = 'display:flex; justify-content:center; gap:10px;';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.innerText = 'Cancel';
+        cancelBtn.style.cssText = 'padding:10px 20px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); border-radius:8px; cursor:pointer; font-weight:bold; transition:0.2s; min-width:100px;';
+        cancelBtn.onmouseover = () => cancelBtn.style.background = 'var(--border)';
+        cancelBtn.onmouseout = () => cancelBtn.style.background = 'var(--card-bg)';
+        cancelBtn.onclick = () => { document.body.removeChild(overlay); resolve(false); };
+        
+        const confirmBtn = document.createElement('button');
+        confirmBtn.innerText = 'Confirm';
+        confirmBtn.style.cssText = 'padding:10px 20px; border:none; background:var(--danger); color:#fff; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.2s; min-width:100px;';
+        confirmBtn.onmouseover = () => confirmBtn.style.opacity = '0.8';
+        confirmBtn.onmouseout = () => confirmBtn.style.opacity = '1';
+        confirmBtn.onclick = () => { document.body.removeChild(overlay); resolve(true); };
+        
+        btnContainer.appendChild(cancelBtn);
+        btnContainer.appendChild(confirmBtn);
+        modal.appendChild(text);
+        modal.appendChild(btnContainer);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    });
+};
+
+window.customAlert = (message) => {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.2s; backdrop-filter:blur(3px);';
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background:var(--bg-main); padding:25px; border-radius:12px; max-width:400px; width:90%; border:1px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center; transform:scale(0.95); animation:zoomIn 0.2s forwards;';
+        
+        const text = document.createElement('p');
+        text.style.cssText = 'margin:0 0 20px 0; color:var(--text-main); font-size:16px; font-weight:bold;';
+        text.innerText = message;
+        
+        const okBtn = document.createElement('button');
+        okBtn.innerText = 'OK';
+        okBtn.style.cssText = 'padding:10px 30px; border:none; background:var(--accent); color:#fff; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.2s;';
+        okBtn.onmouseover = () => okBtn.style.opacity = '0.8';
+        okBtn.onmouseout = () => okBtn.style.opacity = '1';
+        okBtn.onclick = () => { document.body.removeChild(overlay); resolve(); };
+        
+        modal.appendChild(text);
+        modal.appendChild(okBtn);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    });
+};
+window.alert = window.customAlert;
+
 window.showToast = (message, type = 'success', sticky = false) => {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -1209,9 +1279,8 @@ const views = {
           return;
         }
         
-        if (!confirm("Are you sure you want to broadcast this notification to all subscribed users?")) {
-          return;
-        }
+        const confirmed = await window.customConfirm("Are you sure you want to broadcast this notification to all subscribed users?");
+        if (!confirmed) return;
         
         statusEl.textContent = "Sending...";
         statusEl.style.color = "var(--text-muted)";
@@ -1609,7 +1678,9 @@ const views = {
       // Bind delete avatar buttons
       document.querySelectorAll('.delete-avatar-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-          if (!confirm("Are you sure you want to delete this avatar?")) return;
+          const confirmed = await window.customConfirm("Are you sure you want to delete this avatar?");
+          if (!confirmed) return;
+          
           const gid = e.target.getAttribute('data-id');
           try {
             e.target.textContent = "Deleting...";
