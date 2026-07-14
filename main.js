@@ -80,7 +80,7 @@ document.querySelectorAll('.theme-card').forEach(card => {
     document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     
-    // Aut&#x1F512;close sidebar to see changes
+    // Auto-close sidebar to see changes
     closeSidebarFunc();
   });
 });
@@ -243,7 +243,7 @@ const adminSidebarBtn = document.getElementById('adminSidebarBtn');
 let globalRosterRegisteredOnly = false;
 onValue(ref(db, 'config/rosterRegisteredOnly'), (snapshot) => {
   globalRosterRegisteredOnly = snapshot.val() || false;
-  // Aut&#x1F512;refresh roster if currently open
+  // Auto-refresh roster if currently open
   const profContainer = document.getElementById('playerProfileContainer');
   if (profContainer && views && typeof views.roster === 'function') {
       // It's the roster view, might want to re-render but not strictly necessary for real-time
@@ -825,7 +825,7 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
       
       await registerUser(email, password, gameId, chiefName);
       
-      // Aut&#x1F512;post to giftcodebot Google Sheet via backend API
+      // Auto-post to giftcodebot Google Sheet via backend API
       try {
           const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}`;
           fetch(url).catch(e => console.warn("Failed to ping GAS for registration", e));
@@ -1080,7 +1080,7 @@ const checkDeploymentStatus = async () => {
             devDeployBanner.style.display = 'block';
             devDeployBanner.style.backgroundColor = '#f59e0b';
             devDeployBanner.style.color = '#fff';
-            devDeployBanner.innerHTML = '🚀 Deployment in progress... Aut&#x1F512;refresh enabled.';
+            devDeployBanner.innerHTML = '🚀 Deployment in progress... Auto-refresh enabled.';
             lastDeployStatus = 'in_progress';
         }
       } else if (status === 'completed' && conclusion === 'success') {
@@ -1464,7 +1464,7 @@ const views = {
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <h3 style="margin:0; color:var(--text-main);">Dev Mode (Track Deployment)</h3>
-                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and aut&#x1F512;refreshes the page.</p>
+                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">When enabled, checks for active GitHub deployments and auto-refreshes the page.</p>
                 <div id="github-deploy-status" style="margin-top:8px; font-weight:bold; font-size:13px; color:var(--text-muted);">
                   ⏳ Fetching status...
                 </div>
@@ -3675,7 +3675,7 @@ allLinks.forEach(link => {
       targetEl.classList.add('active');
     }
     
-    // Aut&#x1F512;close the hamburger menu if it's open
+    // Auto-close the hamburger menu if it's open
     if (mobileMenu) mobileMenu.classList.remove('open');
     
     const target = targetEl.getAttribute('data-target');
@@ -3804,7 +3804,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   let metricsHtml = '<div style="margin-top: 25px;">';
   metricsHtml += '<h3 style="margin: 0 0 5px 0; color:var(--text-main); font-size:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">📅 Events Checklist</h3>';
   metricsHtml += '<p style="font-size:11px; color:var(--text-muted); margin:0 0 15px 0;">✅ = Participated / Done <span style="margin:0 5px;">|</span> ❌ = Action Required <span style="margin:0 5px;">|</span> ⏳ = Upcoming</p>';
-  metricsHtml += '<div style="display:grid; grid-template-columns: repeat(aut&#x1F512;fit, minmax(140px, 1fr)); gap:15px;">';
+  metricsHtml += '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">';
   
   let missedEvents = [];
   const supportedEvents = ["Championship", "Polar Terrors", "Mercenary Prestige", "Voter"];
