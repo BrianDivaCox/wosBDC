@@ -189,6 +189,7 @@ onValue(ref(db, 'avatars'), (snap) => {
 window.systemAdmins = {};
 onValue(ref(db, 'config/admins'), (snap) => {
   window.systemAdmins = snap.val() || {};
+  if (typeof window.renderStaffRoles === 'function') window.renderStaffRoles();
   if (typeof checkMaintenanceAccess === 'function') checkMaintenanceAccess();
 });
 
@@ -215,6 +216,41 @@ window.getAdminLevel = (user) => {
 
 window.isAdminUser = (user) => {
   return window.getAdminLevel(user) !== false;
+};
+
+window.renderStaffRoles = () => {
+    const container = document.getElementById('adminStaffListContainer');
+    if (!container) return;
+    
+    let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-weight:bold; color:var(--text-main);">Diva (Root Admin)</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <div style="color:var(--accent); font-size:12px; font-weight:bold; background:rgba(52,152,219,0.1); padding:2px 6px; border-radius:4px; border:1px solid rgba(52,152,219,0.3);">R5</div>
+             <div style="color:var(--text-muted); font-size:12px;">318843189</div>
+          </div>
+        </div>
+    `;
+    
+    html += Object.entries(window.systemAdmins).map(([gid, level]) => {
+        let n = idToNameMap[gid] || "Not Found";
+        let lvlStr = (level === true || level === "R5") ? "R5" : "R4";
+        let lvlColor = (lvlStr === "R5") ? "#FFD700" : "var(--accent)";
+        let lvlBg = (lvlStr === "R5") ? "rgba(255,215,0,0.1)" : "rgba(52,152,219,0.1)";
+        
+        return `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-weight:bold; color:var(--text-main);">${n}</div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <div style="color:${lvlColor}; font-size:12px; font-weight:bold; background:${lvlBg}; padding:2px 6px; border-radius:4px; border:1px solid ${lvlBg};">${lvlStr}</div>
+            <div style="color:var(--text-muted); font-size:12px;">${gid}</div>
+            <button onclick="window.revokeAdmin('${gid}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
+          </div>
+        </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = html;
 };
 
 window.grantAdmin = async (gameId, level = 'R5') => {
@@ -1438,26 +1474,11 @@ const views = {
               </div>
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
               <div style="margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--accent);">🛡️ Staff Roles (Admins)</h3>
+                <h3 style="margin:0; color:var(--accent);">👑 Staff Roles (Admins)</h3>
                 <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">List of players who currently have Admin Dashboard access. You can grant admin access directly from a player's profile card.</p>
               </div>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
-                  <div style="font-weight:bold; color:var(--text-main);">Diva (Root Admin)</div>
-                  <div style="color:var(--text-muted); font-size:12px;">318843189</div>
-                </div>
-                ${Object.keys(window.systemAdmins).map(gid => {
-                   let n = idToNameMap[gid] || "Not Found";
-                   return `
-                   <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
-                     <div style="font-weight:bold; color:var(--text-main);">${n}</div>
-                     <div style="display:flex; gap:10px; align-items:center;">
-                       <div style="color:var(--text-muted); font-size:12px;">${gid}</div>
-                       <button onclick="window.revokeAdmin('${gid}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">Revoke</button>
-                     </div>
-                   </div>
-                   `;
-                }).join('')}
+              <div id="adminStaffListContainer" style="display:flex; flex-direction:column; gap:8px;">
+                 <!-- Rendered by window.renderStaffRoles -->
               </div>
             </div>
           
@@ -1612,6 +1633,7 @@ const views = {
           </div>
         </div>`;
       app.innerHTML = html;
+      if (window.renderStaffRoles) window.renderStaffRoles();
       
       // Bind Admin Tabs
       document.querySelectorAll('.admin-tab-btn').forEach(btn => {
