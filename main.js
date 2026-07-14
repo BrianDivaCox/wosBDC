@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbza_zOSCCX244uFfPtE8DWlKHtlCv8193dXZ5nhUsHwM4-1b5AGbFwxiHJxMvXZA_I/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzt15bebxz5YAnyG8_12XyRjr3JlEWpKw2f2x9v89EaSUF8y-P6KK4853gUKELJg6s/exec';
 
 // --- Security Helpers ---
 window.escapeHTML = (str) => {
@@ -821,20 +821,42 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
 });
 
 const authChiefConfirm = document.getElementById('authChiefConfirm');
+let wosLookupTimeout = null;
+export let verifiedFurnaceLevel = ""; // Save furnace level to send during registration
+
 if (authGameId && authChiefConfirm) {
   authGameId.addEventListener('input', () => {
     if (!isRegistering) return;
     const val = authGameId.value.trim();
     if (!val) {
       authChiefConfirm.style.display = 'none';
+      verifiedFurnaceLevel = "";
       return;
     }
+    
     authChiefConfirm.style.display = 'block';
-    if (idToNameMap[val]) {
-      authChiefConfirm.innerHTML = `Is your Chief Name: <strong style="color:var(--success)">${idToNameMap[val]}</strong>?`;
-    } else {
-      authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Game ID not found in master database.</span>`;
-    }
+    authChiefConfirm.innerHTML = `<span style="color:var(--text-muted)">Looking up Game ID on official servers...</span>`;
+    
+    clearTimeout(wosLookupTimeout);
+    wosLookupTimeout = setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}?api=verifyWosId&id=${encodeURIComponent(val)}`);
+        const data = await response.json();
+        
+        if (data.success && data.nickname) {
+          authChiefConfirm.innerHTML = `Is your Chief Name: <strong style="color:var(--success)">${window.escapeHTML(data.nickname)}</strong>?`;
+          // Auto-fill the chief name field if it exists
+          if (authChiefName) authChiefName.value = data.nickname;
+          verifiedFurnaceLevel = data.stove_lv || "";
+        } else {
+          authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Game ID not found or invalid.</span>`;
+          verifiedFurnaceLevel = "";
+        }
+      } catch (err) {
+        authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Error connecting to game servers.</span>`;
+        verifiedFurnaceLevel = "";
+      }
+    }, 600); // 600ms debounce
   });
 }
 
@@ -875,7 +897,7 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
       
       // Auto-post to giftcodebot Google Sheet via backend API
       try {
-          const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}`;
+          const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}&level=${encodeURIComponent(verifiedFurnaceLevel)}`;
           fetch(url).catch(e => console.warn("Failed to ping GAS for registration", e));
       } catch(e) {}
 
