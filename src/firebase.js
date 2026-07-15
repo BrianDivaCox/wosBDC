@@ -171,3 +171,5 @@ export function listenForForegroundMessages(callback) {
     });
   }
 }
+
+export { auth };

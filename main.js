@@ -1,18 +1,16 @@
 import './style.css'
-import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
+import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzht58-V6xSTq4iE0BoTUK2q2WvuFpZx-tkvdENkyoedUD5td0KJz-vusplbSn1Dfw/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyskvSH0uxyWNy31CiaiEAfSZLdEUPv7LBHQkn5Om_4HwC9uPJRy0x-c3toVLuIV-E/exec';
 
 // Get a fresh Firebase ID token for the current user (replaces hardcoded APP_SECRET)
 const getAuthToken = async () => {
   try {
-    const { getAuth } = await import('firebase/auth');
-    const authInst = getAuth();
-    if (authInst.currentUser) {
-      return await authInst.currentUser.getIdToken(/* forceRefresh */ false);
+    if (auth && auth.currentUser) {
+      return await auth.currentUser.getIdToken(/* forceRefresh */ false);
     }
-  } catch(e) { /* not logged in */ }
+  } catch(e) { console.warn('getAuthToken failed:', e); }
   return null;
 };
 
