@@ -1,0 +1,40 @@
+{
+  "rules": {
+    "users": {
+      ".read": true,
+      "$uid": {
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "presence": {
+      ".read": true,
+      "$uid": {
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "stats": {
+      "totalViews": {
+        ".read": true,
+        ".write": "newData.isNumber() && (!data.exists() || newData.val() == data.val() + 1)"
+      }
+    },
+    "avatars": {
+      ".read": true,
+      "$gameId": {
+        ".write": "auth != null"
+      }
+    },
+    "fcmTokens": {
+      "$token": {
+        ".read": false,
+        ".write": "auth != null"
+      }
+    },
+    "sheets": { ".read": true, ".write": false },
+    "config": { ".read": true, ".write": "auth != null" },
+    "system": { ".read": true, ".write": false },
+    "bearTrapLog": { ".read": true, ".write": false },
+    ".read": false,
+    ".write": false
+  }
+}

@@ -2,7 +2,20 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzt15bebxz5YAnyG8_12XyRjr3JlEWpKw2f2x9v89EaSUF8y-P6KK4853gUKELJg6s/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzht58-V6xSTq4iE0BoTUK2q2WvuFpZx-tkvdENkyoedUD5td0KJz-vusplbSn1Dfw/exec';
+
+// Get a fresh Firebase ID token for the current user (replaces hardcoded APP_SECRET)
+const getAuthToken = async () => {
+  try {
+    const { getAuth } = await import('firebase/auth');
+    const authInst = getAuth();
+    if (authInst.currentUser) {
+      return await authInst.currentUser.getIdToken(/* forceRefresh */ false);
+    }
+  } catch(e) { /* not logged in */ }
+  return null;
+};
+
 
 window.getFurnaceIconHtml = (level) => {
     if (!level || level === "N/A") return '🔥 ' + level;
@@ -412,7 +425,8 @@ window._executeLogBearTrapWinner = async (name, trap) => {
     window.showToast("Crowning Winner...", "accent");
     try {
         const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
-        const url = `${API_BASE_URL}?api=addBearTrapEventWin&name=${encodeURIComponent(name)}&trap=${encodeURIComponent(trap)}&admin=${encodeURIComponent(adminName)}`;
+        const token = await getAuthToken();
+        const url = `${API_BASE_URL}?api=addBearTrapEventWin&name=${encodeURIComponent(name)}&trap=${encodeURIComponent(trap)}&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(token)}`;
         const res = await fetch(url).then(r => r.json());
         
         if (res && res.success) {
@@ -713,7 +727,8 @@ window.savePlayerFull = async (name) => {
   resDiv.innerHTML = '<span style="color:var(--text-muted)">Saving changes to master sheets...</span>';
   
   try {
-    const res = await fetch(`${API_BASE_URL}?api=updateFull&name=${encodeURIComponent(name)}&ptStatus=${encodeURIComponent(ptStatus)}&acStatus=${encodeURIComponent(acStatus)}&btAdd=${encodeURIComponent(btAdd)}&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+    const token = await getAuthToken();
+    const res = await fetch(`${API_BASE_URL}?api=updateFull&name=${encodeURIComponent(name)}&ptStatus=${encodeURIComponent(ptStatus)}&acStatus=${encodeURIComponent(acStatus)}&btAdd=${encodeURIComponent(btAdd)}&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(token)}`).then(r => r.json());
     if (res.success) {
       window.showToast("Player updated successfully!", "success");
       let successMsg = `<div style="color:var(--success); font-weight:bold; margin-bottom:5px;">✅ ${res.message}</div>`;
@@ -907,7 +922,8 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
       
       // Auto-post to giftcodebot Google Sheet via backend API
       try {
-          const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}&level=${encodeURIComponent(verifiedFurnaceLevel)}`;
+          const regToken = await getAuthToken();
+          const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}&level=${encodeURIComponent(verifiedFurnaceLevel)}${regToken ? '&token=' + encodeURIComponent(regToken) : ''}`;
           fetch(url).catch(e => console.warn("Failed to ping GAS for registration", e));
       } catch(e) {}
 
@@ -1092,7 +1108,8 @@ window.liveData = {};
         }
         
         try {
-          const res = await fetch(API_BASE_URL + '?api=adminLog').then(r => r.json());
+          const adminToken = await getAuthToken();
+          const res = await fetch(API_BASE_URL + '?api=adminLog&token=' + encodeURIComponent(adminToken)).then(r => r.json());
           if (res.success && res.data && res.data.length > 0) {
             let html = '';
             const todayStr = (new Date().getMonth() + 1) + '/' + new Date().getDate();
@@ -1154,7 +1171,8 @@ const fetchSheet = async (sheetName) => {
     }, async (error) => {
       console.warn(`Cache miss for ${sheetName}, falling back to GAS`);
       try {
-        const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}`);
+        const fallbackToken = await getAuthToken();
+        const res = await fetch(`${API_BASE_URL}?api=${encodeURIComponent(sheetName)}${fallbackToken ? '&token=' + encodeURIComponent(fallbackToken) : ''}`);
         const text = await res.text();
         let json;
         try {
@@ -1356,7 +1374,7 @@ const views = {
         try {
           const res = await fetch(API_BASE_URL, {
             method: 'POST',
-            body: JSON.stringify({ api: 'sendPush', title: title, body: body }),
+            body: JSON.stringify({ api: 'sendPush', title: title, body: body, secret: APP_SECRET }),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }
           }).then(r => r.json());
           
@@ -1381,7 +1399,8 @@ const views = {
         if (!tb) return;
         tb.innerHTML = `<tr><td colspan="5" style="padding:15px; text-align:center; color:var(--text-muted);">Fetching directly from Google Sheets...</td></tr>`;
         try {
-          const res = await fetch(API_BASE_URL + '?api=getSheetData&sheetName=Admin Log').then(r => r.json());
+          const logToken = await getAuthToken();
+          const res = await fetch(API_BASE_URL + '?api=getSheetData&sheetName=Admin Log&token=' + encodeURIComponent(logToken)).then(r => r.json());
           if (res.success && res.data) {
             const logsData = res.data;
             let tbodyHtml = '';
@@ -1914,7 +1933,8 @@ const views = {
       const logDiv = document.getElementById('beartrapLog');
       logDiv.innerHTML = '<span style="color:var(--text-muted)">Loading...</span>';
       try {
-        const res = await fetch(`${API_BASE_URL}?api=adminLog`).then(r => r.json());
+        const adminLogToken = await getAuthToken();
+        const res = await fetch(`${API_BASE_URL}?api=adminLog&token=${encodeURIComponent(adminLogToken)}`).then(r => r.json());
         if (res.success && res.data.length > 0) {
           let html = '';
           res.data.forEach(log => {
@@ -1961,7 +1981,8 @@ const views = {
       
       for (const entry of entries) {
          try {
-           const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(entry.name)}&amount=${encodeURIComponent(entry.amount)}&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+           const donToken = await getAuthToken();
+           const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(entry.name)}&amount=${encodeURIComponent(entry.amount)}&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(donToken)}`).then(r => r.json());
            if (res && res.success) {
              resultsHTML += `✅ <b>${res.name}</b>: +${res.amount} (New Total: ${res.newTotal})<br>`;
            } else if (res && res.message) {
@@ -3315,7 +3336,8 @@ const views = {
            optInBtn.textContent = 'Linking...';
            const chiefName = currentUser.name || idToNameMap[currentUser.gameId] || "Unknown Chief";
            try {
-               const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(currentUser.gameId)}&name=${encodeURIComponent(chiefName)}`;
+               const optInToken = await getAuthToken();
+               const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(currentUser.gameId)}&name=${encodeURIComponent(chiefName)}&token=${encodeURIComponent(optInToken)}`;
                const res = await fetch(url).then(r => r.json());
                
                if (res && res.success) {
@@ -4147,7 +4169,8 @@ window.promptEditEvents = (name, missedEventsStr) => {
       if (ev.toLowerCase().includes('championship')) eventSheetName = "Alliance Championship ";
       
       try {
-        const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=yes&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+        const evToken = await getAuthToken();
+        const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=yes&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(evToken)}`).then(r => r.json());
         if (!res.success) {
           alert(`Error updating ${ev}: ${res.message}`);
           break; // stop on error
@@ -4178,7 +4201,8 @@ window.promptBearTrap = async (name) => {
   window.showToast("Adding donation...", "success");
   const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
   try {
-    const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(name)}&amount=${encodeURIComponent(amt)}&admin=${encodeURIComponent(adminName)}`).then(r => r.json());
+    const donToken2 = await getAuthToken();
+    const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(name)}&amount=${encodeURIComponent(amt)}&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(donToken2)}`).then(r => r.json());
     if (res.success) {
       window.showToast("Successfully added! New Total: " + res.newTotal, "success", true);
       window.sheetCache = {}; 
@@ -4260,7 +4284,8 @@ window.openAltPerksModal = (gameId, altName) => {
             btn.disabled = true;
             btn.textContent = "Enrolling...";
             
-            const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gId)}&name=${encodeURIComponent(cName)}&dateStarted=${encodeURIComponent(cDate)}`;
+            const altToken = await getAuthToken();
+            const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gId)}&name=${encodeURIComponent(cName)}&dateStarted=${encodeURIComponent(cDate)}&token=${encodeURIComponent(altToken)}`;
             const res = await fetch(url).then(r => r.json());
             
             if (res && res.success) {
