@@ -582,7 +582,7 @@ window.searchPlayerFull = async (name) => {
     if (rosterRawData && rosterRawData.length > 0) {
       for (let i = 1; i < rosterRawData.length; i++) {
         let chief = rosterRawData[i][0];
-        if (chief) rosterMap[chief.toString().trim()] = { giftCodes: rosterRawData[i][2], timeActive: rosterRawData[i][4] };
+        if (chief) rosterMap[chief.toString().trim()] = { furnaceLevel: rosterRawData[i][2], giftCodes: rosterRawData[i][3], timeActive: rosterRawData[i][5] };
       }
     }
     
