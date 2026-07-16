@@ -1056,11 +1056,17 @@ window.customAlert = (message) => {
 };
 window.alert = window.customAlert;
 
-window.showToast = (message, type = 'success', sticky = false) => {
+window.showToast = (message, type = 'success', sticky = null) => {
   const container = document.getElementById('toast-container');
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = `toast-msg ${type}`;
+  
+  // Auto-sticky for success/error — they confirm actions and should not vanish
+  // info/accent types (loading states) auto-dismiss
+  if (sticky === null) {
+    sticky = (type === 'success' || type === 'error');
+  }
   
   if (sticky) {
     toast.classList.add('sticky');
@@ -1078,9 +1084,10 @@ window.showToast = (message, type = 'success', sticky = false) => {
     toast.innerHTML = message;
     setTimeout(() => {
       if (toast.parentElement) {
-        toast.remove();
+        toast.style.animation = 'fadeOutToast 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
       }
-    }, 3000);
+    }, 5000);
   }
   
   container.appendChild(toast);
