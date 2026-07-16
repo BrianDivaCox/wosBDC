@@ -21,7 +21,7 @@
     "avatars": {
       ".read": true,
       "$gameId": {
-        ".write": "auth != null"
+        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == $gameId"
       }
     },
     "fcmTokens": {
@@ -31,7 +31,24 @@
       }
     },
     "sheets": { ".read": true, ".write": false },
-    "config": { ".read": true, ".write": "auth != null" },
+    "config": {
+      ".read": true,
+      "rosterRegisteredOnly": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+      },
+      "admins": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+      },
+      "maintenanceMode": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+      },
+      "maintenanceEndTime": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+      },
+      "$otherConfig": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+      }
+    },
     "system": { ".read": true, ".write": false },
     "bearTrapLog": { ".read": true, ".write": false },
     ".read": false,
