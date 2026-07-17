@@ -3429,7 +3429,7 @@ const views = {
       // Find the row that contains the dates
       let dateRowIdx = -1;
       for (let r = 0; r < data.length; r++) {
-        if (data[r].some(cell => typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/))) {
+        if (data[r].some(cell => typeof cell === 'string' && (cell.match(/^\d{4}-\d{2}-\d{2}T/) || cell.match(/^\d{1,2}\/\d{1,2}$/)))) {
           dateRowIdx = r;
           break;
         }
@@ -3444,11 +3444,21 @@ const views = {
       let days = [];
       for (let c = 0; c < data[dateRowIdx].length; c++) {
         let cell = data[dateRowIdx][c];
-        if (typeof cell === 'string' && cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
-          let [year, month, day] = cell.split('T')[0].split('-');
-          let d = new Date(year, month - 1, day);
-          let formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-          days.push({ dateStr: formatted, colIdx: c, categories: {} });
+        if (typeof cell === 'string') {
+          let formatted = '';
+          if (cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
+            let [year, month, day] = cell.split('T')[0].split('-');
+            let d = new Date(year, month - 1, day);
+            formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          } else if (cell.match(/^\d{1,2}\/\d{1,2}$/)) {
+            let [month, day] = cell.split('/');
+            let d = new Date(new Date().getFullYear(), month - 1, day);
+            formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          }
+          
+          if (formatted) {
+            days.push({ dateStr: formatted, colIdx: c, categories: {} });
+          }
         }
       }
       

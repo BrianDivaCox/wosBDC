@@ -1,3 +1,7 @@
+## [1.20.12] - 2026-07-17
+### Fixed
+- **Calendar Schedule View**: Fixed a bug where the full calendar view would fail to render and show a "Could not find dates" error due to the new compressed `M/D` date format deployed in the Firebase sync.
+
 ## [1.20.11] - 2026-07-17
 ### Changed
 - **Countdown Formatting**: The home page countdown widget now cleanly omits unnecessary leading zeros (e.g. `5h 06m` instead of `05h 06m`) and will hide the hours entirely when it drops below 1 hour.
