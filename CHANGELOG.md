@@ -1,3 +1,7 @@
+## [1.20.9] - 2026-07-17
+### Added
+- **Site Favicon**: Replaced the default browser tab icon with a snowflake emoji (❄️) to match the dashboard navbar logo and improve brand recognition.
+
 ## [1.20.8] - 2026-07-17
 ### Added
 - **Popup Color Coding**: The search results in the Rewards Editor popup are now color-coded for quick identification: Green (Active/Upcoming), Red (Expired), and Yellow (No dates set).
