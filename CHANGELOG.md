@@ -1,3 +1,7 @@
+## [1.20.7] - 2026-07-17
+### Changed
+- **Popup UI Polish**: The Rewards Editor popup now hides the massive list of events entirely when it first opens, presenting a cleaner interface. The list only appears once you begin typing in the search box.
+
 ## [1.20.6] - 2026-07-17
 ### Added
 - **Set Today Buttons**: Added clickable "TODAY" buttons above the start and end date inputs in the Rewards Editor popup for instant date assignment.
