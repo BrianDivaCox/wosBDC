@@ -3494,147 +3494,235 @@ const views = {
     renderLoading("Loading Today's Events");
     try {
       const data = await fetchSheet("WhiteOut Survival");
-      
+
       if (!data || !Array.isArray(data) || data.length === 0) {
-        app.innerHTML = `<div class="card"><div class="loading">⚠️ Today's schedule data is currently unavailable. Please try again later.</div></div>`;
+        app.innerHTML = `<div class="card"><div class="loading">⚠️ Schedule data is currently unavailable. Please try again later.</div></div>`;
         return;
       }
-      
-      let todayHtml = "";
-      let upcomingHtml = "";
-      let currentCategory = "today";
-      
+
+      const now = new Date();
+      const todayStr = now.toDateString();
+
+      // ── 1. Parse timed events (rows 2–8, col F=5, G=6, H=7, I=8) ──
+      let todayEvents = [];
+      let upcomingEvents = [];
+
       for (let i = 1; i < Math.min(34, data.length); i++) {
-        let row = data[i];
-        let eventName = row[5];
-        let originalDateVal = row[6];
-        let originalUtcVal = row[7];
-        let pdtVal = row[8];
-        
-        let dateVal = originalDateVal;
-        let utcVal = originalUtcVal;
-        
-        if (!eventName || eventName.toString().trim() === "" || eventName.includes("Event's")) continue;
-        
-        let isPast = false;
-        let localTimeStr = "";
-        let hasDate = (typeof originalDateVal === 'string' && originalDateVal.match(/^\d{4}-\d{2}-\d{2}T/));
-        
-        if (hasDate) {
-          let eventDate = new Date(originalDateVal);
-          let now = new Date();
-          
-          let isToday = (eventDate.getDate() === now.getDate() && eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear());
-          if (isToday) {
-            currentCategory = "today";
-          } else {
-            currentCategory = "upcoming";
-          }
-          
-          dateVal = (eventDate.getMonth()+1) + '/' + eventDate.getDate();
-          
-          if (typeof utcVal === 'string' && utcVal.match(/^\d{4}-\d{2}-\d{2}T/)) {
-            let gasDate = new Date(utcVal);
-            
-            // Google Apps Script reads plain times as 1899-12-30 in the script's timezone (PST = UTC-8).
-            // So it added 8 hours to whatever the user typed. We subtract 8 hours to get the EXACT time the user typed.
-            gasDate.setUTCHours(gasDate.getUTCHours() - 8);
-            
-            let trueUtcHour = gasDate.getUTCHours();
-            let trueUtcMinute = gasDate.getUTCMinutes();
-            
-            // Format the True UTC time for the table in 24-hour standard format (e.g. 16:00)
-            let h24 = trueUtcHour.toString().padStart(2, '0');
-            let mStr = trueUtcMinute.toString().padStart(2, '0');
-            utcVal = `${h24}:${mStr}`;
-            
-            // Calculate the visitor's local time by treating that time as UTC!
-            let todayLocal = new Date();
-            todayLocal.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
-            localTimeStr = todayLocal.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            // Check if exact event time is in the past
-            let exactEventDate = new Date(eventDate);
-            exactEventDate.setUTCHours(trueUtcHour, trueUtcMinute, 0, 0);
-            if (exactEventDate < now) {
-              isPast = true;
-            }
-          } else {
-            if (utcVal === undefined) utcVal = "";
-            // For all-day events or events with no time, strike if it's strictly before today
-            if (!isToday && eventDate < now) {
-              isPast = true;
-            }
-          }
-        } else {
-          if (dateVal === undefined) dateVal = "";
-          if (utcVal === undefined) utcVal = "";
+        const row = data[i];
+        const eventName = row[5];
+        const dateRaw   = row[6];
+        const utcRaw    = row[7];
+        const pdtVal    = row[8];
+
+        if (!eventName || String(eventName).trim() === '' || String(eventName).includes("Event's") || String(eventName) === 'Rewards') break;
+
+        const hasDate = typeof dateRaw === 'string' && dateRaw.match(/^\d{4}-\d{2}-\d{2}T/);
+        if (!hasDate) continue;
+
+        const eventDate = new Date(dateRaw);
+        const isToday = eventDate.toDateString() === todayStr;
+        const isFuture = eventDate > now && !isToday;
+
+        // Resolve the display UTC time and local time
+        let utcDisplay = '';
+        let localTimeStr = '';
+        let eventDateTime = null;
+
+        if (typeof utcRaw === 'string' && utcRaw.match(/^\d{4}-\d{2}-\d{2}T/)) {
+          const gasDate = new Date(utcRaw);
+          gasDate.setUTCHours(gasDate.getUTCHours() - 8);
+          const h = gasDate.getUTCHours();
+          const m = gasDate.getUTCMinutes();
+          utcDisplay = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} UTC`;
+          const localRef = new Date();
+          localRef.setUTCHours(h, m, 0, 0);
+          localTimeStr = localRef.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+          // Build exact event datetime for countdown
+          eventDateTime = new Date(eventDate);
+          eventDateTime.setUTCHours(h, m, 0, 0);
         }
-        
-        let rowHtml = "";
-        
-        // Handle Headers
-        if (eventName === "Rewards" || eventName === "TimeZones" || eventName === "Date") {
-          let titleColor = eventName === "Rewards" ? "#eab308" : "#10b981"; // Gold for Rewards, Green for others
-          let col4Text = eventName === "Rewards" ? pdtVal : "Your Time";
-          
-          rowHtml += `<tr style="height:30px;"></tr>
-                   <tr>
-                     <td style="font-weight:bold; color:${titleColor}; font-size:16px; padding-top:20px; text-transform:uppercase; border-bottom:2px solid var(--border);">${eventName}</td>
-                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${dateVal}</td>
-                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${utcVal}</td>
-                     <td style="font-weight:bold; color:var(--text-muted); padding-top:20px; border-bottom:2px solid var(--border);">${col4Text}</td>
-                   </tr>`;
-        } else {
-          let styleStr = isPast ? `text-decoration:line-through; opacity:0.5;` : `font-weight:500;`;
-          
-          // Display the original PDT value if no local time was calculated (e.g. text like "No Events")
-          let finalCol4Text = localTimeStr || pdtVal || "";
-          
-          rowHtml += `<tr style="${styleStr}">
-                     <td>${eventName.toString().includes('Bear Trap') ? '🪤' : '✨'} ${eventName}</td>
-                     <td>${dateVal}</td>
-                     <td>${utcVal}</td>
-                     <td>${finalCol4Text}</td>
-                   </tr>`;
-        }
-        
-        if (currentCategory === "today") {
-          todayHtml += rowHtml;
-        } else {
-          upcomingHtml += rowHtml;
+
+        const isPast = eventDateTime ? eventDateTime < now : (!isToday && eventDate < now);
+        const isBearTrap = String(eventName).includes('Bear Trap') || String(eventName).includes('🪤') || String(eventName).includes('🐻');
+        const emoji = isBearTrap ? '🪤' : '✨';
+
+        const entry = { eventName: String(eventName).trim(), utcDisplay, localTimeStr, pdtVal: String(pdtVal || ''), isPast, emoji, eventDateTime, eventDate };
+
+        if (isToday) {
+          todayEvents.push(entry);
+        } else if (isFuture && !isPast) {
+          entry.dateLabel = eventDate.toLocaleDateString('en-US', { weekday:'short', month:'numeric', day:'numeric' });
+          upcomingEvents.push(entry);
         }
       }
-      
-      let finalHtml = `<div style="display:flex; flex-direction:column; gap:20px;">`;
-      
-      if (todayHtml !== "") {
-        finalHtml += `<div class="card" style="overflow-x:auto;">
-                        <div class="card-title">🕒 Today's Schedule</div>
-                        <table><thead><tr>
-                          <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
-                        </tr></thead><tbody>${todayHtml}</tbody></table></div>`;
+
+      // ── 2. Parse category columns (Rewards/Signups/All Week/Holidays) ──
+      let headerRowIdx = -1;
+      for (let i = 0; i < data.length; i++) {
+        const cell = String(data[i][5] || '').trim().toLowerCase();
+        if (cell === 'rewards') { headerRowIdx = i; break; }
+      }
+
+      let rewards = [], signups = [], allWeek = [], holidays = [];
+      if (headerRowIdx !== -1) {
+        for (let i = headerRowIdx + 1; i < data.length; i++) {
+          const r = data[i][5], g = data[i][6], h = data[i][7], k = data[i][8];
+          const anyVal = [r,g,h,k].some(v => v && String(v).trim() !== '');
+          if (!anyVal) break;
+          const skip = (v) => !v || String(v).trim() === '' || String(v).trim().toLowerCase() === 'no events';
+          if (!skip(r)) rewards.push(String(r).trim());
+          if (!skip(g)) signups.push(String(g).trim());
+          if (!skip(h)) allWeek.push(String(h).trim());
+          if (!skip(k)) holidays.push(String(k).trim());
+        }
+      }
+
+      // ── 3. Build the unified card ──
+      const dayName = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+      const sectionPill = (icon, label, color, bg) =>
+        `<div style="display:inline-flex;align-items:center;gap:6px;background:${bg};color:${color};padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">${icon} ${label}</div>`;
+
+      // Today's Events rows
+      let todayRows = '';
+      if (todayEvents.length === 0) {
+        todayRows = `<div style="padding:14px 0;text-align:center;color:var(--text-muted);font-style:italic;">🎉 Rest day — no timed events today!</div>`;
       } else {
-        finalHtml += `<div class="card" style="overflow-x:auto;">
-                        <div class="card-title">🕒 Today's Schedule</div>
-                        <div style="padding: 20px; text-align: center; color: var(--text-muted);">No events scheduled for today.</div>
-                      </div>`;
+        todayEvents.forEach(ev => {
+          const strikeStyle = ev.isPast ? 'opacity:0.45;text-decoration:line-through;' : '';
+          // Live countdown id
+          const countdownId = 'cd_' + Math.random().toString(36).slice(2,8);
+          let countdownHtml = '';
+          if (ev.eventDateTime && !ev.isPast) {
+            const diffMs = ev.eventDateTime - now;
+            const hrs = Math.floor(diffMs / 3600000);
+            const mins = Math.floor((diffMs % 3600000) / 60000);
+            const label = hrs > 0 ? `in ${hrs}h ${mins}m` : `in ${mins}m`;
+            countdownHtml = `<span id="${countdownId}" style="background:rgba(16,185,129,0.15);color:#10b981;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;">${label}</span>`;
+            // Register countdown
+            if (!window._scheduleCountdowns) window._scheduleCountdowns = [];
+            window._scheduleCountdowns.push({ id: countdownId, target: ev.eventDateTime });
+          } else if (ev.isPast) {
+            countdownHtml = `<span style="background:rgba(100,100,100,0.15);color:var(--text-muted);font-size:11px;padding:3px 8px;border-radius:10px;">Done</span>`;
+          }
+          todayRows += `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-main);border-radius:10px;margin-bottom:8px;gap:10px;${strikeStyle}flex-wrap:wrap;">
+              <span style="font-size:14px;font-weight:600;color:var(--text-main);">${ev.emoji} ${ev.eventName}</span>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                ${ev.utcDisplay ? `<span style="font-size:13px;color:var(--text-muted);">${ev.utcDisplay}</span>` : ''}
+                ${ev.localTimeStr ? `<span style="font-size:13px;font-weight:600;color:var(--text-main);">${ev.localTimeStr} local</span>` : ev.pdtVal ? `<span style="font-size:13px;color:var(--text-muted);">${ev.pdtVal} PDT</span>` : ''}
+                ${countdownHtml}
+              </div>
+            </div>`;
+        });
       }
-      
-      if (upcomingHtml !== "") {
-        finalHtml += `<div class="card" style="overflow-x:auto;">
-                        <div class="card-title">📅 Upcoming Schedule</div>
-                        <table><thead><tr>
-                          <th>Event</th><th>Date</th><th>UTC</th><th>Your Time</th>
-                        </tr></thead><tbody>${upcomingHtml}</tbody></table></div>`;
+
+      // Category columns (2-col grid for Rewards + Signups)
+      const listItems = (arr, color) => arr.map(x => `<div style="padding:6px 0;font-size:14px;color:var(--text-main);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;"><span style="width:7px;height:7px;background:${color};border-radius:50%;flex-shrink:0;"></span>${x}</div>`).join('');
+
+      let categoriesHtml = '';
+
+      const hasRewards  = rewards.length > 0;
+      const hasSignups  = signups.length > 0;
+      const hasAllWeek  = allWeek.length > 0;
+      const hasHolidays = holidays.length > 0;
+
+      if (hasRewards || hasSignups) {
+        categoriesHtml += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:20px;">`;
+        if (hasRewards) {
+          categoriesHtml += `<div style="background:var(--bg-main);border-radius:12px;padding:16px;">
+            ${sectionPill('🎁','Rewards','#eab308','rgba(234,179,8,0.12)')}
+            ${listItems(rewards,'#eab308')}
+          </div>`;
+        }
+        if (hasSignups) {
+          categoriesHtml += `<div style="background:var(--bg-main);border-radius:12px;padding:16px;">
+            ${sectionPill('📋','Sign-Ups','#10b981','rgba(16,185,129,0.12)')}
+            ${listItems(signups,'#10b981')}
+          </div>`;
+        }
+        categoriesHtml += `</div>`;
       }
-      
-      finalHtml += `</div>`;
-      app.innerHTML = finalHtml;
-      
+
+      if (hasAllWeek) {
+        categoriesHtml += `<div style="background:var(--bg-main);border-radius:12px;padding:16px;margin-top:16px;">
+          ${sectionPill('📆','All Week','#818cf8','rgba(129,140,248,0.12)')}
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${allWeek.map(x => `<span style="background:rgba(129,140,248,0.15);color:#818cf8;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600;">${x}</span>`).join('')}
+          </div>
+        </div>`;
+      }
+
+      if (hasHolidays) {
+        categoriesHtml += `<div style="background:var(--bg-main);border-radius:12px;padding:16px;margin-top:16px;">
+          ${sectionPill('🎉','Holidays','#f97316','rgba(249,115,22,0.12)')}
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${holidays.map(x => `<span style="background:rgba(249,115,22,0.15);color:#f97316;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600;">${x}</span>`).join('')}
+          </div>
+        </div>`;
+      }
+
+      // Coming Up This Week
+      let upcomingHtml = '';
+      if (upcomingEvents.length > 0) {
+        upcomingHtml = `<div style="background:var(--bg-main);border-radius:12px;padding:16px;margin-top:16px;">
+          ${sectionPill('📅','Coming Up This Week','var(--accent)','rgba(59,130,246,0.12)')}`;
+        upcomingEvents.forEach(ev => {
+          upcomingHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;">
+            <span style="font-size:14px;color:var(--text-main);font-weight:500;">${ev.emoji} ${ev.eventName}</span>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <span style="font-size:12px;color:var(--text-muted);">${ev.dateLabel}</span>
+              ${ev.utcDisplay ? `<span style="font-size:12px;color:var(--text-muted);">${ev.utcDisplay}</span>` : ''}
+              ${ev.localTimeStr ? `<span style="font-size:12px;font-weight:600;color:var(--accent);">${ev.localTimeStr}</span>` : ''}
+            </div>
+          </div>`;
+        });
+        upcomingHtml += `</div>`;
+      }
+
+      // ── 4. Final render ──
+      app.innerHTML = `
+        <div class="card" style="background:var(--card-bg);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:16px;padding:24px;animation:fadeIn 0.3s ease;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h2 style="margin:0;font-size:22px;color:var(--text-main);">🕒 Today's Schedule</h2>
+              <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">${dayName}</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <a href="https://www.google.com/url?q=https://calendar.google.com/calendar/u/0?cid%3DMWZkOTI2ZjdkNzVhYWIyMzM1N2IxYjE1NTc5MzE2YTRlYTRjMDI3NjA4NDlmOTRkZjg2MDRlZWY5YjdiMTI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&sa=D&source=editors&ust=1783297509664500&usg=AOvVaw3Nu5FI78rflI7vvCvxd5MS" target="_blank" style="background:#0ea5e9;color:#fff;padding:7px 14px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:12px;">➕ Google Cal</a>
+              <button onclick="window.refreshSchedule && window.refreshSchedule()" style="background:var(--bg-main);color:var(--text-main);border:1px solid var(--border);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;">🔄 Refresh</button>
+            </div>
+          </div>
+
+          <div style="background:var(--bg-main);border-radius:12px;padding:16px;">
+            ${sectionPill('⏰','Events Today','#60a5fa','rgba(96,165,250,0.12)')}
+            ${todayRows}
+          </div>
+
+          ${categoriesHtml}
+          ${upcomingHtml}
+        </div>`;
+
+      // ── 5. Start live countdown interval ──
+      if (window._scheduleCountdownTimer) clearInterval(window._scheduleCountdownTimer);
+      if (window._scheduleCountdowns && window._scheduleCountdowns.length > 0) {
+        window._scheduleCountdownTimer = setInterval(() => {
+          const n = new Date();
+          (window._scheduleCountdowns || []).forEach(cd => {
+            const el = document.getElementById(cd.id);
+            if (!el) return;
+            const diff = cd.target - n;
+            if (diff <= 0) { el.textContent = 'Now'; el.style.background = 'rgba(239,68,68,0.15)'; el.style.color = '#ef4444'; return; }
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            el.textContent = h > 0 ? `in ${h}h ${m}m` : `in ${m}m`;
+          });
+        }, 30000);
+      }
+
     } catch(e) { renderError(e.message); }
   },
-  
+
   contact: async () => {
     app.innerHTML = `
       <div class="card" style="display:flex; flex-direction:column; height: 85vh; min-height: 800px; padding:0; overflow:hidden; animation: fadeIn 0.3s ease;">
