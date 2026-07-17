@@ -2054,19 +2054,24 @@ const views = {
           linkedHtml += `<div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">`;
           links.forEach(gid => {
               let altName = idToNameMap[gid] || `Game ID: ${gid}`;
-              linkedHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-main); padding:8px 12px; border-radius:8px; border:1px solid var(--border);">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                      <div style="width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; overflow:hidden; cursor:pointer; position:relative;" onclick="window._uploadTargetId='${gid}'; document.getElementById('avatarUploadInput').click();" title="Change Alt Avatar">
-                          <img id="altAvatarImg-${gid}" src="${avatarMap[gid] || `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                          <div id="altAvatarFallback-${gid}" style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${altName.charAt(0).toUpperCase()}</div>
-                          <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><span style="font-size:12px;">✏️</span></div>
+              let altStats = window.rosterMap[gid] || {};
+              let flVal = altStats.furnaceLevel || 'N/A';
+              let timeActiveVal = altStats.timeActive || 'Unknown';
+              
+              linkedHtml += `<div style="display:flex; flex-direction:column; background:var(--bg-main); padding:12px; border-radius:10px; border:1px solid var(--border); box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <div style="display:flex; align-items:center; gap:10px;">
+                          <div style="width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; overflow:hidden; cursor:pointer; position:relative; flex-shrink:0;" onclick="window._uploadTargetId='${gid}'; document.getElementById('avatarUploadInput').click();" title="Change Alt Avatar">
+                              <img id="altAvatarImg-${gid}" src="${avatarMap[gid] || `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                              <div id="altAvatarFallback-${gid}" style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${altName.charAt(0).toUpperCase()}</div>
+                              <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><span style="font-size:12px;">✏️</span></div>
+                          </div>
+                          <div style="text-align:left;">
+                              <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${altName}</div>
+                              <div style="font-size:11px; color:var(--text-muted); font-family:monospace;">ID: ${gid}</div>
+                          </div>
                       </div>
-                      <div style="text-align:left;">
-                          <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${altName}</div>
-                          <div style="font-size:11px; color:var(--text-muted);">${gid}</div>
-                      </div>
-                  </div>
-                  ${ (() => {
+                      ${ (() => {
         let isAltEnrolled = false;
         const gcb = window.liveData['giftcodebot'];
         if (gcb && gcb.length > 1) {
@@ -2090,6 +2095,15 @@ const views = {
             </div>`;
         }
       })() }
+                  </div>
+                  <div style="display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
+                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-muted);">
+                          <span style="font-weight:bold; color:var(--text-main); display:flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-muted);">
+                          ⏱️ ${timeActiveVal}
+                      </div>
+                  </div>
               </div>`;
           });
           linkedHtml += `</div>`;
