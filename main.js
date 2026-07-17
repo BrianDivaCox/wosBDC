@@ -226,6 +226,18 @@ window.unlinkAltAccountPrompt = async (gid) => {
     }
 };
 
+window.adminLinkAltAccountPrompt = async (uid, cName, currentLinksStr) => {
+    const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${cName}:`);
+    if (!altId || altId.trim() === '') return;
+    const currentLinks = currentLinksStr ? currentLinksStr.split(',') : [];
+    try {
+        await linkAltAccount(uid, altId.trim(), currentLinks);
+        if (window.showToast) window.showToast(`Alt Account linked for ${cName}!`, "success");
+    } catch(e) {
+        alert(e.message);
+    }
+};
+
 window.getAdminLevel = (user) => {
     if (!user || !user.gameId) return false;
     if (Number(user.gameId) === 318843189) return "R5"; // Root admin
@@ -1578,6 +1590,7 @@ const views = {
             </td>
             <td style="padding:10px;">
               ${hasAvatar ? `<button class="delete-avatar-btn" data-id="${u.gameId}" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Delete Avatar</button>` : `<span style="color:var(--text-muted); font-size:12px;">Default</span>`}
+              <button onclick="window.adminLinkAltAccountPrompt('${u.uid}', '${cName.replace(/'/g, "\\'")}', '${(u.linkedGameIds || []).join(',')}')" style="background:transparent; border:1px solid var(--accent); color:var(--accent); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">+ Add Alt</button>
             </td>
           </tr>
         `;
@@ -1715,14 +1728,16 @@ const views = {
         if (window.adminSyncListener) window.adminSyncListener();
         window.adminSyncListener = onValue(ref(db, 'system/lastSync'), (snap) => {
           const data = snap.val() || {};
-          let html = Object.keys(data).sort().map(sheet => {
+          let todayStr = new Date().toDateString();
+          let filteredKeys = Object.keys(data).filter(sheet => new Date(data[sheet]).toDateString() === todayStr);
+          let html = filteredKeys.sort().map(sheet => {
             let timeStr = new Date(data[sheet]).toLocaleString();
             return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
               <span style="color:var(--text-main); font-weight:bold;">${sheet}</span>
               <span style="color:var(--success); font-size:12px; font-weight:bold;">${timeStr}</span>
             </div>`;
           }).join('');
-          if (html === '') html = '<div style="color:var(--text-muted); font-size:12px; text-align:center; padding:10px;">No sync data available yet.</div>';
+          if (html === '') html = '<div style="color:var(--text-muted); font-size:12px; text-align:center; padding:10px;">No sync data available for today yet.</div>';
           syncStatusDiv.innerHTML = html;
         });
       }
@@ -2173,9 +2188,10 @@ const views = {
             <div style="position:absolute; top:0; left:0; width:100%; height:4px; background:var(--accent); box-shadow:0 0 10px var(--accent);"></div>
             
             <div class="id-card-header" style="display:flex; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:15px; position:relative; z-index:2;">
-                <div class="id-card-avatar" style="border-radius:12px; overflow:hidden; border:2px solid var(--accent); box-shadow:0 4px 15px rgba(0,0,0,0.3); background:var(--bg-secondary); flex-shrink:0;">
+                <div class="id-card-avatar" style="border-radius:12px; overflow:hidden; border:2px solid var(--accent); box-shadow:0 4px 15px rgba(0,0,0,0.3); background:var(--bg-secondary); flex-shrink:0; cursor:pointer; position:relative;" onclick="window._uploadTargetId=currentUser.gameId; document.getElementById('avatarUploadInput').click();" title="Change Profile Picture">
                     <img id="accountHubAvatarImg" src="${avatarSrc}" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width:100%; height:100%; object-fit:cover;" />
                     <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%; font-size:32px; font-weight:bold; color:#fff;">${currentChiefName.charAt(0).toUpperCase()}</div>
+                    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><span style="font-size:24px;">✏️</span></div>
                 </div>
                 <div style="overflow:hidden;">
                     <h2 class="id-card-name" style="margin:0 0 5px 0; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 4px rgba(0,0,0,0.5); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${window.escapeHTML(currentChiefName)}${adminBadgeHtml}</h2>
@@ -2213,15 +2229,7 @@ const views = {
         <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;">
           <div style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">Email: ${currentUser.email}</div>
           
-          <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
-            <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">🖼️ Profile Picture</h3>
-            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">Upload a custom profile picture. It will automatically replace your default avatar on the Chief's Roster and Leaderboards.</p>
-            
-            <input type="file" id="avatarUploadInput" accept="image/png, image/jpeg, image/webp" style="display:none;">
-            <button id="avatarUploadBtn" style="background:var(--bg-main); border:1px solid var(--accent); color:var(--text-main); padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.2s;">Choose Image</button>
-            
-            <div id="avatarUploadStatus" style="margin-top:10px; font-size:13px; color:var(--success); font-weight:bold;"></div>
-          </div>
+          <input type="file" id="avatarUploadInput" accept="image/png, image/jpeg, image/webp" style="display:none;">
         </div>
             ${linkedHtml}
         
@@ -2288,10 +2296,6 @@ const views = {
       }
       
       const uploadInput = document.getElementById('avatarUploadInput');
-    const uploadBtn = document.getElementById('avatarUploadBtn');
-    const statusMsg = document.getElementById('avatarUploadStatus');
-    
-    uploadBtn.addEventListener('click', () => { window._uploadTargetId = currentUser.gameId; uploadInput.click(); });
     
     uploadInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -2381,17 +2385,16 @@ const views = {
                      if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'none';
                    }
                    
-                   statusMsg.style.color = 'var(--success)';
-                   statusMsg.textContent = '✅ Profile picture updated successfully!';
+                   if (window.showToast) window.showToast('Profile picture updated successfully!', 'success');
                    
                    // Refresh mapping so UI updates immediately globally
                    if (idToNameMap[currentUser.gameId]) {
-                      avatarMap[currentUser.gameId] = await get(ref(db, `avatars/${currentUser.gameId}`)).then(s => s.val());
+                      const timeStamp = new Date().getTime();
+                      avatarMap[targetId] = base64String;
                    }
-               } catch (err) {
-                   console.error(err);
-                   statusMsg.style.color = 'var(--danger)';
-                   statusMsg.textContent = '❌ Upload failed. Please try again.';
+               } catch (error) {
+                   if (window.showToast) window.showToast('Failed to upload image.', 'error');
+                   console.error(error);
                }
                
                // Cleanup
