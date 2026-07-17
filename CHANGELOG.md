@@ -1,3 +1,7 @@
+## [1.20.8] - 2026-07-17
+### Added
+- **Popup Color Coding**: The search results in the Rewards Editor popup are now color-coded for quick identification: Green (Active/Upcoming), Red (Expired), and Yellow (No dates set).
+
 ## [1.20.7] - 2026-07-17
 ### Changed
 - **Popup UI Polish**: The Rewards Editor popup now hides the massive list of events entirely when it first opens, presenting a cleaner interface. The list only appears once you begin typing in the search box.
