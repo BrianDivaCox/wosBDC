@@ -3491,6 +3491,21 @@ const views = {
   },
   
   todays_schedule: async () => {
+    // Define refresh function scoped to THIS view (not the weekly calendar)
+    window.refreshTodaysSchedule = async () => {
+      delete window.liveData["WhiteOut Survival"];
+      delete window.livePromises["WhiteOut Survival"];
+      if (window.liveListeners && window.liveListeners["WhiteOut Survival"]) {
+        window.liveListeners["WhiteOut Survival"]();
+        delete window.liveListeners["WhiteOut Survival"];
+      }
+      if (window._scheduleCountdownTimer) { clearInterval(window._scheduleCountdownTimer); window._scheduleCountdownTimer = null; }
+      window._scheduleCountdowns = [];
+      if (window.showToast) window.showToast("Refreshing schedule...", "info", false);
+      await views.todays_schedule();
+      if (window.showToast) window.showToast("Schedule refreshed!", "success", true);
+    };
+
     renderLoading("Loading Today's Events");
     try {
       const data = await fetchSheet("WhiteOut Survival");
@@ -3514,7 +3529,10 @@ const views = {
         const utcRaw    = row[7];
         const pdtVal    = row[8];
 
-        if (!eventName || String(eventName).trim() === '' || String(eventName).includes("Event's") || String(eventName) === 'Rewards') break;
+        // Skip blank rows and header rows — only BREAK on 'Rewards' which marks end of events section
+        if (!eventName || String(eventName).trim() === '') continue;
+        if (String(eventName).includes("Event's")) continue;
+        if (String(eventName).trim() === 'Rewards') break;
 
         const hasDate = typeof dateRaw === 'string' && dateRaw.match(/^\d{4}-\d{2}-\d{2}T/);
         if (!hasDate) continue;
@@ -3690,7 +3708,7 @@ const views = {
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
               <a href="https://www.google.com/url?q=https://calendar.google.com/calendar/u/0?cid%3DMWZkOTI2ZjdkNzVhYWIyMzM1N2IxYjE1NTc5MzE2YTRlYTRjMDI3NjA4NDlmOTRkZjg2MDRlZWY5YjdiMTI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&sa=D&source=editors&ust=1783297509664500&usg=AOvVaw3Nu5FI78rflI7vvCvxd5MS" target="_blank" style="background:#0ea5e9;color:#fff;padding:7px 14px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:12px;">➕ Google Cal</a>
-              <button onclick="window.refreshSchedule && window.refreshSchedule()" style="background:var(--bg-main);color:var(--text-main);border:1px solid var(--border);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;">🔄 Refresh</button>
+              <button onclick="window.refreshTodaysSchedule && window.refreshTodaysSchedule()" style="background:var(--bg-main);color:var(--text-main);border:1px solid var(--border);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;">🔄 Refresh</button>
             </div>
           </div>
 
