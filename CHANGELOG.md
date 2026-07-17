@@ -1,3 +1,7 @@
+## [1.20.11] - 2026-07-17
+### Changed
+- **Countdown Formatting**: The home page countdown widget now cleanly omits unnecessary leading zeros (e.g. `5h 06m` instead of `05h 06m`) and will hide the hours entirely when it drops below 1 hour.
+
 ## [1.20.10] - 2026-07-17
 ### Changed
 - **Home Widget Countdown Styling**: Styled the home page countdown widget so the numbers pop in the accent color, while the letters (h, m, s) seamlessly blend in using the active theme's text color.

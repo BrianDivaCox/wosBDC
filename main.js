@@ -2595,7 +2595,13 @@ const views = {
           let m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           let s = Math.floor((diff % (1000 * 60)) / 1000);
           
-          timerEl.innerHTML = `${h.toString().padStart(2, '0')}<span style="color:var(--text-main); font-size:0.7em; margin:0 4px 0 1px;">h</span>${m.toString().padStart(2, '0')}<span style="color:var(--text-main); font-size:0.7em; margin:0 4px 0 1px;">m</span>${s.toString().padStart(2, '0')}<span style="color:var(--text-main); font-size:0.7em; margin-left:1px;">s</span>`;
+          let timeStr = '';
+          if (h > 0) {
+            timeStr = `${h}<span style="color:var(--text-main); font-size:0.7em; margin:0 4px 0 1px;">h</span>${m.toString().padStart(2, '0')}<span style="color:var(--text-main); font-size:0.7em; margin:0 4px 0 1px;">m</span>${s.toString().padStart(2, '0')}<span style="color:var(--text-main); font-size:0.7em; margin-left:1px;">s</span>`;
+          } else {
+            timeStr = `${m}<span style="color:var(--text-main); font-size:0.7em; margin:0 4px 0 1px;">m</span>${s.toString().padStart(2, '0')}<span style="color:var(--text-main); font-size:0.7em; margin-left:1px;">s</span>`;
+          }
+          timerEl.innerHTML = timeStr;
         };
         
         let countdownInterval = setInterval(updateTimer, 1000);
