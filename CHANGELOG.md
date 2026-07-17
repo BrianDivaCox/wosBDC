@@ -1,3 +1,7 @@
+## [1.20.6] - 2026-07-17
+### Added
+- **Set Today Buttons**: Added clickable "TODAY" buttons above the start and end date inputs in the Rewards Editor popup for instant date assignment.
+
 ## [1.20.5] - 2026-07-17
 ### Added
 - **Search-As-You-Type**: The new Rewards & Events Editor popup now has a live search box at the top, allowing you to instantly filter through all events and rewards without scrolling through the Google Sheet.
