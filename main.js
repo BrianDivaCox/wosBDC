@@ -2041,9 +2041,10 @@ const views = {
               let altName = idToNameMap[gid] || `Game ID: ${gid}`;
               linkedHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-main); padding:8px 12px; border-radius:8px; border:1px solid var(--border);">
                   <div style="display:flex; align-items:center; gap:10px;">
-                      <div style="width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; overflow:hidden;">
-                          <img src="${avatarMap[gid] || `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                          <div style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${altName.charAt(0).toUpperCase()}</div>
+                      <div style="width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; overflow:hidden; cursor:pointer; position:relative;" onclick="window._uploadTargetId='${gid}'; document.getElementById('avatarUploadInput').click();" title="Change Alt Avatar">
+                          <img id="altAvatarImg-${gid}" src="${avatarMap[gid] || `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                          <div id="altAvatarFallback-${gid}" style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${altName.charAt(0).toUpperCase()}</div>
+                          <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><span style="font-size:12px;">✏️</span></div>
                       </div>
                       <div style="text-align:left;">
                           <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${altName}</div>
@@ -2290,7 +2291,7 @@ const views = {
     const uploadBtn = document.getElementById('avatarUploadBtn');
     const statusMsg = document.getElementById('avatarUploadStatus');
     
-    uploadBtn.addEventListener('click', () => uploadInput.click());
+    uploadBtn.addEventListener('click', () => { window._uploadTargetId = currentUser.gameId; uploadInput.click(); });
     
     uploadInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -2363,10 +2364,17 @@ const views = {
                const base64String = canvas.toDataURL('image/jpeg', 0.8);
                
                try {
-                   await uploadAvatar(currentUser.gameId, base64String);
+                   let targetId = window._uploadTargetId || currentUser.gameId;
+                   await uploadAvatar(targetId, base64String);
                    
                    // Update DOM immediately
-                   const imgEl = document.getElementById('accountHubAvatarImg');
+                   let imgEl;
+                   if (targetId === currentUser.gameId) {
+                     imgEl = document.getElementById('accountHubAvatarImg');
+                   } else {
+                     imgEl = document.getElementById(`altAvatarImg-${targetId}`);
+                   }
+                   
                    if (imgEl) {
                      imgEl.src = base64String;
                      imgEl.style.display = 'block';
