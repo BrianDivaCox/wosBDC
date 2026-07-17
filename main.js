@@ -2077,22 +2077,28 @@ const views = {
               </div>`;
           });
           linkedHtml += `</div>`;
-      } else {
-          linkedHtml += `<p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">You can link 1 alt account to bypass the unregistered filter.</p>`;
       }
       
-      if (links.length < 1) {
-          linkedHtml += `
-          <div id="linkAltForm" style="display:none; background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
-              <input type="number" id="altGameIdInput" placeholder="Enter Alt Game ID" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); margin-bottom:10px;">
-              <div id="altChiefConfirm" style="font-size:13px; margin-bottom:10px; display:none;"></div>
-              <div style="display:flex; gap:10px;">
-                  <button id="cancelAltBtn" style="flex:1; background:transparent; border:1px solid var(--border); color:var(--text-muted); padding:8px; border-radius:6px; cursor:pointer;">Cancel</button>
-                  <button id="submitAltBtn" style="flex:1; background:var(--accent); color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm Link</button>
-              </div>
-          </div>
-          <button id="openLinkAltBtn" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link ${links.length > 0 ? 'Another' : 'Alt'} Account</button>`;
+      let datalistHtml = `<datalist id="rosterAltDatalist">`;
+      for (const [id, name] of Object.entries(idToNameMap)) {
+          if (id !== currentUser.gameId && !links.includes(id)) {
+              datalistHtml += `<option value="${id}">${name}</option>`;
+          }
       }
+      datalistHtml += `</datalist>`;
+
+      linkedHtml += `
+      <div id="linkAltForm" style="display:none; background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
+          <input type="text" id="altGameIdInput" list="rosterAltDatalist" placeholder="Search Alt Name or Game ID..." style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); margin-bottom:10px;">
+          ${datalistHtml}
+          <div id="altChiefConfirm" style="font-size:13px; margin-bottom:10px; display:none;"></div>
+          <div style="display:flex; gap:10px;">
+              <button id="cancelAltBtn" style="flex:1; background:transparent; border:1px solid var(--border); color:var(--text-muted); padding:8px; border-radius:6px; cursor:pointer;">Cancel</button>
+              <button id="submitAltBtn" style="flex:1; background:var(--accent); color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm Link</button>
+          </div>
+      </div>
+      <button id="openLinkAltBtn" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px dashed var(--accent); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; transition:0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">+ Link ${links.length > 0 ? 'Another' : 'Alt'} Account</button>`;
+      
       linkedHtml += `</div>`;
       
       let currentChiefName = idToNameMap[currentUser.gameId] || `Unknown Chief`;
