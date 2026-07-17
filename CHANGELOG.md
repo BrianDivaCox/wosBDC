@@ -1,3 +1,7 @@
+## [1.20.13] - 2026-07-17
+### Fixed
+- **Calendar Schedule Header Bug**: Fixed a persistent crash in the Calendar View where custom text in the date headers (like "Today Thu 7/16") caused the date parser to fail and throw a "Could not find dates" error.
+
 ## [1.20.12] - 2026-07-17
 ### Fixed
 - **Calendar Schedule View**: Fixed a bug where the full calendar view would fail to render and show a "Could not find dates" error due to the new compressed `M/D` date format deployed in the Firebase sync.

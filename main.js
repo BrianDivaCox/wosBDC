@@ -3429,7 +3429,8 @@ const views = {
       // Find the row that contains the dates
       let dateRowIdx = -1;
       for (let r = 0; r < data.length; r++) {
-        if (data[r].some(cell => typeof cell === 'string' && (cell.match(/^\d{4}-\d{2}-\d{2}T/) || cell.match(/^\d{1,2}\/\d{1,2}$/)))) {
+        let dateCells = data[r].filter(cell => typeof cell === 'string' && (cell.match(/^\d{4}-\d{2}-\d{2}T/) || cell.match(/\d{1,2}\/\d{1,2}/)));
+        if (dateCells.length >= 3) {
           dateRowIdx = r;
           break;
         }
@@ -3450,10 +3451,8 @@ const views = {
             let [year, month, day] = cell.split('T')[0].split('-');
             let d = new Date(year, month - 1, day);
             formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-          } else if (cell.match(/^\d{1,2}\/\d{1,2}$/)) {
-            let [month, day] = cell.split('/');
-            let d = new Date(new Date().getFullYear(), month - 1, day);
-            formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          } else if (cell.match(/\d{1,2}\/\d{1,2}/)) {
+            formatted = cell.replace(/Today /ig, '').replace(/Tomorrow /ig, '').trim();
           }
           
           if (formatted) {
