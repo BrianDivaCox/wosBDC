@@ -2054,9 +2054,18 @@ const views = {
           linkedHtml += `<div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">`;
           links.forEach(gid => {
               let altName = idToNameMap[gid] || `Game ID: ${gid}`;
-              let altStats = rosterMap[gid] || {};
-              let flVal = altStats.furnaceLevel || 'N/A';
-              let timeActiveVal = altStats.timeActive || 'Unknown';
+              let flVal = 'N/A';
+              let timeActiveVal = 'Unknown';
+              const rosterData = window.liveData['Roster'];
+              if (rosterData && rosterData.length > 1) {
+                  for (let i = 1; i < rosterData.length; i++) {
+                      if (rosterData[i][0] && rosterData[i][0].toString().trim() === altName.trim()) {
+                          flVal = rosterData[i][2] || 'N/A';
+                          timeActiveVal = rosterData[i][5] || 'Unknown';
+                          break;
+                      }
+                  }
+              }
               
               linkedHtml += `<div style="display:flex; flex-direction:column; background:var(--bg-main); padding:12px; border-radius:10px; border:1px solid var(--border); box-shadow:0 2px 5px rgba(0,0,0,0.1);">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
