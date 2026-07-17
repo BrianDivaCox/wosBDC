@@ -1,3 +1,7 @@
+## [1.20.10] - 2026-07-17
+### Changed
+- **Home Widget Countdown Styling**: Styled the home page countdown widget so the numbers pop in the accent color, while the letters (h, m, s) seamlessly blend in using the active theme's text color.
+
 ## [1.20.9] - 2026-07-17
 ### Added
 - **Site Favicon**: Replaced the default browser tab icon with a snowflake emoji (❄️) to match the dashboard navbar logo and improve brand recognition.
