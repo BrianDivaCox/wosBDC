@@ -2417,24 +2417,45 @@ const views = {
         for (let i = 1; i < Math.min(34, scheduleData.length); i++) {
           let row = scheduleData[i];
           let eventName = row[5];
-          let originalDateVal = row[6];
-          let utcVal = row[7];
+          let dateRaw = row[6];
+          let utcRaw = row[7];
           
-          if (!eventName || eventName.toString().trim() === "" || eventName.includes("Event's")) continue;
-          if (typeof originalDateVal !== 'string' || !originalDateVal.match(/^\d{4}-\d{2}-\d{2}T/)) continue;
-          if (typeof utcVal !== 'string' || !utcVal.match(/^\d{4}-\d{2}-\d{2}T/)) continue;
+          if (!eventName || String(eventName).trim() === "" || String(eventName).includes("Event's")) continue;
+          if (String(eventName).trim() === 'Rewards') break;
           
-          let eventDate = new Date(originalDateVal);
-          let gasDate = new Date(utcVal);
-          gasDate.setUTCHours(gasDate.getUTCHours() - 8); // Undo Google Sheets time offset
-          
-          // Combine Date and Time into a single exact Date object
-          let exactEventDate = new Date(eventDate);
-          exactEventDate.setUTCHours(gasDate.getUTCHours(), gasDate.getUTCMinutes(), 0, 0);
+          const dateStr = String(dateRaw || '').trim();
+          let eventDate = null;
+          const mdMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})$/);
+          const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+          if (mdMatch) {
+            eventDate = new Date(now.getFullYear(), parseInt(mdMatch[1]) - 1, parseInt(mdMatch[2]));
+          } else if (isoMatch) {
+            eventDate = new Date(dateStr);
+          } else {
+            continue;
+          }
+
+          let exactEventDate = null;
+          const utcStr = String(utcRaw || '').trim();
+          const hmMatch = utcStr.match(/^(\d{1,2}):(\d{2})$/);
+          const isoUtcMatch = utcStr.match(/^\d{4}-\d{2}-\d{2}T/);
+
+          if (hmMatch) {
+            const h = parseInt(hmMatch[1]), m = parseInt(hmMatch[2]);
+            exactEventDate = new Date(eventDate);
+            exactEventDate.setUTCHours(h, m, 0, 0);
+          } else if (isoUtcMatch) {
+            const gasDate = new Date(utcStr);
+            gasDate.setUTCHours(gasDate.getUTCHours() - 8);
+            exactEventDate = new Date(eventDate);
+            exactEventDate.setUTCHours(gasDate.getUTCHours(), gasDate.getUTCMinutes(), 0, 0);
+          } else {
+            continue;
+          }
           
           if (exactEventDate > now) {
             upcomingEvents.push({
-              name: eventName,
+              name: String(eventName).trim(),
               exactDate: exactEventDate
             });
           }
