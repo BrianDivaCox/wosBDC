@@ -1,3 +1,7 @@
+## [1.20.14] - 2026-07-17
+### Changed
+- **UI Notifications**: Routine success toasts (like Schedule Refreshed, Enrolled, Added Donation) will now auto-dismiss after a few seconds instead of requiring a manual click. Critical notifications like "Updates complete!" remain sticky.
+
 ## [1.20.13] - 2026-07-17
 ### Fixed
 - **Calendar Schedule Header Bug**: Fixed a persistent crash in the Calendar View where custom text in the date headers (like "Today Thu 7/16") caused the date parser to fail and throw a "Could not find dates" error.

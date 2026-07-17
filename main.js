@@ -1325,7 +1325,7 @@ const views = {
             if (usersTab) usersTab.style.display = 'block';
         }, 50);
         
-        if (window.showToast) window.showToast("User database refreshed!", "success", true);
+        if (window.showToast) window.showToast("User database refreshed!", "success");
     };
 
     if (!window.isAdminUser(currentUser)) {
@@ -3374,9 +3374,9 @@ const views = {
                
                if (res && res.success) {
                    if (res.status === 'duplicate_skipped') {
-                       window.showToast("You are already enrolled!", "success", true);
+                       window.showToast("You are already enrolled!", "success");
                    } else {
-                       window.showToast("Successfully Enrolled in Auto Redeem!", "success", true);
+                       window.showToast("Successfully Enrolled in Auto Redeem!", "success");
                    }
                    optInBtn.textContent = 'Enrolled o.';
                    optInBtn.style.background = 'var(--bg-card)';
@@ -3412,7 +3412,7 @@ const views = {
       
       setTimeout(async () => {
         await views.schedule();
-        if (window.showToast) window.showToast("Schedule refreshed!", "success", true);
+        if (window.showToast) window.showToast("Schedule refreshed!", "success");
       }, 400);
     };
 
@@ -3539,7 +3539,7 @@ const views = {
       window._scheduleCountdowns = [];
       if (window.showToast) window.showToast("Refreshing schedule...", "info", false);
       await views.todays_schedule();
-      if (window.showToast) window.showToast("Schedule refreshed!", "success", true);
+      if (window.showToast) window.showToast("Schedule refreshed!", "success");
     };
 
     renderLoading("Loading Today's Events");
@@ -4372,7 +4372,7 @@ window.promptBearTrap = async (name) => {
     const donToken2 = await getAuthToken();
     const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(name)}&amount=${encodeURIComponent(amt)}&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(donToken2)}`).then(r => r.json());
     if (res.success) {
-      window.showToast("Successfully added! New Total: " + res.newTotal, "success", true);
+      window.showToast("Successfully added! New Total: " + res.newTotal, "success");
       window.sheetCache = {}; 
       window.liveData['LeaderBoards'] = null; window.livePromises['LeaderBoards'] = null;
       window.liveData['activity '] = null; window.livePromises['activity '] = null;
@@ -4458,9 +4458,9 @@ window.openAltPerksModal = (gameId, altName) => {
             
             if (res && res.success) {
                 if (res.status === 'duplicate_skipped') {
-                    window.showToast("This Alt is already enrolled!", "success", true);
+                    window.showToast("This Alt is already enrolled!", "success");
                 } else {
-                    window.showToast("Successfully Enrolled Alt Account!", "success", true);
+                    window.showToast("Successfully Enrolled Alt Account!", "success");
                 }
                 document.getElementById('altPerksModal').style.display = 'none';
                 document.getElementById('altPerksModalOverlay').style.display = 'none';
