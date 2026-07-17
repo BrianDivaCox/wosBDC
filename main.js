@@ -3525,37 +3525,58 @@ const views = {
       for (let i = 1; i < Math.min(34, data.length); i++) {
         const row = data[i];
         const eventName = row[5];
-        const dateRaw   = row[6];
-        const utcRaw    = row[7];
-        const pdtVal    = row[8];
+        const dateRaw   = row[6];  // now "7/17" format
+        const utcRaw    = row[7];  // now "16:00" format
+        const pdtVal    = row[8];  // "9:00 AM" (display only)
 
         // Skip blank rows and header rows — only BREAK on 'Rewards' which marks end of events section
         if (!eventName || String(eventName).trim() === '') continue;
         if (String(eventName).includes("Event's")) continue;
         if (String(eventName).trim() === 'Rewards') break;
 
-        const hasDate = typeof dateRaw === 'string' && dateRaw.match(/^\d{4}-\d{2}-\d{2}T/);
-        if (!hasDate) continue;
+        // ── Parse M/D date (e.g. "7/17") ──
+        const dateStr = String(dateRaw || '').trim();
+        // Support both "7/17" and legacy "2026-07-17T..." ISO format
+        let eventDate = null;
+        const mdMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})$/);
+        const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+        if (mdMatch) {
+          eventDate = new Date(now.getFullYear(), parseInt(mdMatch[1]) - 1, parseInt(mdMatch[2]));
+        } else if (isoMatch) {
+          eventDate = new Date(dateStr);
+        } else {
+          continue; // can't parse date — skip
+        }
 
-        const eventDate = new Date(dateRaw);
         const isToday = eventDate.toDateString() === todayStr;
         const isFuture = eventDate > now && !isToday;
 
-        // Resolve the display UTC time and local time
+        // ── Parse UTC time (e.g. "16:00" or legacy ISO) ──
         let utcDisplay = '';
         let localTimeStr = '';
         let eventDateTime = null;
 
-        if (typeof utcRaw === 'string' && utcRaw.match(/^\d{4}-\d{2}-\d{2}T/)) {
-          const gasDate = new Date(utcRaw);
-          gasDate.setUTCHours(gasDate.getUTCHours() - 8);
-          const h = gasDate.getUTCHours();
-          const m = gasDate.getUTCMinutes();
+        const utcStr = String(utcRaw || '').trim();
+        const hmMatch = utcStr.match(/^(\d{1,2}):(\d{2})$/);
+        const isoUtcMatch = utcStr.match(/^\d{4}-\d{2}-\d{2}T/);
+
+        if (hmMatch) {
+          const h = parseInt(hmMatch[1]), m = parseInt(hmMatch[2]);
           utcDisplay = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} UTC`;
           const localRef = new Date();
           localRef.setUTCHours(h, m, 0, 0);
           localTimeStr = localRef.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-          // Build exact event datetime for countdown
+          eventDateTime = new Date(eventDate);
+          eventDateTime.setUTCHours(h, m, 0, 0);
+        } else if (isoUtcMatch) {
+          // Legacy ISO format: apply the -8h GAS offset correction
+          const gasDate = new Date(utcStr);
+          gasDate.setUTCHours(gasDate.getUTCHours() - 8);
+          const h = gasDate.getUTCHours(), m = gasDate.getUTCMinutes();
+          utcDisplay = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} UTC`;
+          const localRef = new Date();
+          localRef.setUTCHours(h, m, 0, 0);
+          localTimeStr = localRef.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
           eventDateTime = new Date(eventDate);
           eventDateTime.setUTCHours(h, m, 0, 0);
         }
