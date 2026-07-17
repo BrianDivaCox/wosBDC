@@ -1,3 +1,7 @@
+## [1.24.1] - 2026-07-17
+### Fixed
+- **Account Hub Crash**: Fixed a critical bug where the Account Hub would fail to load if it couldn't correctly reference the Roster data map.
+
 ## [1.24.0] - 2026-07-17
 ### Added
 - **Alt Account Stats**: Alt accounts now beautifully display their Furnace Level and Time Active (pulled directly from the Chief's Roster) directly within the Account Hub.

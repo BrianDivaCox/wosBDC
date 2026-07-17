@@ -2054,7 +2054,7 @@ const views = {
           linkedHtml += `<div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">`;
           links.forEach(gid => {
               let altName = idToNameMap[gid] || `Game ID: ${gid}`;
-              let altStats = window.rosterMap[gid] || {};
+              let altStats = rosterMap[gid] || {};
               let flVal = altStats.furnaceLevel || 'N/A';
               let timeActiveVal = altStats.timeActive || 'Unknown';
               
