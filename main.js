@@ -2272,10 +2272,10 @@ const views = {
       })() }
                   </div>
                   <div style="display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
-                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-muted);">
+                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-main);">
                           <span id="${flSpanId}" style="font-weight:bold; color:var(--text-main); display:flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>
                       </div>
-                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-muted);">
+                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-main); font-weight:bold;">
                           ⏱️ ${timeActiveVal}
                       </div>
                   </div>

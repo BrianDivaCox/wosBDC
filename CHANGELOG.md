@@ -1,3 +1,7 @@
+## [1.24.21] - 2026-07-17
+### Fixed
+- **Personal Hub UI**: Changed the text color of the "Time Active" stats on Personal Hub Alt Cards from muted gray to bright white (`var(--text-main)`) with bold weighting to match the Furnace Level display.
+
 ## [1.24.20] - 2026-07-17
 ### Fixed
 - **Personal Hub UI**: Reverted the shorthand "Time Active" formatter (e.g. 8M 3D) in the Personal Hub's Alt Accounts section back to the long form, keeping the shorthand format strictly isolated to the Admin Player Database Editor as requested.
