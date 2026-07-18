@@ -958,8 +958,8 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   if (isRegistering) {
     authModalTitle.textContent = 'Create Account';
     authGameId.style.display = 'block';
-    if(authChiefName) authChiefName.style.display = 'block';
-    if(authDateStarted) authDateStarted.style.display = 'block';
+    const authDateWrapper = document.getElementById('authDateWrapper');
+    if (authDateWrapper) authDateWrapper.style.display = 'block';
     authGameId.value = '';
     if(authChiefConfirm) authChiefConfirm.style.display = 'none';
     authSubmitBtn.textContent = 'Create Account';
@@ -968,8 +968,8 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   } else {
     authModalTitle.textContent = 'Sign In';
     authGameId.style.display = 'none';
-    if(authChiefName) authChiefName.style.display = 'none';
-    if(authDateStarted) authDateStarted.style.display = 'none';
+    const authDateWrapper = document.getElementById('authDateWrapper');
+    if (authDateWrapper) authDateWrapper.style.display = 'none';
     if(authChiefConfirm) authChiefConfirm.style.display = 'none';
     authSubmitBtn.textContent = 'Sign In';
     authToggleText.textContent = 'Need an account?';
@@ -980,6 +980,7 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
 const authChiefConfirm = document.getElementById('authChiefConfirm');
 let wosLookupTimeout = null;
 export let verifiedFurnaceLevel = ""; // Save furnace level to send during registration
+export let verifiedChiefName = ""; // Save verified chief name
 
 if (authGameId && authChiefConfirm) {
   authGameId.addEventListener('input', () => {
@@ -988,6 +989,7 @@ if (authGameId && authChiefConfirm) {
     if (!val) {
       authChiefConfirm.style.display = 'none';
       verifiedFurnaceLevel = "";
+      verifiedChiefName = "";
       return;
     }
     
@@ -1002,15 +1004,16 @@ if (authGameId && authChiefConfirm) {
         
         if (data.success && data.nickname) {
           authChiefConfirm.innerHTML = `Is your Chief Name: <strong style="color:var(--success)">${window.escapeHTML(data.nickname)}</strong>?`;
-          // Auto-fill the chief name field if it exists
-          if (authChiefName) authChiefName.value = data.nickname;
+          verifiedChiefName = data.nickname;
           verifiedFurnaceLevel = data.stove_lv || "";
         } else {
           authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Game ID not found or invalid.</span>`;
+          verifiedChiefName = "";
           verifiedFurnaceLevel = "";
         }
       } catch (err) {
         authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Error connecting to game servers.</span>`;
+        verifiedChiefName = "";
         verifiedFurnaceLevel = "";
       }
     }, 600); // 600ms debounce
@@ -1033,7 +1036,7 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
   const email = authEmail.value.trim().toLowerCase();
   const password = authPassword.value;
   const gameId = authGameId.value.trim();
-  const chiefName = authChiefName ? authChiefName.value.trim() : "";
+  const chiefName = verifiedChiefName;
   const dateStarted = authDateStarted ? authDateStarted.value : "";
   
   if (!email || !password) {
@@ -1048,7 +1051,7 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
     
     if (isRegistering) {
       if (!gameId) throw new Error('Game ID is required.');
-      if (!chiefName) throw new Error('Chief Name is required.');
+      if (!chiefName) throw new Error('Valid Game ID is required to verify Chief Name.');
       
       await registerUser(email, password, gameId, chiefName);
       

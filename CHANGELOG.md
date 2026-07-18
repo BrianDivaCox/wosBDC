@@ -1,3 +1,8 @@
+## [1.24.34] - 2026-07-18
+### Changed
+- **Registration**: Removed the manual "Chief Name" input box during signup. The system now fully relies on the verified Chief Name pulled directly from the Game ID validation API.
+- **Registration**: Added a clear "Date You Started Playing" label above the date picker to improve clarity on iOS and desktop browsers.
+
 ## [1.24.33] - 2026-07-18
 ### Changed
 - **Navigation**: Removed the calendar emoji from the Schedule link in the navigation bar for a cleaner look.
