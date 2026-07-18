@@ -4230,9 +4230,9 @@ function updateGlobalTimers() {
     const nextReset = new Date();
     nextReset.setUTCHours(24, 0, 0, 0);
     let diff = Math.floor((nextReset - now) / 1000);
-    const rh = Math.floor(diff / 3600).toString().padStart(2, '0');
-    const rm = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-    const rs = (diff % 60).toString().padStart(2, '0');
+    const rh = Math.floor(diff / 3600);
+    const rm = Math.floor((diff % 3600) / 60);
+    const rs = (diff % 60);
     resetTimerEl.textContent = `${rh}h ${rm}m ${rs}s`;
 
     if (resetTimerLocalEl) {
@@ -4266,9 +4266,9 @@ function updateGlobalTimers() {
     }
 
     let diff = Math.floor((nextInteReset - now) / 1000);
-    const ih = Math.floor(diff / 3600).toString().padStart(2, '0');
-    const im = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-    const is_ = (diff % 60).toString().padStart(2, '0');
+    const ih = Math.floor(diff / 3600);
+    const im = Math.floor((diff % 3600) / 60);
+    const is_ = (diff % 60);
     inteResetEl.textContent = `${ih}h ${im}m ${is_}s`;
 
     if (inteResetLocalEl) {
