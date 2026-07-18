@@ -1867,9 +1867,9 @@ const views = {
           <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">📝 Add Donations</h3>
           <div id="beartrapEntries">
             <div class="beartrap-row" style="display:flex; gap:10px; margin-bottom:10px;">
-              <input type="text" class="bt-name" list="chiefList" placeholder="Player Name..." style="flex:2; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
-              <input type="number" class="bt-amount" placeholder="Amount..." style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
-              <button onclick="this.parentElement.remove()" style="background:var(--danger); color:#fff; border:none; width:40px; border-radius:6px; cursor:pointer; font-weight:bold;">X</button>
+              <input type="text" class="bt-name" list="chiefList" placeholder="Player Name..." style="flex:2; min-width:0; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+              <input type="number" class="bt-amount" placeholder="Amount..." style="flex:1; min-width:0; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+              <button onclick="this.parentElement.remove()" style="background:var(--danger); color:#fff; border:none; width:40px; flex-shrink:0; border-radius:6px; cursor:pointer; font-weight:bold;">X</button>
             </div>
           </div>
           <div style="display:flex; gap:10px; margin-top:10px;">
@@ -1924,9 +1924,9 @@ const views = {
       div.className = 'beartrap-row';
       div.style.cssText = 'display:flex; gap:10px; margin-bottom:10px;';
       div.innerHTML = `
-        <input type="text" class="bt-name" list="chiefList" placeholder="Player Name..." style="flex:2; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
-        <input type="number" class="bt-amount" placeholder="Amount..." style="flex:1; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
-        <button onclick="this.parentElement.remove()" style="background:var(--danger); color:#fff; border:none; width:40px; border-radius:6px; cursor:pointer; font-weight:bold;">X</button>
+        <input type="text" class="bt-name" list="chiefList" placeholder="Player Name..." style="flex:2; min-width:0; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+        <input type="number" class="bt-amount" placeholder="Amount..." style="flex:1; min-width:0; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+        <button onclick="this.parentElement.remove()" style="background:var(--danger); color:#fff; border:none; width:40px; flex-shrink:0; border-radius:6px; cursor:pointer; font-weight:bold;">X</button>
       `;
       cont.appendChild(div);
       div.querySelector('.bt-name').focus();

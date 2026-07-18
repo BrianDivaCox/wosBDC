@@ -1,3 +1,7 @@
+## [1.24.6] - 2026-07-17
+### Fixed
+- **Admin Panel UI**: Fixed an issue in the Multi-Bear Donations form where the Amount box was being pushed off the screen on smaller smartphones.
+
 ## [1.24.5] - 2026-07-17
 ### Fixed
 - **Alt Account Stats Bug**: Fixed a severe typo where the website was looking for Alt Account stats in a non-existent database tab called "Roster", rather than the actual "Chief's List" tab. Alt stats will now pull perfectly from the database again!
