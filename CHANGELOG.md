@@ -1,3 +1,8 @@
+## [1.24.17] - 2026-07-17
+### Changed
+- **Alt Account UI**: Stripped the redundant fire emoji ("🔥") and the "Lv" text from the Furnace Level display on Alt Cards to make it cleaner, since the orange furnace icon is already present.
+- **Alt Account UI**: Updated the green Enrolled badge text to say "Code Enrolled".
+
 ## [1.24.16] - 2026-07-17
 ### Fixed
 - **Alt Account Stats Bug**: Fixed a bug where Alt Cards in the Player Database Editor were not displaying Furnace Level or Time Active due to a broken map lookup. Alt Cards now properly query the Chief's List for data, and dynamically fetch Furnace Levels straight from the Century Games API if the alt account hasn't been synced to the roster yet.

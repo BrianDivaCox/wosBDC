@@ -658,7 +658,10 @@ window.adminFetchAltFurnace = async (gid, spanId) => {
         const data = await res.json();
         if (data.success && data.stove_lv) {
             const flEl = document.getElementById(spanId);
-            if (flEl) flEl.innerHTML = window.getFurnaceIconHtml ? window.getFurnaceIconHtml(data.stove_lv) : data.stove_lv;
+            if (flEl) {
+                let flHtml = window.getFurnaceIconHtml ? window.getFurnaceIconHtml(data.stove_lv) : data.stove_lv;
+                flEl.innerHTML = typeof flHtml === 'string' ? flHtml.replace('🔥 ', '').replace('Lv ', '') : flHtml;
+            }
         }
     } catch(e) {}
 };
@@ -4514,13 +4517,13 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
                 }
             }
             
-            let enrolledBadge = isAltEnrolled ? `<span style="border:1px solid #10b981; color:#10b981; background:rgba(16,185,129,0.1); border-radius:9999px; padding:4px 12px; font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:6px; margin-top:8px;">&#x2705; Enrolled</span>` : '';
+            let enrolledBadge = isAltEnrolled ? `<span style="border:1px solid #10b981; color:#10b981; background:rgba(16,185,129,0.1); border-radius:9999px; padding:4px 12px; font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:6px; margin-top:8px;">&#x2705; Code Enrolled</span>` : '';
             
             let furnaceIcon = `<svg class="w-6 h-6 text-orange-500" style="width:24px; height:24px; color:#f97316;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>`;
             let timerIcon = `<svg class="w-6 h-6 text-cyan-400" style="width:24px; height:24px; color:#06b6d4;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
             
             let flSpanId = `admin-alt-fl-${gid}`;
-            let flDisplay = window.getFurnaceIconHtml && flVal !== 'N/A' ? window.getFurnaceIconHtml(flVal) : flVal;
+            let flDisplay = window.getFurnaceIconHtml && flVal !== 'N/A' ? window.getFurnaceIconHtml(flVal).replace('🔥 ', '').replace('Lv ', '') : flVal;
             
             if (flVal === 'N/A') {
                 flDisplay += `<img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" onload="if(window.adminFetchAltFurnace) window.adminFetchAltFurnace('${gid}', '${flSpanId}')" style="display:none;">`;
