@@ -1,3 +1,9 @@
+## [1.24.12] - 2026-07-17
+### Added
+- **Dedicated Player Database Editor View**: Extracted the Player Database Editor from the Admin Panel dashboard into its own spacious, full-screen view (similar to the Multi-BT Donations feature). This provides significantly more room for managing player profiles and alt accounts.
+### Fixed
+- **Player Editor Search Checkmarks**: Fixed a bug where the green checkmarks (`✅`) were not properly displaying next to registered users in the Player Database Editor's dropdown menu.
+
 ## [1.24.11] - 2026-07-17
 ### Fixed
 - **Roster Page Crash**: Hotfixed a JavaScript reference error (`window.idToNameMap` undefined) that broke the public Roster page when attempting to render Alt Account badges.

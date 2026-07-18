@@ -1406,26 +1406,8 @@ const views = {
       ]);
       const users = usersSnap.val() || {};
       
-      const players = [];
-      if (rosterRawData && rosterRawData.length > 0) {
-        for (let i = 1; i < rosterRawData.length; i++) {
-          let name = rosterRawData[i][0];
-          
-          if (name && name.toString().trim() !== "") {
-            players.push(name.toString().trim());
-          }
-        }
-      }
       await refreshIdToNameMap();
-      players.sort((a, b) => a.localeCompare(b));
-      let playerOptions = `<option value="">-- Select a Chief --</option>`;
-      players.forEach(p => {
-        let isRegistered = false;
-        let gid = nameToIdMap[p];
-        if (gid && users[gid]) isRegistered = true;
-        let displayStr = isRegistered ? `✅ ${p}` : p;
-        playerOptions += `<option value="${window.escapeHTML(displayStr)}">${window.escapeHTML(displayStr)}</option>`;
-      });
+
 
       window.sendBroadcastPush = async () => {
         const title = document.getElementById('adminPushTitle').value.trim();
@@ -1542,27 +1524,11 @@ const views = {
             <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; text-align:center;">
               <h3 style="margin:0 0 10px 0; color:var(--text-main);">Bear Trap Automation</h3>
               <p style="margin:0 0 15px 0; font-size:13px; color:var(--text-muted);">Quickly process multiple Bear Trap donations at once.</p>
-              <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; width:100%; max-width:300px;">🥩 Open Multi-BT Donations</button>
-            </div>
-            
-            <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px;">
-              <div style="margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--accent);">Player Database Editor</h3>
-                <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">Select a chief and click their red "Missed" metrics below to instantly mark them as Participated for Alliance Championship, Polar Terrors, Mercenary Prestige, or Voter. Use the green button to add Bear Donations.</p>
-              </div>
-              
-              <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <div style="position:relative; flex:1; display:flex; align-items:center;">
-                  <input type="text" id="uniSearchInput" list="uniSearchDatalist" onchange="window.searchPlayerFull(this.value)" placeholder="Search Chief Name..." style="width:100%; padding:10px 40px 10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box;">
-                  <button onclick="document.getElementById('uniSearchInput').value=''; window.searchPlayerFull(''); document.getElementById('uniSearchInput').focus();" style="position:absolute; right:8px; background:transparent; border:none; color:var(--danger); font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; border-radius:50%;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">✖</button>
-                </div>
-                <datalist id="uniSearchDatalist">
-                  ${playerOptions}
-                </datalist>
-                <button onclick="window.searchPlayerFull(document.getElementById('uniSearchInput').value)" style="background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:16px;">Search</button>
-              </div>
-              
-              <div id="uniEditorRes" style="display:none; flex-direction:column; gap:12px; border-top:1px solid var(--border); padding-top:15px;">
+              <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; text-align:center;">
+              <h3 style="margin:0 0 10px 0; color:var(--text-main);">Player Database Editor</h3>
+              <p style="margin:0 0 15px 0; font-size:13px; color:var(--text-muted);">Manage player stats, event participation, and add Alt Accounts.</p>
+              <button onclick="views.playerEditor()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; width:100%; max-width:300px;">👤 Open Player Database Editor</button>
+            </div>order); padding-top:15px;">
                  <!-- Populated by JS -->
               </div>
             </div>
@@ -2087,6 +2053,82 @@ const views = {
     };
 
     window.loadBeartrapLog();
+  },
+  
+  playerEditor: async () => {
+    if (!window.isAdminUser(currentUser)) {
+      views.home();
+      return;
+    }
+    
+    let rosterRawData = null;
+    let usersSnap = null;
+    try {
+      const results = await Promise.all([
+        fetchSheet("Chief's List"),
+        get(ref(window.firebaseDb, 'users'))
+      ]);
+      rosterRawData = results[0];
+      usersSnap = results[1];
+    } catch (e) {
+      console.error("Failed to load data for player editor", e);
+    }
+    
+    const users = usersSnap ? (usersSnap.val() || {}) : {};
+    const registeredGameIds = new Set();
+    Object.values(users).forEach(u => {
+        if (u.gameId) registeredGameIds.add(u.gameId.toString().trim());
+    });
+    
+    const players = [];
+    if (rosterRawData && rosterRawData.length > 0) {
+      for (let i = 1; i < rosterRawData.length; i++) {
+        let name = rosterRawData[i][0];
+        if (name && name.toString().trim() !== "") {
+          players.push(name.toString().trim());
+        }
+      }
+    }
+    
+    await refreshIdToNameMap();
+    players.sort((a, b) => a.localeCompare(b));
+    let playerOptions = `<option value="">-- Select a Chief --</option>`;
+    players.forEach(p => {
+      let gid = nameToIdMap[p];
+      let isRegistered = (gid && registeredGameIds.has(gid.toString().trim()));
+      let displayStr = isRegistered ? `✅ ${p}` : p;
+      playerOptions += `<option value="${window.escapeHTML(displayStr)}">${window.escapeHTML(displayStr)}</option>`;
+    });
+
+    app.innerHTML = `
+      <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease; position:relative; min-height: 80vh;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <h2 style="color:var(--accent); margin:0; display:flex; align-items:center; gap:10px;">
+            👤 Player Database Editor
+          </h2>
+          <button onclick="views.admin()" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">◀ Back</button>
+        </div>
+        
+        <p style="margin:0 0 20px 0; font-size:14px; color:var(--text-muted);">
+          Select a chief from the dropdown below to view their profile, manage their event participation, edit their stats, and add Alt Accounts.
+        </p>
+
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+          <div style="position:relative; flex:1; display:flex; align-items:center;">
+            <input type="text" id="uniSearchInput" list="uniSearchDatalist" onchange="window.searchPlayerFull(this.value)" placeholder="Search Chief Name..." style="width:100%; padding:14px 40px 14px 16px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box;">
+            <button onclick="document.getElementById('uniSearchInput').value=''; window.searchPlayerFull(''); document.getElementById('uniSearchInput').focus();" style="position:absolute; right:12px; background:transparent; border:none; color:var(--danger); font-size:20px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; border-radius:50%;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">❌</button>
+          </div>
+          <datalist id="uniSearchDatalist">
+            ${playerOptions}
+          </datalist>
+          <button onclick="window.searchPlayerFull(document.getElementById('uniSearchInput').value)" style="background:var(--accent); color:#fff; border:none; padding:0 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px;">Search</button>
+        </div>
+        
+        <div id="uniEditorRes" style="display:none; flex-direction:column; gap:16px; border-top:1px solid var(--border); padding-top:20px;">
+           <!-- Populated by JS -->
+        </div>
+      </div>
+    `;
   },
   
   account: async () => {
