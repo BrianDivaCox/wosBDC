@@ -4210,35 +4210,72 @@ function formatClockTime(hours, minutes, seconds, use12hr) {
 function updateGlobalTimers() {
   const now = new Date();
   const is12 = clockFormat === '12';
-  
+
   // UTC Clock
   const utcClockEl = document.getElementById('utc-clock');
   if (utcClockEl) {
     utcClockEl.textContent = formatClockTime(now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), is12);
   }
-  
+
   // Local Clock
   const localClockEl = document.getElementById('local-clock');
   if (localClockEl) {
     localClockEl.textContent = formatClockTime(now.getHours(), now.getMinutes(), now.getSeconds(), is12);
   }
-  
-  // Reset Timer (Reset is at 00:00 UTC)
+
+  // --- DAILY RESET (UTC 00:00) ---
   const resetTimerEl = document.getElementById('reset-timer');
+  const resetTimerLocalEl = document.getElementById('reset-timer-local');
   if (resetTimerEl) {
-    let nextReset = new Date();
-    nextReset.setUTCHours(24, 0, 0, 0); // Next midnight UTC
-    
-    let diff = nextReset - now;
-    let hours = Math.floor(diff / (1000 * 60 * 60));
-    let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    let seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    hours = hours.toString().padStart(2, '0');
-    minutes = minutes.toString().padStart(2, '0');
-    seconds = seconds.toString().padStart(2, '0');
-    
-    resetTimerEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
+    const nextReset = new Date();
+    nextReset.setUTCHours(24, 0, 0, 0);
+    let diff = Math.floor((nextReset - now) / 1000);
+    const rh = Math.floor(diff / 3600).toString().padStart(2, '0');
+    const rm = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+    const rs = (diff % 60).toString().padStart(2, '0');
+    resetTimerEl.textContent = `${rh}h ${rm}m ${rs}s`;
+
+    if (resetTimerLocalEl) {
+      const localStr = nextReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = nextReset.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      resetTimerLocalEl.textContent = `Next: ${dateStr} ${localStr} local`;
+    }
+  }
+
+  // --- INTE RESET (UTC 00:00, 08:00, 16:00) ---
+  const inteResetEl = document.getElementById('inte-reset-timer');
+  const inteResetLocalEl = document.getElementById('inte-reset-local');
+  if (inteResetEl) {
+    // Find the next reset time from the three daily reset points
+    const utcMidnight = new Date(now);
+    utcMidnight.setUTCHours(0, 0, 0, 0);
+    const secondsSinceMidnight = Math.floor((now - utcMidnight) / 1000);
+
+    const resetPointsSeconds = [0, 8 * 3600, 16 * 3600]; // 00:00, 08:00, 16:00 UTC
+    let nextInteReset = null;
+
+    for (const rt of resetPointsSeconds) {
+      if (rt > secondsSinceMidnight) {
+        nextInteReset = new Date(utcMidnight.getTime() + rt * 1000);
+        break;
+      }
+    }
+    // If past 16:00 UTC, next reset is tomorrow's 00:00 UTC
+    if (!nextInteReset) {
+      nextInteReset = new Date(utcMidnight.getTime() + 24 * 3600 * 1000);
+    }
+
+    let diff = Math.floor((nextInteReset - now) / 1000);
+    const ih = Math.floor(diff / 3600).toString().padStart(2, '0');
+    const im = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+    const is_ = (diff % 60).toString().padStart(2, '0');
+    inteResetEl.textContent = `${ih}h ${im}m ${is_}s`;
+
+    if (inteResetLocalEl) {
+      const localStr = nextInteReset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = nextInteReset.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      inteResetLocalEl.textContent = `Next: ${dateStr} ${localStr} local`;
+    }
   }
 }
 

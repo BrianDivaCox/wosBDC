@@ -1,3 +1,10 @@
+## [1.24.30] - 2026-07-18
+### Added
+- **Global Timers - Inte Reset**: Added new ⚡ Inte Reset countdown timer (resets at UTC 00:00, 08:00, 16:00). Shows time remaining until next reset with a sub-line displaying the next reset time in the user's local timezone — works correctly for every timezone automatically.
+- **Global Timers - Daily Reset**: Added matching "Next: [date] [time] local" sub-line to the Daily Reset timer for consistency.
+### Changed
+- **Global Timers Widget**: Redesigned the entire Global Timers sidebar widget to use flexbox (no more `float:right`) for correct rendering on smartphones. Timer cards now use colored accent borders (blue for Daily Reset, orange for Inte Reset) with monospace font for the countdowns.
+
 ## [1.24.29] - 2026-07-18
 ### Fixed
 - **Account Hub - Alt Cards**: Removed the fire emoji 🔥 and "Lv" text from the furnace level display — now shows just the FC icon image (for Fire Crystal levels) or the plain number (for lower levels).
