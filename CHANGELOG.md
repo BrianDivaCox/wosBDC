@@ -1,3 +1,7 @@
+## [1.24.8] - 2026-07-17
+### Added
+- **Admin User List**: Added the requested `Furnace Level`, `Giftcode Enrolled` tag, and `Time Active` (years in service) stats directly to the Users tab in the Admin Panel. These badges now appear next to the Chief Name for both Main and Alt accounts!
+
 ## [1.24.7] - 2026-07-17
 ### Changed
 - **Account Hub Styling**: Changed the text color for Furnace Level and Time Active values from pink to white to match the styling of the Game ID.

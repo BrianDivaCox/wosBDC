@@ -1575,13 +1575,36 @@ const views = {
         
         const hasAlts = (u.linkedGameIds && Array.isArray(u.linkedGameIds) && u.linkedGameIds.length > 0);
         
+        let rosterInfoHtml = '';
+        if (rosterRawData && rosterRawData.length > 1) {
+             for (let i = 1; i < rosterRawData.length; i++) {
+                 if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim() === cName) {
+                     let flVal = rosterRawData[i][2];
+                     let gcVal = rosterRawData[i][3];
+                     let taVal = rosterRawData[i][5];
+                     let isEnrolled = (gcVal === true || gcVal === 'TRUE' || (typeof gcVal === 'string' && gcVal.toLowerCase().trim() === 'true'));
+                     
+                     if (flVal) rosterInfoHtml += `<span style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text-main); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px; display:inline-flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>`;
+                     if (isEnrolled) rosterInfoHtml += `<span style="background:rgba(16,185,129,0.1); color:var(--success); border:1px solid var(--success); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">&#x2705; Enrolled</span>`;
+                     if (taVal) rosterInfoHtml += `<span style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text-main); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">⏱️ ${taVal}</span>`;
+                     break;
+                 }
+             }
+        }
+        
         html += `
           <tr style="border-bottom:1px solid var(--border); background:var(--card-bg);">
             <td style="padding:10px; font-family:monospace; color:var(--accent); display:flex; align-items:center; gap:5px;">
               ${hasAlts ? `<button onclick="document.querySelectorAll('.alt-rows-${u.gameId}').forEach(r => { if(r.style.display==='none'){r.style.display='table-row'; this.innerHTML='🔽';}else{r.style.display='none'; this.innerHTML='▶️';} })" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0 5px;">▶️</button>` : `<span style="width:22px; display:inline-block;"></span>`}
               ${u.gameId}
             </td>
-            <td style="padding:10px; font-weight:bold; color:var(--text-main);">${cName} ${hasAlts ? `<span style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid var(--accent); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">${u.linkedGameIds.length} Alt(s)</span>` : ''}</td>
+            <td style="padding:10px; font-weight:bold; color:var(--text-main);">
+              <div style="display:flex; align-items:center; flex-wrap:wrap; gap:5px;">
+                ${cName} 
+                ${hasAlts ? `<span style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid var(--accent); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">${u.linkedGameIds.length} Alt(s)</span>` : ''}
+                ${rosterInfoHtml}
+              </div>
+            </td>
             <td style="padding:10px; color:var(--text-muted); font-size:12px;">${u.email}</td>
             <td style="padding:10px;">
               <div style="width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--accent);">
@@ -1600,13 +1623,41 @@ const views = {
                 const altName = idToNameMap[altId] || "Not Found";
                 const altHasAvatar = avatarMap[altId] ? true : false;
                 const altAvatarSrc = avatarMap[altId] || `images/${altName}.png`;
+                
+                let altRosterInfoHtml = '';
+                if (rosterRawData && rosterRawData.length > 1) {
+                    for (let i = 1; i < rosterRawData.length; i++) {
+                         if (rosterRawData[i][1] && rosterRawData[i][1].toString().trim() === altId.toString().trim()) {
+                             let flVal = rosterRawData[i][2];
+                             let taVal = rosterRawData[i][5];
+                             if (flVal) altRosterInfoHtml += `<span style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text-main); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px; display:inline-flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>`;
+                             if (taVal) altRosterInfoHtml += `<span style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text-main); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">⏱️ ${taVal}</span>`;
+                             break;
+                         }
+                    }
+                }
+                const gcb = window.liveData['giftcodebot'];
+                if (gcb && gcb.length > 1) {
+                    for (let i = 1; i < gcb.length; i++) {
+                         if (gcb[i] && gcb[i][2] && gcb[i][2].toString().trim() === altId.toString().trim()) {
+                             altRosterInfoHtml += `<span style="background:rgba(16,185,129,0.1); color:var(--success); border:1px solid var(--success); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">&#x2705; Enrolled</span>`;
+                             break;
+                         }
+                    }
+                }
+                
                 html += `
                   <tr class="alt-rows-${u.gameId}" style="display:none; border-bottom:1px solid var(--border); background:rgba(52,152,219,0.05);">
                     <td style="padding:10px; font-family:monospace; color:var(--accent); padding-left:40px;">
                        <span style="color:var(--accent); border:1px solid var(--accent); padding:1px 4px; border-radius:4px; font-size:9px; margin-right:5px; background:rgba(52,152,219,0.1);">ALT</span>
                        ${altId}
                     </td>
-                    <td style="padding:10px; font-weight:bold; color:var(--text-main);">${altName}</td>
+                    <td style="padding:10px; font-weight:bold; color:var(--text-main);">
+                      <div style="display:flex; align-items:center; flex-wrap:wrap; gap:5px;">
+                        ${altName}
+                        ${altRosterInfoHtml}
+                      </div>
+                    </td>
                     <td style="padding:10px; color:var(--text-muted); font-size:12px;">(Linked to ${u.gameId})</td>
                     <td style="padding:10px;">
                       <div style="width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--accent);">
