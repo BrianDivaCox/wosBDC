@@ -1,3 +1,12 @@
+## [1.24.10] - 2026-07-17
+### Changed
+- **Alt Account Management Refactored**:
+  - Removed the `+ Add Alt` button and collapsible Alt Account rows from the Admin Panel's "Users" list to significantly reduce clutter.
+  - The "Users" list still displays the total number of linked Alt Accounts (e.g., `3 Alt(s)`) next to the chief's name.
+  - Moved the `➕ Add Alt Account` button to the `⚙️ Actions` dropdown menu in the Universal Player Editor.
+  - The Universal Player Editor's profile card now explicitly lists the total number of Alt Accounts and their names underneath the main badges.
+  - The "Search Chief Name" dropdown in the Player Database Editor now displays a green checkmark (`✅`) next to chiefs who are already registered in the system.
+
 ## [1.24.9] - 2026-07-17
 ### Fixed
 - **Admin Permissions Bug**: Fixed an issue where Firebase Database Security Rules were blocking Admins from adding Alt accounts to other players. Admins now have the proper database write access to modify user profiles and delete avatars.

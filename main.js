@@ -238,6 +238,43 @@ window.adminLinkAltAccountPrompt = async (uid, cName, currentLinksStr) => {
     }
 };
 
+window.adminLinkAltAccountPromptByChief = async (chiefName) => {
+    const gameId = window.nameToIdMap[chiefName];
+    if (!gameId) {
+        if(window.showToast) window.showToast("Could not find Game ID for " + chiefName, "error");
+        else alert("Could not find Game ID");
+        return;
+    }
+    try {
+        const usersSnap = await window.get(window.ref(window.firebaseDb, 'users'));
+        const users = usersSnap.val() || {};
+        let targetUid = null;
+        let currentLinks = [];
+        for (const [uid, u] of Object.entries(users)) {
+            if (Number(u.gameId) === Number(gameId)) {
+                targetUid = uid;
+                currentLinks = u.linkedGameIds || [];
+                break;
+            }
+        }
+        if (!targetUid) {
+            if(window.showToast) window.showToast("User is not registered on the site.", "error");
+            else alert("User is not registered on the site.");
+            return;
+        }
+        const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${chiefName}:`);
+        if (!altId || altId.trim() === '') return;
+        
+        await window.linkAltAccount(targetUid, altId.trim(), currentLinks);
+        if (window.showToast) window.showToast(`Alt Account linked for ${chiefName}!`, "success");
+        if (document.getElementById('adminHubView')) window.views.admin();
+        window.searchPlayerFull(chiefName);
+    } catch(e) {
+        alert(e.message);
+    }
+};
+
+
 window.getAdminLevel = (user) => {
     if (!user || !user.gameId) return false;
     if (Number(user.gameId) === 318843189) return "R5"; // Root admin
@@ -577,6 +614,7 @@ window.toggleMaintenance = async () => {
 };
 
 window.searchPlayerFull = async (name) => {
+  if (name) name = name.replace(/^✅\s*/, '');
   window.activeViewFunc = () => window.searchPlayerFull(name);
   const resDiv = document.getElementById('uniEditorRes');
   if (!name || !name.trim()) {
@@ -717,7 +755,21 @@ window.searchPlayerFull = async (name) => {
     if (!pRow) throw new Error("Player not found in Activity sheet.");
     
     // Generate HTML
-    let html = window.generatePlayerProfileHtml(name, pRow, headers, colIsUpcoming, rosterMap[name], null, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, true);
+    let altAccounts = [];
+    if (usersSnap && usersSnap.exists()) {
+        const users = usersSnap.val();
+        let targetGameId = nameToIdMap[name];
+        if (targetGameId) {
+            for (const u of Object.values(users)) {
+                if (Number(u.gameId) === Number(targetGameId)) {
+                    if (u.linkedGameIds && Array.isArray(u.linkedGameIds)) altAccounts = u.linkedGameIds;
+                    break;
+                }
+            }
+        }
+    }
+    
+    let html = window.generatePlayerProfileHtml(name, pRow, headers, colIsUpcoming, rosterMap[name], null, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, true, altAccounts);
     
     resDiv.innerHTML = html;
     
@@ -1368,7 +1420,11 @@ const views = {
       players.sort((a, b) => a.localeCompare(b));
       let playerOptions = `<option value="">-- Select a Chief --</option>`;
       players.forEach(p => {
-        playerOptions += `<option value="${window.escapeHTML(p)}">${window.escapeHTML(p)}</option>`;
+        let isRegistered = false;
+        let gid = nameToIdMap[p];
+        if (gid && users[gid]) isRegistered = true;
+        let displayStr = isRegistered ? `✅ ${p}` : p;
+        playerOptions += `<option value="${window.escapeHTML(displayStr)}">${window.escapeHTML(displayStr)}</option>`;
       });
 
       window.sendBroadcastPush = async () => {
@@ -1595,7 +1651,6 @@ const views = {
         html += `
           <tr style="border-bottom:1px solid var(--border); background:var(--card-bg);">
             <td style="padding:10px; font-family:monospace; color:var(--accent); display:flex; align-items:center; gap:5px;">
-              ${hasAlts ? `<button onclick="document.querySelectorAll('.alt-rows-${u.gameId}').forEach(r => { if(r.style.display==='none'){r.style.display='table-row'; this.innerHTML='🔽';}else{r.style.display='none'; this.innerHTML='▶️';} })" style="background:none; border:none; color:var(--text-main); cursor:pointer; font-size:12px; padding:0 5px;">▶️</button>` : `<span style="width:22px; display:inline-block;"></span>`}
               ${u.gameId}
             </td>
             <td style="padding:10px; font-weight:bold; color:var(--text-main);">
@@ -1613,64 +1668,9 @@ const views = {
             </td>
             <td style="padding:10px;">
               ${hasAvatar ? `<button class="delete-avatar-btn" data-id="${u.gameId}" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Delete Avatar</button>` : `<span style="color:var(--text-muted); font-size:12px;">Default</span>`}
-              <button onclick="window.adminLinkAltAccountPrompt('${u.uid}', '${cName.replace(/'/g, "\\'")}', '${(u.linkedGameIds || []).join(',')}')" style="background:transparent; border:1px solid var(--accent); color:var(--accent); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">+ Add Alt</button>
             </td>
           </tr>
         `;
-        
-        if (hasAlts) {
-            u.linkedGameIds.forEach(altId => {
-                const altName = idToNameMap[altId] || "Not Found";
-                const altHasAvatar = avatarMap[altId] ? true : false;
-                const altAvatarSrc = avatarMap[altId] || `images/${altName}.png`;
-                
-                let altRosterInfoHtml = '';
-                if (rosterRawData && rosterRawData.length > 1) {
-                    for (let i = 1; i < rosterRawData.length; i++) {
-                         if (rosterRawData[i][1] && rosterRawData[i][1].toString().trim() === altId.toString().trim()) {
-                             let flVal = rosterRawData[i][2];
-                             let taVal = rosterRawData[i][5];
-                             if (flVal) altRosterInfoHtml += `<span style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text-main); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px; display:inline-flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>`;
-                             if (taVal) altRosterInfoHtml += `<span style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text-main); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">⏱️ ${taVal}</span>`;
-                             break;
-                         }
-                    }
-                }
-                const gcb = window.liveData['giftcodebot'];
-                if (gcb && gcb.length > 1) {
-                    for (let i = 1; i < gcb.length; i++) {
-                         if (gcb[i] && gcb[i][2] && gcb[i][2].toString().trim() === altId.toString().trim()) {
-                             altRosterInfoHtml += `<span style="background:rgba(16,185,129,0.1); color:var(--success); border:1px solid var(--success); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:5px;">&#x2705; Enrolled</span>`;
-                             break;
-                         }
-                    }
-                }
-                
-                html += `
-                  <tr class="alt-rows-${u.gameId}" style="display:none; border-bottom:1px solid var(--border); background:rgba(52,152,219,0.05);">
-                    <td style="padding:10px; font-family:monospace; color:var(--accent); padding-left:40px;">
-                       <span style="color:var(--accent); border:1px solid var(--accent); padding:1px 4px; border-radius:4px; font-size:9px; margin-right:5px; background:rgba(52,152,219,0.1);">ALT</span>
-                       ${altId}
-                    </td>
-                    <td style="padding:10px; font-weight:bold; color:var(--text-main);">
-                      <div style="display:flex; align-items:center; flex-wrap:wrap; gap:5px;">
-                        ${altName}
-                        ${altRosterInfoHtml}
-                      </div>
-                    </td>
-                    <td style="padding:10px; color:var(--text-muted); font-size:12px;">(Linked to ${u.gameId})</td>
-                    <td style="padding:10px;">
-                      <div style="width:30px; height:30px; border-radius:50%; overflow:hidden; background:var(--accent);">
-                        <img src="${altAvatarSrc}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none';">
-                      </div>
-                    </td>
-                    <td style="padding:10px;">
-                      ${altHasAvatar ? `<button class="delete-avatar-btn" data-id="${altId}" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Delete Avatar</button>` : `<span style="color:var(--text-muted); font-size:12px;">Default</span>`}
-                    </td>
-                  </tr>
-                `;
-            });
-        }
       }
       
       html += `</tbody></table></div></div>
@@ -3388,8 +3388,21 @@ const views = {
                 else otherLbs.push(lb);
             });
         }
+        let altAccounts = [];
+        if (usersSnap && usersSnap.exists()) {
+            const users = usersSnap.val();
+            let targetGameId = nameToIdMap[chiefName];
+            if (targetGameId) {
+                for (const u of Object.values(users)) {
+                    if (Number(u.gameId) === Number(targetGameId)) {
+                        if (u.linkedGameIds && Array.isArray(u.linkedGameIds)) altAccounts = u.linkedGameIds;
+                        break;
+                    }
+                }
+            }
+        }
         
-        let html = window.generatePlayerProfileHtml(chiefName, p, headers, colIsUpcoming, rosterMap[chiefName], lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, false);
+        let html = window.generatePlayerProfileHtml(chiefName, p, headers, colIsUpcoming, rosterMap[chiefName], lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, false, altAccounts);
         container.innerHTML = html;
       };
       
@@ -4188,7 +4201,7 @@ initPresence();
 window.views = views;
 
 
-window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, rosterInfo, lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, isAdmin = false) => {
+window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, rosterInfo, lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, isAdmin = false, altAccounts = []) => {
   let headerBadgesHtml = '';
   if (rosterInfo) {
     let flVal = rosterInfo.furnaceLevel;
@@ -4203,6 +4216,11 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     if (taVal && taVal.toString().trim() !== "") {
        headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--text-main) 10%, transparent); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">⏱️ '+taVal+'</span>';
     }
+  }
+  
+  if (altAccounts && altAccounts.length > 0) {
+    let altsDisplayStr = altAccounts.map(id => window.idToNameMap[id] ? window.idToNameMap[id] : id).join(', ');
+    headerBadgesHtml += `<div style="width: 100%; margin-top: 5px;"><span style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid var(--accent); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${altAccounts.length} Alt(s): ${altsDisplayStr}</span></div>`;
   }
   
   let activityBadges = '';
@@ -4364,6 +4382,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
           <button onclick="window.promptLogBearTrapWinner('${chiefName}')" style="background:rgba(255,215,0,0.1); color:#FFD700; border:1px solid rgba(255,215,0,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(255,215,0,0.2)'" onmouseout="this.style.background='rgba(255,215,0,0.1)'">👑 Crown Winner</button>
           <button onclick="window.promptBearTrap('${chiefName}')" style="background:rgba(46,204,113,0.1); color:var(--success); border:1px solid rgba(46,204,113,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(46,204,113,0.2)'" onmouseout="this.style.background='rgba(46,204,113,0.1)'">🥩 + Bear Donation</button>
           <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">📝 Edit Events</button>
+          <button onclick="window.adminLinkAltAccountPromptByChief('${chiefName}')" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s; margin-top:5px;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">➕ Add Alt Account</button>
         </div>
       </div>
     `;
