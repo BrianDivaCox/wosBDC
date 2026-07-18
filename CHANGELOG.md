@@ -1,3 +1,9 @@
+## [1.24.27] - 2026-07-17
+### Fixed
+- **CRITICAL - Add Alt Account root cause**: `window.nameToIdMap` was never actually assigned to the `window` object. Since `main.js` is an ES Module, all `export let` variables live in module scope — invisible to inline `onclick` handlers. `adminLinkAltAccountPromptByChief` was silently bailing immediately because `window.nameToIdMap[chiefName]` was always `undefined`. Fixed by assigning `window.nameToIdMap = nameToIdMap` and `window.idToNameMap = idToNameMap` at the end of `refreshIdToNameMap()`.
+### Added
+- `ARCHITECTURE.md` — comprehensive documentation of the full stack, ES module gotchas, Firebase security rules and the GAS bypass pattern, alt account linking flow, deployment instructions, and a common bugs reference table.
+
 ## [1.24.26] - 2026-07-17
 ### Fixed
 - **Admin Log**: Fixed an issue where the Multi-BT Donations Admin Log would display "No activity found" if the Google Sheet had trailing empty rows.

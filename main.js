@@ -205,6 +205,12 @@ export const refreshIdToNameMap = async () => {
                   }
             }
         }
+        // *** CRITICAL: Expose maps on window so inline onclick handlers can access them ***
+        // main.js is an ES module. Variables declared with `export let` are NOT automatically
+        // on window. Any inline onclick="..." that calls window.nameToIdMap or window.idToNameMap
+        // will get undefined unless we explicitly assign them here.
+        window.nameToIdMap = nameToIdMap;
+        window.idToNameMap = idToNameMap;
     } catch(e) { console.error("Error refreshing ID map:", e); }
 };
 
