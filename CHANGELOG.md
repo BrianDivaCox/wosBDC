@@ -1,3 +1,10 @@
+## [1.24.32] - 2026-07-18
+### Changed
+- **Schedule**: Merged the "Calendar View" and "Today's Schedule" pages into a single unified "Event Schedule" page.
+- **Schedule**: Added a toggle pill button at the top to instantly switch between "Today's View" and "Calendar View" without reloading the page.
+- **Schedule**: The site now remembers your preferred schedule view tab and automatically loads it next time you visit.
+- **Navigation**: Removed the dropdown submenu for Schedule since everything is now available from a single page.
+
 ## [1.24.31] - 2026-07-18
 ### Added
 - **Privacy - Root Admin Alt Accounts**: R4 admins can no longer see the root admin's (BrianDCox) linked alt accounts in the Player Database Editor. The alt accounts section is silently hidden when an R4 views the root admin's profile — the data is never even sent to the HTML renderer. R5 (root admin) can still see all alt accounts as normal.

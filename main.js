@@ -3634,158 +3634,81 @@ const views = {
   
 
   schedule: async () => {
+    let currentTab = localStorage.getItem('scheduleView') || 'today';
+
     window.refreshSchedule = async () => {
       const icon = document.getElementById('schRefreshIcon');
-      if(icon) icon.style.animation = 'spin 1s linear infinite';
+      if (icon) icon.style.animation = 'spin 1s linear infinite';
       
-      if (window.showToast) window.showToast("Refreshing schedule...", "info");
+      if (window.showToast) window.showToast('Refreshing schedule...', 'info', false);
       
-      // Clear live data cache to force a fresh fetch from Firebase
-      delete window.liveData["schedule"];
-      delete window.livePromises["schedule"];
-      if (window.liveListeners["schedule"]) {
-          window.liveListeners["schedule"](); // unsubscribe
-          delete window.liveListeners["schedule"];
+      delete window.liveData['schedule'];
+      delete window.livePromises['schedule'];
+      if (window.liveListeners['schedule']) {
+          window.liveListeners['schedule']();
+          delete window.liveListeners['schedule'];
       }
-      
-      setTimeout(async () => {
-        await views.schedule();
-        if (window.showToast) window.showToast("Schedule refreshed!", "success");
-      }, 400);
-    };
-
-    renderLoading("Loading Schedule");
-    try {
-      const data = await fetchSheet("schedule");
-      
-      if (!data || !Array.isArray(data) || data.length === 0) {
-  
-      app.innerHTML = `<div class="card"><div class="loading">⚠️ Schedule data is currently unavailable. Please try again later.</div></div>`;
-        return;
-      }
-      
-      // Find the row that contains the dates
-      let dateRowIdx = -1;
-      for (let r = 0; r < data.length; r++) {
-        let dateCells = data[r].filter(cell => typeof cell === 'string' && (cell.match(/^\d{4}-\d{2}-\d{2}T/) || cell.match(/\d{1,2}\/\d{1,2}/)));
-        if (dateCells.length >= 3) {
-          dateRowIdx = r;
-          break;
-        }
-      }
-      
-      if (dateRowIdx === -1) {
-        app.innerHTML = `<div class="card"><div class="loading">Could not find dates in schedule.</div></div>`;
-        return;
-      }
-      
-      // Map each date to its column index
-      let days = [];
-      for (let c = 0; c < data[dateRowIdx].length; c++) {
-        let cell = data[dateRowIdx][c];
-        if (typeof cell === 'string') {
-          let formatted = '';
-          if (cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
-            let [year, month, day] = cell.split('T')[0].split('-');
-            let d = new Date(year, month - 1, day);
-            formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-          } else if (cell.match(/\d{1,2}\/\d{1,2}/)) {
-            formatted = cell.replace(/Today /ig, '').replace(/Tomorrow /ig, '').trim();
-          }
-          
-          if (formatted) {
-            days.push({ dateStr: formatted, colIdx: c, categories: {} });
-          }
-        }
-      }
-      
-      // Extract events for each day, grouping by category
-      let currentCategory = "Events";
-      for (let r = dateRowIdx + 1; r < data.length; r++) {
-        if (data[r].every(cell => cell === "")) continue;
-        
-        // Detect category headers: A row with exactly one non-empty cell located in Column B (index 1)
-        let nonEmptyCells = data[r].filter(c => c !== "");
-        if (nonEmptyCells.length === 1 && typeof data[r][1] === 'string' && data[r][1].trim() !== "") {
-          currentCategory = data[r][1].trim();
-          continue;
-        }
-        
-        days.forEach(day => {
-          let eventCell = data[r][day.colIdx];
-          if (eventCell && eventCell.trim() !== "") {
-            if (!day.categories[currentCategory]) day.categories[currentCategory] = [];
-            day.categories[currentCategory].push(eventCell);
-          }
-        });
-      }
-      
-      // Render the timeline as Daily Cards
-      let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
-                    <div style="display:flex; align-items:center; gap:15px;">
-                      <h2 style="color:var(--text-main); margin:0;">📅 Event Schedule</h2>
-                      <button onclick="window.refreshSchedule()" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:5px;">
-                        <span id="schRefreshIcon">🔄</span> Refresh
-                      </button>
-                    </div>
-                    <a href="https://www.google.com/url?q=https://calendar.google.com/calendar/u/0?cid%3DMWZkOTI2ZjdkNzVhYWIyMzM1N2IxYjE1NTc5MzE2YTRlYTRjMDI3NjA4NDlmOTRkZjg2MDRlZWY5YjdiMTI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&sa=D&source=editors&ust=1783297509664500&usg=AOvVaw3Nu5FI78rflI7vvCvxd5MS" target="_blank" style="background:#0ea5e9; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:14px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">➕ Add to Google Calendar</a>
-                  </div>`;
-      html += `<div style="display:flex; flex-wrap:wrap; gap:20px;">`;
-      
-      days.forEach(day => {
-        html += `<div class="card" style="flex: 1; min-width: 250px; padding:0; overflow:hidden;">
-                   <div style="background:var(--accent); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:18px;">
-                     ${day.dateStr}
-                   </div>
-                   <div style="padding:15px;">`;
-                   
-        let catKeys = Object.keys(day.categories);
-        if (catKeys.length === 0) {
-          html += `<div style="padding:10px 0; color:var(--text-muted); text-align:center; font-style:italic;">No Events</div>`;
-        } else {
-          catKeys.forEach((cat, index) => {
-            // Add extra top margin for categories after the first one (e.g. between Events and Rewards)
-            let topMargin = index === 0 ? "5px" : "25px";
-            html += `<div style="font-weight:bold; color:var(--text-main); margin-top:${topMargin}; margin-bottom:8px; text-transform:uppercase; font-size:11px; letter-spacing:1px;">${cat}</div>`;
-            html += `<ul style="list-style:none; padding:0; margin:0; margin-bottom:15px;">`;
-            day.categories[cat].forEach((ev, idx) => {
-              html += `<li style="padding:8px 0; font-size:14px; color:var(--text-muted);">
-                         ${ev.includes('Bear Trap') ? '🪤' : '✨'} ${ev}
-                       </li>`;
-            });
-            html += `</ul>`;
-          });
-        }
-        html += `</div></div>`;
-      });
-      
-      html += `</div>`;
-      app.innerHTML = html;
-    } catch(e) { renderError(e.message); }
-  },
-  
-  todays_schedule: async () => {
-    // Define refresh function scoped to THIS view (not the weekly calendar)
-    window.refreshTodaysSchedule = async () => {
-      delete window.liveData["WhiteOut Survival"];
-      delete window.livePromises["WhiteOut Survival"];
-      if (window.liveListeners && window.liveListeners["WhiteOut Survival"]) {
-        window.liveListeners["WhiteOut Survival"]();
-        delete window.liveListeners["WhiteOut Survival"];
+      delete window.liveData['WhiteOut Survival'];
+      delete window.livePromises['WhiteOut Survival'];
+      if (window.liveListeners && window.liveListeners['WhiteOut Survival']) {
+        window.liveListeners['WhiteOut Survival']();
+        delete window.liveListeners['WhiteOut Survival'];
       }
       if (window._scheduleCountdownTimer) { clearInterval(window._scheduleCountdownTimer); window._scheduleCountdownTimer = null; }
       window._scheduleCountdowns = [];
-      if (window.showToast) window.showToast("Refreshing schedule...", "info", false);
-      await views.todays_schedule();
-      if (window.showToast) window.showToast("Schedule refreshed!", "success");
+
+      setTimeout(async () => {
+        await views.schedule();
+        if (window.showToast) window.showToast('Schedule refreshed!', 'success');
+      }, 400);
     };
 
-    renderLoading("Loading Today's Events");
+    window.switchScheduleTab = (tab) => {
+      localStorage.setItem('scheduleView', tab);
+      currentTab = tab;
+      window.renderTabs();
+    };
+
+    renderLoading('Loading Schedule');
     try {
-      const data = await fetchSheet("WhiteOut Survival");
+      const [weeklyData, todayData] = await Promise.all([
+        fetchSheet('schedule').catch(() => null),
+        fetchSheet('WhiteOut Survival').catch(() => null)
+      ]);
+
+      const renderTabs = () => {
+        if (window._scheduleCountdownTimer) clearInterval(window._scheduleCountdownTimer);
+        window._scheduleCountdowns = [];
+        
+        let html = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+            <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+              <h2 style="color:var(--text-main); margin:0;">📅 Event Schedule</h2>
+              <div style="display:flex; background:var(--bg-main); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <button onclick="window.switchScheduleTab('today')" style="padding:6px 16px; border:none; background:${currentTab === 'today' ? 'var(--accent)' : 'transparent'}; color:${currentTab === 'today' ? '#fff' : 'var(--text-muted)'}; font-weight:bold; cursor:pointer; font-size:13px; transition:0.2s;">Today's View</button>
+                <button onclick="window.switchScheduleTab('calendar')" style="padding:6px 16px; border:none; background:${currentTab === 'calendar' ? 'var(--accent)' : 'transparent'}; color:${currentTab === 'calendar' ? '#fff' : 'var(--text-muted)'}; font-weight:bold; cursor:pointer; font-size:13px; transition:0.2s;">Calendar View</button>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <a href="https://www.google.com/url?q=https://calendar.google.com/calendar/u/0?cid%3DMWZkOTI2ZjdkNzVhYWIyMzM1N2IxYjE1NTc5MzE2YTRlYTRjMDI3NjA4NDlmOTRkZjg2MDRlZWY5YjdiMTI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&sa=D&source=editors&ust=1783297509664500&usg=AOvVaw3Nu5FI78rflI7vvCvxd5MS" target="_blank" style="background:#0ea5e9; color:#fff; padding:7px 14px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:12px;">➕ Google Cal</a>
+              <button onclick="window.refreshSchedule()" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); padding:7px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                <span id="schRefreshIcon">🔄</span> Refresh
+              </button>
+            </div>
+          </div>
+          <div id="schedule-content"></div>
+        `;
+        
+        app.innerHTML = html;
+        const contentDiv = document.getElementById('schedule-content');
+
+        if (currentTab === 'today') {
+           const data = todayData;
+
+      
 
       if (!data || !Array.isArray(data) || data.length === 0) {
-        app.innerHTML = `<div class="card"><div class="loading">⚠️ Schedule data is currently unavailable. Please try again later.</div></div>`;
+        contentDiv.innerHTML = `<div class="card"><div class="loading">⚠️ Schedule data is currently unavailable. Please try again later.</div></div>`;
         return;
       }
 
@@ -3994,18 +3917,8 @@ const views = {
       }
 
       // ── 4. Final render ──
-      app.innerHTML = `
+      contentDiv.innerHTML = `
         <div class="card" style="background:var(--card-bg);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:16px;padding:24px;animation:fadeIn 0.3s ease;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-            <div>
-              <h2 style="margin:0;font-size:22px;color:var(--text-main);">🕒 Today's Schedule</h2>
-              <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">${dayName}</div>
-            </div>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <a href="https://www.google.com/url?q=https://calendar.google.com/calendar/u/0?cid%3DMWZkOTI2ZjdkNzVhYWIyMzM1N2IxYjE1NTc5MzE2YTRlYTRjMDI3NjA4NDlmOTRkZjg2MDRlZWY5YjdiMTI1OEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&sa=D&source=editors&ust=1783297509664500&usg=AOvVaw3Nu5FI78rflI7vvCvxd5MS" target="_blank" style="background:#0ea5e9;color:#fff;padding:7px 14px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:12px;">➕ Google Cal</a>
-              <button onclick="window.refreshTodaysSchedule && window.refreshTodaysSchedule()" style="background:var(--bg-main);color:var(--text-main);border:1px solid var(--border);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;">🔄 Refresh</button>
-            </div>
-          </div>
 
           <div style="background:var(--bg-main);border-radius:12px;padding:16px;">
             ${sectionPill('⏰','Events Today','#60a5fa','rgba(96,165,250,0.12)')}
@@ -4032,6 +3945,114 @@ const views = {
           });
         }, 30000);
       }
+
+    
+        } else {
+           const data = weeklyData;
+
+      
+      
+      if (!data || !Array.isArray(data) || data.length === 0) {
+  
+      contentDiv.innerHTML = `<div class="card"><div class="loading">⚠️ Schedule data is currently unavailable. Please try again later.</div></div>`;
+        return;
+      }
+      
+      // Find the row that contains the dates
+      let dateRowIdx = -1;
+      for (let r = 0; r < data.length; r++) {
+        let dateCells = data[r].filter(cell => typeof cell === 'string' && (cell.match(/^\d{4}-\d{2}-\d{2}T/) || cell.match(/\d{1,2}\/\d{1,2}/)));
+        if (dateCells.length >= 3) {
+          dateRowIdx = r;
+          break;
+        }
+      }
+      
+      if (dateRowIdx === -1) {
+        contentDiv.innerHTML = `<div class="card"><div class="loading">Could not find dates in schedule.</div></div>`;
+        return;
+      }
+      
+      // Map each date to its column index
+      let days = [];
+      for (let c = 0; c < data[dateRowIdx].length; c++) {
+        let cell = data[dateRowIdx][c];
+        if (typeof cell === 'string') {
+          let formatted = '';
+          if (cell.match(/^\d{4}-\d{2}-\d{2}T/)) {
+            let [year, month, day] = cell.split('T')[0].split('-');
+            let d = new Date(year, month - 1, day);
+            formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          } else if (cell.match(/\d{1,2}\/\d{1,2}/)) {
+            formatted = cell.replace(/Today /ig, '').replace(/Tomorrow /ig, '').trim();
+          }
+          
+          if (formatted) {
+            days.push({ dateStr: formatted, colIdx: c, categories: {} });
+          }
+        }
+      }
+      
+      // Extract events for each day, grouping by category
+      let currentCategory = "Events";
+      for (let r = dateRowIdx + 1; r < data.length; r++) {
+        if (data[r].every(cell => cell === "")) continue;
+        
+        // Detect category headers: A row with exactly one non-empty cell located in Column B (index 1)
+        let nonEmptyCells = data[r].filter(c => c !== "");
+        if (nonEmptyCells.length === 1 && typeof data[r][1] === 'string' && data[r][1].trim() !== "") {
+          currentCategory = data[r][1].trim();
+          continue;
+        }
+        
+        days.forEach(day => {
+          let eventCell = data[r][day.colIdx];
+          if (eventCell && eventCell.trim() !== "") {
+            if (!day.categories[currentCategory]) day.categories[currentCategory] = [];
+            day.categories[currentCategory].push(eventCell);
+          }
+        });
+      }
+      
+      // Render the timeline as Daily Cards
+      let html = '';
+      html += `<div style="display:flex; flex-wrap:wrap; gap:20px;">`;
+      
+      days.forEach(day => {
+        html += `<div class="card" style="flex: 1; min-width: 250px; padding:0; overflow:hidden;">
+                   <div style="background:var(--accent); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:18px;">
+                     ${day.dateStr}
+                   </div>
+                   <div style="padding:15px;">`;
+                   
+        let catKeys = Object.keys(day.categories);
+        if (catKeys.length === 0) {
+          html += `<div style="padding:10px 0; color:var(--text-muted); text-align:center; font-style:italic;">No Events</div>`;
+        } else {
+          catKeys.forEach((cat, index) => {
+            // Add extra top margin for categories after the first one (e.g. between Events and Rewards)
+            let topMargin = index === 0 ? "5px" : "25px";
+            html += `<div style="font-weight:bold; color:var(--text-main); margin-top:${topMargin}; margin-bottom:8px; text-transform:uppercase; font-size:11px; letter-spacing:1px;">${cat}</div>`;
+            html += `<ul style="list-style:none; padding:0; margin:0; margin-bottom:15px;">`;
+            day.categories[cat].forEach((ev, idx) => {
+              html += `<li style="padding:8px 0; font-size:14px; color:var(--text-muted);">
+                         ${ev.includes('Bear Trap') ? '🪤' : '✨'} ${ev}
+                       </li>`;
+            });
+            html += `</ul>`;
+          });
+        }
+        html += `</div></div>`;
+      });
+      
+      html += `</div>`;
+      contentDiv.innerHTML = html;
+    
+        }
+      };
+
+      window.renderTabs = renderTabs;
+      renderTabs();
 
     } catch(e) { renderError(e.message); }
   },
