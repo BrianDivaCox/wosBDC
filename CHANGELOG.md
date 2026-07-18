@@ -1,3 +1,8 @@
+## [1.24.29] - 2026-07-18
+### Fixed
+- **Account Hub - Alt Cards**: Removed the fire emoji 🔥 and "Lv" text from the furnace level display — now shows just the FC icon image (for Fire Crystal levels) or the plain number (for lower levels).
+- **Account Hub - Alt Cards**: Time Active now uses the short format (e.g. `8M 3D`) instead of the raw full string (e.g. `8 months, 3 days`).
+
 ## [1.24.28] - 2026-07-18
 ### Changed
 - **Account Hub - Alt Accounts**: Upgraded the Linked Alt Accounts section to use the same premium dark glassmorphism card design as the Player Database Editor. Cards now feature a 70px cyan-glowing avatar, bold white name/ID text, furnace flame icon with label, timer icon with Time Active label, and properly styled Enable Perks / UNLINK buttons. Layout changed from a single-column flex list to a responsive grid.

@@ -2209,7 +2209,7 @@ const views = {
                   for (let i = 1; i < rosterData.length; i++) {
                       if (rosterData[i][1] && rosterData[i][1].toString().trim() === gid.toString().trim()) {
                           flVal = rosterData[i][2] !== undefined && rosterData[i][2] !== "" ? rosterData[i][2] : 'N/A';
-                          timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? rosterData[i][5] : 'Unknown';
+                          timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? window.formatTimeActiveShort(rosterData[i][5].toString()) : 'Unknown';
                           foundInRoster = true;
                           break;
                       }
@@ -2279,7 +2279,7 @@ const views = {
                       <div style="display:flex; align-items:center; gap:12px;">
                           <svg style="width:24px; height:24px; color:#f97316; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
                           <div style="display:flex; flex-direction:column;">
-                              <span id="${flSpanId}" style="font-size:18px; font-weight:bold; color:#ffffff; line-height:1; display:flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>
+                              <span id="${flSpanId}" style="font-size:18px; font-weight:bold; color:#ffffff; line-height:1; display:flex; align-items:center;">${(() => { const raw = window.getFurnaceIconHtml(flVal); return raw.startsWith('<img') ? raw : (flVal === 'N/A' ? 'N/A' : flVal); })()}</span>
                               <span style="font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px;">Furnace Level</span>
                           </div>
                       </div>
