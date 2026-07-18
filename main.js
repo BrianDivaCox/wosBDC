@@ -2057,14 +2057,31 @@ const views = {
               let flVal = 'N/A';
               let timeActiveVal = 'Unknown';
               const rosterData = window.liveData['Roster'];
+              let foundInRoster = false;
               if (rosterData && rosterData.length > 1) {
                   for (let i = 1; i < rosterData.length; i++) {
                       if (rosterData[i][1] && rosterData[i][1].toString().trim() === gid.toString().trim()) {
                           flVal = rosterData[i][2] !== undefined && rosterData[i][2] !== "" ? rosterData[i][2] : 'N/A';
                           timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? rosterData[i][5] : 'Unknown';
+                          foundInRoster = true;
                           break;
                       }
                   }
+              }
+              
+              let flSpanId = `alt-fl-${gid}`;
+              
+              if (!foundInRoster) {
+                  setTimeout(async () => {
+                      try {
+                          const res = await fetch(`${API_BASE_URL}?api=verifyWosId&id=${encodeURIComponent(gid)}`);
+                          const data = await res.json();
+                          if (data.success && data.stove_lv) {
+                              const flEl = document.getElementById(flSpanId);
+                              if (flEl) flEl.innerHTML = window.getFurnaceIconHtml(data.stove_lv);
+                          }
+                      } catch(e) {}
+                  }, 100);
               }
               
               linkedHtml += `<div style="display:flex; flex-direction:column; background:var(--bg-main); padding:12px; border-radius:10px; border:1px solid var(--border); box-shadow:0 2px 5px rgba(0,0,0,0.1);">
@@ -2107,7 +2124,7 @@ const views = {
                   </div>
                   <div style="display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
                       <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-muted);">
-                          <span style="font-weight:bold; color:var(--text-main); display:flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>
+                          <span id="${flSpanId}" style="font-weight:bold; color:var(--text-main); display:flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>
                       </div>
                       <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-muted);">
                           ⏱️ ${timeActiveVal}
