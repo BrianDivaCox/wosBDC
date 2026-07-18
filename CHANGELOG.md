@@ -1,3 +1,7 @@
+## [1.24.39] - 2026-07-18
+### Changed
+- **Backend API**: The new signup flow will now ONLY insert the Chief Name into the `Chief's List` sheet, leaving all other columns blank so that your Google Sheet formulas can safely pull the data from `giftcodebot` without being permanently overwritten by hardcoded values.
+
 ## [1.24.38] - 2026-07-18
 ### Fixed
 - **Backend API**: Completely replaced the `appendRow` Google Sheets function with an intelligent search that finds the true first empty row in the list to prevent Google Sheets from inserting new signups thousands of rows down the page if there are blank formatted rows.
