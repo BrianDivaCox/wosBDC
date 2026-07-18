@@ -2191,15 +2191,15 @@ const views = {
       return;
     }
     
-          let linkedHtml = '';
-      let links = currentUser.linkedGameIds || [];
+    let linkedHtml = '';
+    let links = currentUser.linkedGameIds || [];
       
-      linkedHtml += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
-        <h3 style="margin-top:0; color:var(--text-main); font-size:16px;">s< Linked Alt Accounts</h3>`;
-        
-      if (links.length > 0) {
-          linkedHtml += `<div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">`;
-          links.forEach(gid => {
+    linkedHtml += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
+         <h3 style="margin-top:0; color:var(--text-main); font-size:18px; font-weight:bold;">🔗 Linked Alt Accounts <span style="font-size:14px; color:var(--text-muted); font-weight:normal;">(${links.length})</span></h3>`;
+         
+    if (links.length > 0) {
+        linkedHtml += `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px; margin-bottom:15px;">`;
+        links.forEach(gid => {
               let altName = idToNameMap[gid] || `Game ID: ${gid}`;
               let flVal = 'N/A';
               let timeActiveVal = 'Unknown';
@@ -2231,52 +2231,67 @@ const views = {
                   }, 100);
               }
               
-              linkedHtml += `<div style="display:flex; flex-direction:column; background:var(--bg-main); padding:12px; border-radius:10px; border:1px solid var(--border); box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <div style="display:flex; align-items:center; gap:10px;">
-                          <div style="width:30px; height:30px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; overflow:hidden; cursor:pointer; position:relative; flex-shrink:0;" onclick="window._uploadTargetId='${gid}'; document.getElementById('avatarUploadInput').click();" title="Change Alt Avatar">
+              linkedHtml += `
+              <div style="background:rgba(15,23,42,0.6); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:24px; box-shadow:0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1); display:flex; flex-direction:column; justify-content:space-between;">
+                  
+                  <!-- Top row: avatar + name + action buttons -->
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                      <div style="display:flex; gap:16px; align-items:center;">
+                          <!-- Avatar (clickable to upload) -->
+                          <div style="width:70px; height:70px; border-radius:50%; border:2px solid #06b6d4; box-shadow:0 0 15px rgba(6,182,212,0.5); overflow:hidden; background:var(--bg-secondary); position:relative; cursor:pointer; flex-shrink:0;" onclick="window._uploadTargetId='${gid}'; document.getElementById('avatarUploadInput').click();" title="Change Alt Avatar">
                               <img id="altAvatarImg-${gid}" src="${avatarMap[gid] || `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                              <div id="altAvatarFallback-${gid}" style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">${altName.charAt(0).toUpperCase()}</div>
-                              <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><span style="font-size:12px;">✏️</span></div>
+                              <div id="altAvatarFallback-${gid}" style="display:none; align-items:center; justify-content:center; width:100%; height:100%; font-size:24px; font-weight:bold; color:#fff;">${altName.charAt(0).toUpperCase()}</div>
+                              <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'"><span style="font-size:18px;">✏️</span></div>
                           </div>
-                          <div style="text-align:left;">
-                              <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${altName}</div>
-                              <div style="font-size:11px; color:var(--text-muted); font-family:monospace;">ID: ${gid}</div>
+                          <div style="display:flex; flex-direction:column; justify-content:center;">
+                              <span style="font-size:18px; font-weight:600; color:#ffffff; line-height:1.2;">${altName}</span>
+                              <span style="font-size:13px; color:#94a3b8; margin-top:4px;">ID: ${gid}</span>
                           </div>
                       </div>
+                      <!-- Action buttons (enroll/unlink) -->
                       ${ (() => {
-        let isAltEnrolled = false;
-        const gcb = window.liveData['giftcodebot'];
-        if (gcb && gcb.length > 1) {
-            for (let i = 1; i < gcb.length; i++) {
-                if (gcb[i] && gcb[i][2] && gcb[i][2].toString().trim() === gid.toString().trim()) {
-                    isAltEnrolled = true;
-                    break;
-                }
-            }
-        }
-        
-        if (isAltEnrolled || enrolledGameIds.has(gid.toString())) {
-            return `<div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
-                <div style="color:var(--success); font-weight:bold; font-size:11px; padding:4px 8px; border:1px solid var(--success); border-radius:4px; background:rgba(16,185,129,0.1);">&#x2705; Enrolled</div>
-                <button onclick="window.unlinkAltAccountPrompt('${gid}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-weight:bold; font-size:11px;">Unlink</button>
-            </div>`;
-        } else {
-            return `<div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
-                <button onclick="window.openAltPerksModal('${gid}', '${altName.replace(/'/g, "\\'")}')" style="background:var(--success); border:none; color:var(--text-main); cursor:pointer; font-weight:bold; font-size:11px; padding:4px 8px; border-radius:4px;">&#x1F381; Enable Perks</button>
-                <button onclick="window.unlinkAltAccountPrompt('${gid}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-weight:bold; font-size:11px;">Unlink</button>
-            </div>`;
-        }
-      })() }
+          let isAltEnrolled = false;
+          const gcb = window.liveData['giftcodebot'];
+          if (gcb && gcb.length > 1) {
+              for (let i = 1; i < gcb.length; i++) {
+                  if (gcb[i] && gcb[i][2] && gcb[i][2].toString().trim() === gid.toString().trim()) {
+                      isAltEnrolled = true;
+                      break;
+                  }
+              }
+          }
+          if (isAltEnrolled || enrolledGameIds.has(gid.toString())) {
+              return `<div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0;">
+                  <span style="border:1px solid #10b981; color:#10b981; background:rgba(16,185,129,0.1); border-radius:9999px; padding:4px 12px; font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:6px;">&#x2705; Enrolled</span>
+                  <button onclick="window.unlinkAltAccountPrompt('${gid}')" style="border:1px solid #f87171; color:#f87171; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; transition:background 0.2s;" onmouseover="this.style.background='rgba(248,113,113,0.1)'" onmouseout="this.style.background='transparent'">UNLINK</button>
+              </div>`;
+          } else {
+              return `<div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0;">
+                  <button onclick="window.openAltPerksModal('${gid}', '${altName.replace(/'/g, "\\'")}')" style="background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#10b981; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='rgba(16,185,129,0.25)'" onmouseout="this.style.background='rgba(16,185,129,0.15)'">&#x1F381; Enable Perks</button>
+                  <button onclick="window.unlinkAltAccountPrompt('${gid}')" style="border:1px solid #f87171; color:#f87171; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; transition:background 0.2s;" onmouseover="this.style.background='rgba(248,113,113,0.1)'" onmouseout="this.style.background='transparent'">UNLINK</button>
+              </div>`;
+          }
+        })() }
                   </div>
-                  <div style="display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
-                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-main);">
-                          <span id="${flSpanId}" style="font-weight:bold; color:var(--text-main); display:flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>
+
+                  <!-- Bottom stats row: Furnace Level + Time Active -->
+                  <div style="margin-top:20px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                      <div style="display:flex; align-items:center; gap:12px;">
+                          <svg style="width:24px; height:24px; color:#f97316; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
+                          <div style="display:flex; flex-direction:column;">
+                              <span id="${flSpanId}" style="font-size:18px; font-weight:bold; color:#ffffff; line-height:1; display:flex; align-items:center;">${window.getFurnaceIconHtml(flVal)}</span>
+                              <span style="font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px;">Furnace Level</span>
+                          </div>
                       </div>
-                      <div style="display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px; font-size:11px; color:var(--text-main); font-weight:bold;">
-                          ⏱️ ${timeActiveVal}
+                      <div style="display:flex; align-items:center; gap:12px;">
+                          <svg style="width:24px; height:24px; color:#06b6d4; flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          <div style="display:flex; flex-direction:column;">
+                              <span style="font-size:16px; font-weight:bold; color:#ffffff; line-height:1;">${timeActiveVal}</span>
+                              <span style="font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px;">Time Active</span>
+                          </div>
                       </div>
                   </div>
+
               </div>`;
           });
           linkedHtml += `</div>`;
