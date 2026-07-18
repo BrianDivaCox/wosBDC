@@ -816,12 +816,21 @@ window.searchPlayerFull = async (name) => {
     
     // Generate HTML
     let altAccounts = [];
-    if (usersSnap && usersSnap.exists()) {
+    const viewedGameId = nameToIdMap[name];
+    const ROOT_ADMIN_GAME_ID = 318843189;
+    const viewerIsR5 = window.getAdminLevel(currentUser) === 'R5';
+    const viewedIsRootAdmin = viewedGameId && Number(viewedGameId) === ROOT_ADMIN_GAME_ID;
+
+    // Only show alt accounts if:
+    //   - The viewer is R5 (root admin), OR
+    //   - The player being viewed is NOT the root admin
+    const showAlts = viewerIsR5 || !viewedIsRootAdmin;
+
+    if (showAlts && usersSnap && usersSnap.exists()) {
         const users = usersSnap.val();
-        let targetGameId = nameToIdMap[name];
-        if (targetGameId) {
+        if (viewedGameId) {
             for (const u of Object.values(users)) {
-                if (Number(u.gameId) === Number(targetGameId)) {
+                if (Number(u.gameId) === Number(viewedGameId)) {
                     if (u.linkedGameIds && Array.isArray(u.linkedGameIds)) {
                         altAccounts = [...new Set([...altAccounts, ...u.linkedGameIds])];
                     }
