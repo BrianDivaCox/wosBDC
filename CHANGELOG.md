@@ -1,3 +1,7 @@
+## [1.24.33] - 2026-07-18
+### Changed
+- **Navigation**: Removed the calendar emoji from the Schedule link in the navigation bar for a cleaner look.
+
 ## [1.24.32] - 2026-07-18
 ### Changed
 - **Schedule**: Merged the "Calendar View" and "Today's Schedule" pages into a single unified "Event Schedule" page.
