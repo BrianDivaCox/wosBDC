@@ -1521,16 +1521,9 @@ const views = {
           
           <!-- Tab 1: Daily Tools -->
           <div id="tab-tools" class="admin-tab-content" style="display:block;">
-            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; text-align:center;">
-              <h3 style="margin:0 0 10px 0; color:var(--text-main);">Bear Trap Automation</h3>
-              <p style="margin:0 0 15px 0; font-size:13px; color:var(--text-muted);">Quickly process multiple Bear Trap donations at once.</p>
-              <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; text-align:center;">
-              <h3 style="margin:0 0 10px 0; color:var(--text-main);">Player Database Editor</h3>
-              <p style="margin:0 0 15px 0; font-size:13px; color:var(--text-muted);">Manage player stats, event participation, and add Alt Accounts.</p>
+            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--accent); margin-bottom:20px; text-align:center; display:flex; flex-direction:column; gap:15px; align-items:center;">
+              <button onclick="views.beartrap()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; width:100%; max-width:300px;">🥩 Open Multi-BT Donations</button>
               <button onclick="views.playerEditor()" style="background:var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; width:100%; max-width:300px;">👤 Open Player Database Editor</button>
-            </div>order); padding-top:15px;">
-                 <!-- Populated by JS -->
-              </div>
             </div>
 
             <!-- Push Notification Broadcast -->
@@ -4260,7 +4253,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     }
   }
   
-  if (altAccounts && altAccounts.length > 0) {
+  if (isAdmin && altAccounts && altAccounts.length > 0) {
     let altsDisplayStr = altAccounts.map(id => idToNameMap[id] ? idToNameMap[id] : id).join(', ');
     headerBadgesHtml += `<div style="width: 100%; margin-top: 5px;"><span style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid var(--accent); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${altAccounts.length} Alt(s): ${altsDisplayStr}</span></div>`;
   }

@@ -1,3 +1,8 @@
+## [1.24.14] - 2026-07-17
+### Changed
+- **Admin Panel UI Cleanup**: Restyled the Daily Tools tab in the Admin Panel to neatly stack the "Open Multi-BT Donations" and "Open Player Database Editor" buttons into a cleaner vertical layout, removing unnecessary descriptive text.
+- **Alt Accounts Privacy**: The Alt Accounts list/badge is now hidden on the main public Chief's List. It is now exclusively visible within the Player Database Editor in the Admin Panel.
+
 ## [1.24.13] - 2026-07-17
 ### Fixed
 - **Admin Panel & Firebase Database Crashes**: Fixed a critical bug where replacing `db` with `window.firebaseDb` across the codebase resulted in an undefined reference error (`Cannot read properties of undefined (reading '_checkNotDeleted')`), completely breaking the Admin Panel and Database Editor. Reverted all calls to use the properly scoped `db` module import.
