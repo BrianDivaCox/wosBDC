@@ -1,3 +1,7 @@
+## [1.24.20] - 2026-07-17
+### Fixed
+- **Personal Hub UI**: Reverted the shorthand "Time Active" formatter (e.g. 8M 3D) in the Personal Hub's Alt Accounts section back to the long form, keeping the shorthand format strictly isolated to the Admin Player Database Editor as requested.
+
 ## [1.24.19] - 2026-07-17
 ### Changed
 - **Alt Account UI**: Formatted "Time Active" stats on Alt Cards into short-hand (e.g., "8 months, 3 days" to "8M 3D") to save horizontal space and create a cleaner look.

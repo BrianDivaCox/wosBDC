@@ -2211,7 +2211,7 @@ const views = {
                   for (let i = 1; i < rosterData.length; i++) {
                       if (rosterData[i][1] && rosterData[i][1].toString().trim() === gid.toString().trim()) {
                           flVal = rosterData[i][2] !== undefined && rosterData[i][2] !== "" ? rosterData[i][2] : 'N/A';
-                          timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? window.formatTimeActiveShort(rosterData[i][5].toString()) : 'Unknown';
+                          timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? rosterData[i][5] : 'Unknown';
                           foundInRoster = true;
                           break;
                       }
