@@ -637,7 +637,7 @@ window.searchPlayerFull = async (name) => {
           ]);
         
         let usersSnap = null;
-        try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
+        try { usersSnap = await get(ref(window.firebaseDb, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
     
     // Parse Maps
     const rosterMap = {};
@@ -1401,7 +1401,7 @@ const views = {
     
         try {
       const [usersSnap, rosterRawData] = await Promise.all([
-        get(ref(db, 'users')),
+        get(ref(window.firebaseDb, 'users')),
         fetchSheet("Chief's List")
       ]);
       const users = usersSnap.val() || {};
@@ -3137,7 +3137,7 @@ const views = {
           ]);
         
         let usersSnap = null;
-        try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
+        try { usersSnap = await get(ref(window.firebaseDb, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
       
       if (!data || data.length < 2) throw new Error("No data found.");
       
@@ -4219,7 +4219,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   }
   
   if (altAccounts && altAccounts.length > 0) {
-    let altsDisplayStr = altAccounts.map(id => window.idToNameMap[id] ? window.idToNameMap[id] : id).join(', ');
+    let altsDisplayStr = altAccounts.map(id => idToNameMap[id] ? idToNameMap[id] : id).join(', ');
     headerBadgesHtml += `<div style="width: 100%; margin-top: 5px;"><span style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid var(--accent); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${altAccounts.length} Alt(s): ${altsDisplayStr}</span></div>`;
   }
   

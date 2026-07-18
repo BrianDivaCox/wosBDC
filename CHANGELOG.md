@@ -1,3 +1,7 @@
+## [1.24.11] - 2026-07-17
+### Fixed
+- **Roster Page Crash**: Hotfixed a JavaScript reference error (`window.idToNameMap` undefined) that broke the public Roster page when attempting to render Alt Account badges.
+
 ## [1.24.10] - 2026-07-17
 ### Changed
 - **Alt Account Management Refactored**:
