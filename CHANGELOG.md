@@ -1,3 +1,9 @@
+## [1.24.35] - 2026-07-18
+### Fixed
+- **Backend API**: Fixed a bug where registering a new account or enrolling an alt account was placing the Date Started into the Gift Codes column on the Google Sheet.
+- **Backend API**: Fixed an issue where duplicate checks on the GiftCodeBot sheet prevented new signups from properly updating the Chief's List in Google Sheets.
+- **Frontend**: Updated API_BASE_URL to point to the newly deployed backend script.
+
 ## [1.24.34] - 2026-07-18
 ### Changed
 - **Registration**: Removed the manual "Chief Name" input box during signup. The system now fully relies on the verified Chief Name pulled directly from the Game ID validation API.
