@@ -1,3 +1,7 @@
+## [1.24.18] - 2026-07-17
+### Changed
+- **Fire Crystal Icons**: Globally hid the redundant text number for players above Furnace Level 30 (Fire Crystal levels), allowing the official 3D FC game icons to stand alone.
+
 ## [1.24.17] - 2026-07-17
 ### Changed
 - **Alt Account UI**: Stripped the redundant fire emoji ("🔥") and the "Lv" text from the Furnace Level display on Alt Cards to make it cleaner, since the orange furnace icon is already present.

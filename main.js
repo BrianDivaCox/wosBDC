@@ -22,7 +22,7 @@ window.getFurnaceIconHtml = (level) => {
     if (lv <= 30) return `🔥 Lv ${lv}`;
     let n = Math.floor((lv - 30) / 5);
     let url = `https://gof-formal-avatar.akamaized.net/img/icon/stove_lv_${n}.png`;
-    return `<img src="${url}" style="width:36px; height:36px; vertical-align:middle; margin-right:4px; object-fit:contain; image-rendering:-webkit-optimize-contrast;" /> Lv ${lv}`;
+    return `<img src="${url}" style="width:36px; height:36px; vertical-align:middle; margin-right:4px; object-fit:contain; image-rendering:-webkit-optimize-contrast;" />`;
 };
 
 // --- Security Helpers ---
