@@ -1,3 +1,7 @@
+## [1.24.3] - 2026-07-17
+### Fixed
+- **Alt Account Stats Lookup**: Fixed an issue where Furnace Level and Time Active showed as "N/A" for Alt Accounts because the name matching occasionally failed. Rebuilt the system to look up stats using the bulletproof Game ID numeric identifier instead.
+
 ## [1.24.1] - 2026-07-17
 ### Fixed
 - **Account Hub Crash**: Fixed a critical bug where the Account Hub would fail to load if it couldn't correctly reference the Roster data map.
