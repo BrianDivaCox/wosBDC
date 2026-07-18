@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyo03bNUhDgZfM8wSSzmVfGISIYp4K4pp53iO6kzXqV8yuMFEqqMPjGNppcgLUmtWI/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxJJL1LXnVZ7oFoqcIefVB5fKtHNPVmnXa9sXWkxoXyxRVrFoybrsiBPAhynhy4qzw/exec';
 
 // Get a fresh Firebase ID token for the current user (replaces hardcoded APP_SECRET)
 const getAuthToken = async () => {

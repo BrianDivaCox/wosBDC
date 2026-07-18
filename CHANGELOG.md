@@ -1,3 +1,7 @@
+## [1.24.38] - 2026-07-18
+### Fixed
+- **Backend API**: Completely replaced the `appendRow` Google Sheets function with an intelligent search that finds the true first empty row in the list to prevent Google Sheets from inserting new signups thousands of rows down the page if there are blank formatted rows.
+
 ## [1.24.37] - 2026-07-18
 ### Fixed
 - **Frontend**: Fixed a CORS network error that caused new signups to fail to write to the Google Sheets.
