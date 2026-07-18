@@ -1,3 +1,8 @@
+## [1.24.15] - 2026-07-17
+### Added
+- **Alt Account Management UI**: Completely redesigned the Alt Accounts section within the Player Database Editor to use a stunning glassmorphism card design based on the recent mockup.
+- **Unlink Alt Account Feature**: Added a fully functional "Unlink" button to the new Alt Cards that allows admins to permanently sever the link between a main account and an alt account in the database.
+
 ## [1.24.14] - 2026-07-17
 ### Changed
 - **Admin Panel UI Cleanup**: Restyled the Daily Tools tab in the Admin Panel to neatly stack the "Open Multi-BT Donations" and "Open Player Database Editor" buttons into a cleaner vertical layout, removing unnecessary descriptive text.

@@ -238,6 +238,45 @@ window.adminLinkAltAccountPrompt = async (uid, cName, currentLinksStr) => {
     }
 };
 
+window.adminUnlinkAltAccountPrompt = async (chiefName, altId) => {
+    if (!confirm(`Are you sure you want to unlink ${altId} from ${chiefName}?`)) return;
+    
+    const gameId = window.nameToIdMap[chiefName];
+    if (!gameId) {
+        if(window.showToast) window.showToast("Could not find Game ID for " + chiefName, "error");
+        else alert("Could not find Game ID");
+        return;
+    }
+    
+    try {
+        const usersSnap = await get(ref(db, 'users'));
+        const users = usersSnap.val() || {};
+        let targetUid = null;
+        let currentLinks = [];
+        
+        for (const [uid, u] of Object.entries(users)) {
+            if (Number(u.gameId) === Number(gameId)) {
+                targetUid = uid;
+                currentLinks = u.linkedGameIds || [];
+                break;
+            }
+        }
+        
+        if (!targetUid) {
+            if(window.showToast) window.showToast("User is not registered on the site.", "error");
+            return;
+        }
+        
+        currentLinks = currentLinks.filter(id => id.toString().trim() !== altId.toString().trim());
+        await set(ref(db, `users/${targetUid}/linkedGameIds`), currentLinks);
+        
+        if (window.showToast) window.showToast(`Unlinked ${altId} from ${chiefName}!`, "success");
+        if (window.searchPlayerFull) window.searchPlayerFull(chiefName);
+    } catch(e) {
+        alert(e.message);
+    }
+};
+
 window.adminLinkAltAccountPromptByChief = async (chiefName) => {
     const gameId = window.nameToIdMap[chiefName];
     if (!gameId) {
@@ -4253,10 +4292,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
     }
   }
   
-  if (isAdmin && altAccounts && altAccounts.length > 0) {
-    let altsDisplayStr = altAccounts.map(id => idToNameMap[id] ? idToNameMap[id] : id).join(', ');
-    headerBadgesHtml += `<div style="width: 100%; margin-top: 5px;"><span style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid var(--accent); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${altAccounts.length} Alt(s): ${altsDisplayStr}</span></div>`;
-  }
+
   
   let activityBadges = '';
   let missedDays = p[1];
@@ -4434,7 +4470,78 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
         }
     }
     
-    let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px; flex-wrap:wrap;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1); flex-shrink:0;">' + avatarImgHtml + '</div><div style="flex:1; min-width:200px;"><div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px; word-break:break-word;">' + chiefName + adminBadgeHtml + '</h2>' + adminBarHtml + '</div>' + headerBadgesHtml + '</div></div>' + metricsHtml + '</div>';
+    let html = '<div class="card" style="margin-bottom:20px; animation: fadeIn 0.3s ease;"><div style="display:flex; align-items:center; gap:20px; margin-bottom:15px; flex-wrap:wrap;"><div style="width:70px; height:70px; border-radius:50%; overflow:hidden; background:var(--accent); color:#fff; font-size:32px; font-weight:bold; display:flex; justify-content:center; align-items:center; border:2px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.1); flex-shrink:0;">' + avatarImgHtml + '</div><div style="flex:1; min-width:200px;"><div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;"><h2 style="margin:0; font-size:24px; color:var(--text-main); display:flex; align-items:center; gap:10px; word-break:break-word;">' + chiefName + adminBadgeHtml + '</h2>' + adminBarHtml + '</div>' + headerBadgesHtml + '</div></div>' + metricsHtml;
+
+    if (isAdmin && altAccounts && altAccounts.length > 0) {
+        html += `<div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px;">
+        <h3 style="margin-top:0; color:#ffffff; font-size:24px; font-weight:bold; font-family:sans-serif;">Linked Alt Accounts <span style="font-size:16px; color:var(--text-muted); font-weight:normal;">(${altAccounts.length})</span></h3>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px; margin-top:20px;">`;
+        
+        altAccounts.forEach(gid => {
+            let altName = idToNameMap[gid] || `Game ID: ${gid}`;
+            let altStats = window.rosterMap ? window.rosterMap[gid] : null;
+            let flVal = altStats ? (altStats.furnaceLevel || 'N/A') : 'N/A';
+            let timeActiveVal = altStats ? (altStats.timeActive || 'Unknown') : 'Unknown';
+            let isAltEnrolled = false;
+            
+            const gcb = window.liveData ? window.liveData['giftcodebot'] : null;
+            if (gcb && gcb.length > 1) {
+                for (let i = 1; i < gcb.length; i++) {
+                    if (gcb[i][1] && gcb[i][1].toString().trim() === gid.toString().trim()) {
+                        isAltEnrolled = true;
+                        break;
+                    }
+                }
+            }
+            
+            let enrolledBadge = isAltEnrolled ? `<span style="border:1px solid #10b981; color:#10b981; background:rgba(16,185,129,0.1); border-radius:9999px; padding:4px 12px; font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:6px; margin-top:8px;">&#x2705; Enrolled</span>` : '';
+            
+            let furnaceIcon = `<svg class="w-6 h-6 text-orange-500" style="width:24px; height:24px; color:#f97316;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>`;
+            let timerIcon = `<svg class="w-6 h-6 text-cyan-400" style="width:24px; height:24px; color:#06b6d4;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+            
+            html += `
+            <div style="background:rgba(15,23,42,0.6); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:24px; box-shadow:0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1); display:flex; flex-direction:column; justify-content:space-between;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="display:flex; gap:16px;">
+                        <div style="width:70px; height:70px; border-radius:50%; border:2px solid #06b6d4; box-shadow:0 0 15px rgba(6,182,212,0.5); overflow:hidden; background:var(--bg-secondary); position:relative;">
+                            <img id="altAvatarImg-${gid}" src="${window.avatarMap ? window.avatarMap[gid] || `images/${altName}.png` : `images/${altName}.png`}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div id="altAvatarFallback-${gid}" style="display:none; align-items:center; justify-content:center; width:100%; height:100%; font-size:24px; font-weight:bold; color:#fff;">${altName.charAt(0).toUpperCase()}</div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; justify-content:center;">
+                            <span style="font-size:20px; font-weight:600; color:#ffffff; line-height:1.2;">${altName}</span>
+                            <span style="font-size:13px; color:#94a3b8; margin-top:4px;">ID: ${gid}</span>
+                            ${enrolledBadge}
+                        </div>
+                    </div>
+                    <button onclick="window.adminUnlinkAltAccountPrompt('${chiefName}', '${gid}')" style="border:1px solid #f87171; color:#f87171; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; transition:background 0.2s; flex-shrink:0;" onmouseover="this.style.background='rgba(248,113,113,0.1)'" onmouseout="this.style.background='transparent'">UNLINK</button>
+                </div>
+                
+                <div style="margin-top:24px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        ${furnaceIcon}
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-size:22px; font-weight:bold; color:#ffffff; line-height:1;">${flVal}</span>
+                            <span style="font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px;">Furnace Level</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        ${timerIcon}
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-size:16px; font-weight:bold; color:#ffffff; line-height:1;">${timeActiveVal}</span>
+                            <span style="font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px;">Time Active</span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            `;
+        });
+        
+        html += `</div></div>`;
+    }
+
+    html += '</div>';
     return html;
 };
 
