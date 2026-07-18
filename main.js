@@ -2056,7 +2056,7 @@ const views = {
               let altName = idToNameMap[gid] || `Game ID: ${gid}`;
               let flVal = 'N/A';
               let timeActiveVal = 'Unknown';
-              const rosterData = window.liveData['Roster'];
+              const rosterData = window.liveData["Chief's List"];
               let foundInRoster = false;
               if (rosterData && rosterData.length > 1) {
                   for (let i = 1; i < rosterData.length; i++) {
