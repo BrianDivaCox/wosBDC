@@ -2532,8 +2532,6 @@ const views = {
            
            // Save Event
            saveBtn.onclick = async () => {
-               uploadBtn.textContent = 'Uploading...';
-               uploadBtn.disabled = true;
                saveBtn.textContent = 'Saving...';
                saveBtn.disabled = true;
                
@@ -2582,8 +2580,6 @@ const views = {
                cropper.destroy();
                modal.style.display = 'none';
                uploadInput.value = '';
-               uploadBtn.textContent = 'Choose Image';
-               uploadBtn.disabled = false;
                saveBtn.textContent = 'Save';
                saveBtn.disabled = false;
            };

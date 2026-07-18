@@ -1,3 +1,8 @@
+## [1.24.26] - 2026-07-17
+### Fixed
+- **Admin Log**: Fixed an issue where the Multi-BT Donations Admin Log would display "No activity found" if the Google Sheet had trailing empty rows.
+- **Alt Account UI**: Fixed a bug where uploading a profile picture for an Alt Account would fail silently because it was referencing an undefined upload button.
+
 ## [1.24.25] - 2026-07-17
 ### Fixed
 - **Admin Panel Bug**: Fixed a core "Permission denied" error when an Admin tried linking an Alt Account to another user. Firebase Security Rules completely blocked Admins from writing to other users' profiles, so the linkage was failing silently or throwing a red alert. I built a custom Google Apps Script endpoint to securely bypass these rules, allowing Admins to link Alts seamlessly.
