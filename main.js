@@ -1666,7 +1666,7 @@ const views = {
         let rosterInfoHtml = '';
         if (rosterRawData && rosterRawData.length > 1) {
              for (let i = 1; i < rosterRawData.length; i++) {
-                 if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim() === cName) {
+                 if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim().toLowerCase() === cName.toLowerCase()) {
                      let flVal = rosterRawData[i][2];
                      let gcVal = rosterRawData[i][3];
                      let taVal = rosterRawData[i][5];
@@ -2366,7 +2366,7 @@ const views = {
       const rosterRawData = window.liveData["Chief's List"];
       if (rosterRawData && rosterRawData.length > 0) {
           for (let i = 1; i < rosterRawData.length; i++) {
-              if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim() === currentChiefName) {
+              if (rosterRawData[i][0] && rosterRawData[i][0].toString().trim().toLowerCase() === currentChiefName.toLowerCase()) {
                   if (rosterRawData[i][2]) {
                       furnaceLevelStr = rosterRawData[i][2].toString();
                   }

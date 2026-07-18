@@ -1,3 +1,7 @@
+## [1.24.36] - 2026-07-18
+### Fixed
+- **Frontend**: Fixed a case sensitivity bug that caused the Account Hub to fail to pull Furnace Level and Time Active stats if the casing of the user's name on Century Games API didn't exactly match the casing in the Google Sheet.
+
 ## [1.24.35] - 2026-07-18
 ### Fixed
 - **Backend API**: Fixed a bug where registering a new account or enrolling an alt account was placing the Date Started into the Gift Codes column on the Google Sheet.
