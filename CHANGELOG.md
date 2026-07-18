@@ -1,3 +1,7 @@
+## [1.24.7] - 2026-07-17
+### Changed
+- **Account Hub Styling**: Changed the text color for Furnace Level and Time Active values from pink to white to match the styling of the Game ID.
+
 ## [1.24.6] - 2026-07-17
 ### Fixed
 - **Admin Panel UI**: Fixed an issue in the Multi-Bear Donations form where the Amount box was being pushed off the screen on smaller smartphones.

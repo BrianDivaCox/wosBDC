@@ -2249,12 +2249,12 @@ const views = {
                 </div>
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
                     <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Furnace Level</span>
-                    <span style="color:var(--accent); font-weight:bold; font-size:15px; text-align:right; display:flex; align-items:center;">${window.getFurnaceIconHtml(furnaceLevelStr)}</span>
+                    <span style="color:var(--text-main); font-weight:bold; font-size:15px; text-align:right; display:flex; align-items:center;">${window.getFurnaceIconHtml(furnaceLevelStr)}</span>
                 </div>
                 
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
                     <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Time Active</span>
-                    <span style="color:var(--accent); font-weight:bold; font-size:13px; text-align:right;">${timeActiveStr}</span>
+                    <span style="color:var(--text-main); font-weight:bold; font-size:13px; text-align:right;">${timeActiveStr}</span>
                 </div>
             </div>
             
