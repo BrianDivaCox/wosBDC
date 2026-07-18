@@ -246,7 +246,7 @@ window.adminLinkAltAccountPromptByChief = async (chiefName) => {
         return;
     }
     try {
-        const usersSnap = await window.get(window.ref(window.firebaseDb, 'users'));
+        const usersSnap = await get(ref(db, 'users'));
         const users = usersSnap.val() || {};
         let targetUid = null;
         let currentLinks = [];
@@ -637,7 +637,7 @@ window.searchPlayerFull = async (name) => {
           ]);
         
         let usersSnap = null;
-        try { usersSnap = await get(ref(window.firebaseDb, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
+        try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
     
     // Parse Maps
     const rosterMap = {};
@@ -649,7 +649,7 @@ window.searchPlayerFull = async (name) => {
     }
     
 
-    const db = window.firebaseDb;
+
     let btDonationsAllTime = null, btDonationsCurrent = null, bear1 = null, bear2 = null, bearBoth = null, bearAllTime = null;
     let otherLbs = [];
     
@@ -1401,7 +1401,7 @@ const views = {
     
         try {
       const [usersSnap, rosterRawData] = await Promise.all([
-        get(ref(window.firebaseDb, 'users')),
+        get(ref(db, 'users')),
         fetchSheet("Chief's List")
       ]);
       const users = usersSnap.val() || {};
@@ -2066,7 +2066,7 @@ const views = {
     try {
       const results = await Promise.all([
         fetchSheet("Chief's List"),
-        get(ref(window.firebaseDb, 'users'))
+        get(ref(db, 'users'))
       ]);
       rosterRawData = results[0];
       usersSnap = results[1];
@@ -3179,7 +3179,7 @@ const views = {
           ]);
         
         let usersSnap = null;
-        try { usersSnap = await get(ref(window.firebaseDb, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
+        try { usersSnap = await get(ref(db, 'users')); } catch(e) { console.warn("Could not fetch users:", e); }
       
       if (!data || data.length < 2) throw new Error("No data found.");
       
