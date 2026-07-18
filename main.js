@@ -1059,7 +1059,7 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
       try {
           const regToken = await getAuthToken();
           const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}&level=${encodeURIComponent(verifiedFurnaceLevel)}${regToken ? '&token=' + encodeURIComponent(regToken) : ''}`;
-          fetch(url).catch(e => console.warn("Failed to ping GAS for registration", e));
+          fetch(url, { mode: 'no-cors' }).catch(e => console.warn("Failed to ping GAS for registration", e));
       } catch(e) {}
 
       window.showToast("Account created & signed in!", "success");

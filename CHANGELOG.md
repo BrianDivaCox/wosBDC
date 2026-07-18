@@ -1,3 +1,7 @@
+## [1.24.37] - 2026-07-18
+### Fixed
+- **Frontend**: Fixed a CORS network error that caused new signups to fail to write to the Google Sheets.
+
 ## [1.24.36] - 2026-07-18
 ### Fixed
 - **Frontend**: Fixed a case sensitivity bug that caused the Account Hub to fail to pull Furnace Level and Time Active stats if the casing of the user's name on Century Games API didn't exactly match the casing in the Google Sheet.
