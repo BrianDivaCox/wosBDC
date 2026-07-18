@@ -307,9 +307,14 @@ window.adminLinkAltAccountPromptByChief = async (chiefName) => {
             }
         }
         if (!targetUid) {
-            if(window.showToast) window.showToast("User is not registered on the site.", "error");
-            else alert("User is not registered on the site.");
-            return;
+            // Create a stub user so admins can link alts even if the Chief hasn't registered an account yet
+            targetUid = `stub_${gameId}`;
+            await set(ref(db, `users/${targetUid}`), {
+                gameId: gameId,
+                name: chiefName,
+                isStub: true,
+                createdAt: new Date().toISOString()
+            });
         }
         const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${chiefName}:`);
         if (!altId || altId.trim() === '') return;
@@ -4474,10 +4479,10 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
         </button>
         <div class="admin-dropdown-menu" style="display:none; flex-direction:column; gap:8px; position:absolute; top:100%; right:0; margin-top:8px; background:var(--card-bg); border:1px solid var(--border); border-radius:8px; padding:10px; min-width:180px; box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:100;" onclick="event.stopPropagation();">
           ${adminActionBtn ? adminActionBtn : ''}
-          <button onclick="window.promptLogBearTrapWinner('${chiefName}')" style="background:rgba(255,215,0,0.1); color:#FFD700; border:1px solid rgba(255,215,0,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(255,215,0,0.2)'" onmouseout="this.style.background='rgba(255,215,0,0.1)'">👑 Crown Winner</button>
-          <button onclick="window.promptBearTrap('${chiefName}')" style="background:rgba(46,204,113,0.1); color:var(--success); border:1px solid rgba(46,204,113,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(46,204,113,0.2)'" onmouseout="this.style.background='rgba(46,204,113,0.1)'">🥩 + Bear Donation</button>
-          <button onclick="window.promptEditEvents('${chiefName}', decodeURIComponent('${missedJson}'))" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">📝 Edit Events</button>
-          <button onclick="window.adminLinkAltAccountPromptByChief('${chiefName}')" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s; margin-top:5px;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">➕ Add Alt Account</button>
+          <button onclick="window.promptLogBearTrapWinner('${chiefName.replace(/'/g, "\\'")}')" style="background:rgba(255,215,0,0.1); color:#FFD700; border:1px solid rgba(255,215,0,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(255,215,0,0.2)'" onmouseout="this.style.background='rgba(255,215,0,0.1)'">👑 Crown Winner</button>
+          <button onclick="window.promptBearTrap('${chiefName.replace(/'/g, "\\'")}')" style="background:rgba(46,204,113,0.1); color:var(--success); border:1px solid rgba(46,204,113,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(46,204,113,0.2)'" onmouseout="this.style.background='rgba(46,204,113,0.1)'">🥩 + Bear Donation</button>
+          <button onclick="window.promptEditEvents('${chiefName.replace(/'/g, "\\'")}', decodeURIComponent('${missedJson}'))" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">📝 Edit Events</button>
+          <button onclick="window.adminLinkAltAccountPromptByChief('${chiefName.replace(/'/g, "\\'")}')" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s; margin-top:5px;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">➕ Add Alt Account</button>
         </div>
       </div>
     `;
@@ -4554,7 +4559,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
                             ${enrolledBadge}
                         </div>
                     </div>
-                    <button onclick="window.adminUnlinkAltAccountPrompt('${chiefName}', '${gid}')" style="border:1px solid #f87171; color:#f87171; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; transition:background 0.2s; flex-shrink:0;" onmouseover="this.style.background='rgba(248,113,113,0.1)'" onmouseout="this.style.background='transparent'">UNLINK</button>
+                    <button onclick="window.adminUnlinkAltAccountPrompt('${chiefName.replace(/'/g, "\\'")}', '${gid}')" style="border:1px solid #f87171; color:#f87171; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; transition:background 0.2s; flex-shrink:0;" onmouseover="this.style.background='rgba(248,113,113,0.1)'" onmouseout="this.style.background='transparent'">UNLINK</button>
                 </div>
                 
                 <div style="margin-top:24px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; display:flex; justify-content:space-between; align-items:center;">

@@ -1,3 +1,7 @@
+## [1.24.23] - 2026-07-17
+### Changed
+- **Admin Panel**: Allowed Admins to link Alt Accounts to players who have not yet registered a website profile by automatically generating a "stub" profile for them in the Firebase database.
+
 ## [1.24.22] - 2026-07-17
 ### Fixed
 - **Admin Panel Bug**: Fixed a crash in the Player Database Editor where the "Add Alt Account" button in the Action Menu would fail due to calling a global window function that was only imported locally.
