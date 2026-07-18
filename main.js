@@ -37,6 +37,16 @@ window.escapeHTML = (str) => {
   }[tag]));
 };
 
+window.formatTimeActiveShort = (str) => {
+    if (!str || typeof str !== 'string') return str;
+    return str.replace(/\s*years?/gi, 'Y')
+              .replace(/\s*months?/gi, 'M')
+              .replace(/\s*days?/gi, 'D')
+              .replace(/,\s*/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+};
+
 
 // --- Settings Sidebar Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -2201,7 +2211,7 @@ const views = {
                   for (let i = 1; i < rosterData.length; i++) {
                       if (rosterData[i][1] && rosterData[i][1].toString().trim() === gid.toString().trim()) {
                           flVal = rosterData[i][2] !== undefined && rosterData[i][2] !== "" ? rosterData[i][2] : 'N/A';
-                          timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? rosterData[i][5] : 'Unknown';
+                          timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? window.formatTimeActiveShort(rosterData[i][5].toString()) : 'Unknown';
                           foundInRoster = true;
                           break;
                       }
@@ -4500,7 +4510,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
                 for (let i = 1; i < rosterData.length; i++) {
                     if (rosterData[i][1] && rosterData[i][1].toString().trim() === gid.toString().trim()) {
                         flVal = rosterData[i][2] !== undefined && rosterData[i][2] !== "" ? rosterData[i][2] : 'N/A';
-                        timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? rosterData[i][5] : 'Unknown';
+                        timeActiveVal = rosterData[i][5] !== undefined && rosterData[i][5] !== "" ? window.formatTimeActiveShort(rosterData[i][5].toString()) : 'Unknown';
                         break;
                     }
                 }

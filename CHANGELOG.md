@@ -1,3 +1,7 @@
+## [1.24.19] - 2026-07-17
+### Changed
+- **Alt Account UI**: Formatted "Time Active" stats on Alt Cards into short-hand (e.g., "8 months, 3 days" to "8M 3D") to save horizontal space and create a cleaner look.
+
 ## [1.24.18] - 2026-07-17
 ### Changed
 - **Fire Crystal Icons**: Globally hid the redundant text number for players above Furnace Level 30 (Fire Crystal levels), allowing the official 3D FC game icons to stand alone.
