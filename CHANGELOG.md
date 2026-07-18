@@ -1,3 +1,7 @@
+## [1.24.9] - 2026-07-17
+### Fixed
+- **Admin Permissions Bug**: Fixed an issue where Firebase Database Security Rules were blocking Admins from adding Alt accounts to other players. Admins now have the proper database write access to modify user profiles and delete avatars.
+
 ## [1.24.8] - 2026-07-17
 ### Added
 - **Admin User List**: Added the requested `Furnace Level`, `Giftcode Enrolled` tag, and `Time Active` (years in service) stats directly to the Users tab in the Admin Panel. These badges now appear next to the Chief Name for both Main and Alt accounts!

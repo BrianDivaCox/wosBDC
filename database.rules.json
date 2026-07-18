@@ -3,7 +3,7 @@
     "users": {
       ".read": true,
       "$uid": {
-        ".write": "$uid === auth.uid"
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists()"
       }
     },
     "presence": {
@@ -21,7 +21,7 @@
     "avatars": {
       ".read": true,
       "$gameId": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == $gameId"
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('gameId').val() == $gameId || root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists())"
       }
     },
     "fcmTokens": {
