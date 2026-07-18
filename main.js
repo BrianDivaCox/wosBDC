@@ -314,7 +314,7 @@ window.adminLinkAltAccountPromptByChief = async (chiefName) => {
         const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${chiefName}:`);
         if (!altId || altId.trim() === '') return;
         
-        await window.linkAltAccount(targetUid, altId.trim(), currentLinks);
+        await linkAltAccount(targetUid, altId.trim(), currentLinks);
         if (window.showToast) window.showToast(`Alt Account linked for ${chiefName}!`, "success");
         if (document.getElementById('adminHubView')) window.views.admin();
         window.searchPlayerFull(chiefName);
