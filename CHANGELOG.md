@@ -1,3 +1,7 @@
+## [1.24.24] - 2026-07-17
+### Fixed
+- **Alt Account UI**: Fixed a bug where Alt Accounts would stop showing up if an admin linked an Alt Account to a "stub" profile, and then the user later registered a real account on the website. The UI now intelligently merges Alts across all profiles matching the user's Game ID to ensure no data is lost.
+
 ## [1.24.23] - 2026-07-17
 ### Changed
 - **Admin Panel**: Allowed Admins to link Alt Accounts to players who have not yet registered a website profile by automatically generating a "stub" profile for them in the Firebase database.

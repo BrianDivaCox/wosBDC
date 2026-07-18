@@ -830,8 +830,9 @@ window.searchPlayerFull = async (name) => {
         if (targetGameId) {
             for (const u of Object.values(users)) {
                 if (Number(u.gameId) === Number(targetGameId)) {
-                    if (u.linkedGameIds && Array.isArray(u.linkedGameIds)) altAccounts = u.linkedGameIds;
-                    break;
+                    if (u.linkedGameIds && Array.isArray(u.linkedGameIds)) {
+                        altAccounts = [...new Set([...altAccounts, ...u.linkedGameIds])];
+                    }
                 }
             }
         }
@@ -3498,8 +3499,9 @@ const views = {
             if (targetGameId) {
                 for (const u of Object.values(users)) {
                     if (Number(u.gameId) === Number(targetGameId)) {
-                        if (u.linkedGameIds && Array.isArray(u.linkedGameIds)) altAccounts = u.linkedGameIds;
-                        break;
+                        if (u.linkedGameIds && Array.isArray(u.linkedGameIds)) {
+                            altAccounts = [...new Set([...altAccounts, ...u.linkedGameIds])];
+                        }
                     }
                 }
             }
