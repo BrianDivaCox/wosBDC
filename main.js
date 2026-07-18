@@ -294,35 +294,21 @@ window.adminLinkAltAccountPromptByChief = async (chiefName) => {
         else alert("Could not find Game ID");
         return;
     }
+    
+    const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${chiefName}:`);
+    if (!altId || altId.trim() === '') return;
+    
     try {
-        const usersSnap = await get(ref(db, 'users'));
-        const users = usersSnap.val() || {};
-        let targetUid = null;
-        let currentLinks = [];
-        for (const [uid, u] of Object.entries(users)) {
-            if (Number(u.gameId) === Number(gameId)) {
-                targetUid = uid;
-                currentLinks = u.linkedGameIds || [];
-                break;
-            }
-        }
-        if (!targetUid) {
-            // Create a stub user so admins can link alts even if the Chief hasn't registered an account yet
-            targetUid = `stub_${gameId}`;
-            await set(ref(db, `users/${targetUid}`), {
-                gameId: gameId,
-                name: chiefName,
-                isStub: true,
-                createdAt: new Date().toISOString()
-            });
-        }
-        const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${chiefName}:`);
-        if (!altId || altId.trim() === '') return;
+        const res = await fetch(`${API_BASE_URL}?api=adminLinkAlt&gameId=${encodeURIComponent(gameId)}&chiefName=${encodeURIComponent(chiefName)}&altGameId=${encodeURIComponent(altId.trim())}`);
+        const json = await res.json();
         
-        await linkAltAccount(targetUid, altId.trim(), currentLinks);
-        if (window.showToast) window.showToast(`Alt Account linked for ${chiefName}!`, "success");
-        if (document.getElementById('adminHubView')) window.views.admin();
-        window.searchPlayerFull(chiefName);
+        if (json.success) {
+            if (window.showToast) window.showToast(`Alt Account linked for ${chiefName}!`, "success");
+            if (document.getElementById('adminHubView')) window.views.admin();
+            window.searchPlayerFull(chiefName);
+        } else {
+            alert(json.message || "Failed to link alt account.");
+        }
     } catch(e) {
         alert(e.message);
     }
