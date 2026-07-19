@@ -1565,6 +1565,35 @@ const views = {
         }
       };
       
+      // System stats - ping Vercel proxy /api/stats
+      window.refreshSystemStats = async () => {
+        const statusEl = document.getElementById('sysStatStatus');
+        const invEl = document.getElementById('sysStatInvocations');
+        const latencyEl = document.getElementById('sysStatLatency');
+        if (!statusEl) return;
+        statusEl.textContent = '⏳';
+        invEl.textContent = '—';
+        latencyEl.textContent = '—';
+        const t0 = Date.now();
+        try {
+          const res = await fetch(`${VERIFY_PROXY_URL.replace('/api/verify', '/api/stats')}`);
+          const ms = Date.now() - t0;
+          const data = await res.json();
+          statusEl.textContent = '🟢';
+          invEl.textContent = data.invocations ?? '—';
+          latencyEl.innerHTML = `<span style="color:${ms < 500 ? 'var(--success)' : ms < 1500 ? 'var(--accent)' : 'var(--danger)'}">${ms}ms</span>`;
+        } catch(e) {
+          statusEl.textContent = '🔴';
+          latencyEl.textContent = 'Offline';
+        }
+      };
+      // Auto-run stats when System tab is clicked
+      document.addEventListener('click', (e) => {
+        if (e.target.dataset && e.target.dataset.tab === 'tab-system') {
+          setTimeout(window.refreshSystemStats, 100);
+        }
+      });
+
       // Global function to manually fetch the freshest Admin Log from Sheets API
       window.fetchAdminLog = async () => {
         const tb = document.getElementById('adminLogsTableBody');
@@ -1634,6 +1663,7 @@ const views = {
             ${isR5 ? `<button class="admin-tab-btn" data-tab="tab-users" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">👥 Users</button>
             <button class="admin-tab-btn" data-tab="tab-settings" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">⚙️ Settings</button>` : ''}
             <button class="admin-tab-btn" data-tab="tab-logs" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">📋 Logs</button>
+            ${isR5 ? `<button class="admin-tab-btn" data-tab="tab-system" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">⚡ System</button>` : ''}
           </div>
           
           <!-- Tab 1: Daily Tools -->
@@ -1795,6 +1825,47 @@ const views = {
           ` : ''}
           
           <!-- Tab 4: Logs -->
+          <!-- System Status Tab (R5 only) -->
+          ${isR5 ? `<div id="tab-system" class="admin-tab-content" style="display:none;">
+            <div style="display:flex; flex-direction:column; gap:16px;">
+
+              <!-- Proxy Status Card -->
+              <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                  <h3 style="margin:0; color:var(--text-main);">⚡ Vercel Proxy Status</h3>
+                  <button onclick="window.refreshSystemStats()" style="background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 14px; cursor:pointer; font-weight:bold; font-size:12px;">🔄 Refresh</button>
+                </div>
+                <div id="systemStatsGrid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;">
+                  <div style="background:var(--card-bg); border-radius:10px; padding:16px; text-align:center; border:1px solid var(--border);">
+                    <div id="sysStatStatus" style="font-size:28px;">⏳</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Proxy Status</div>
+                  </div>
+                  <div style="background:var(--card-bg); border-radius:10px; padding:16px; text-align:center; border:1px solid var(--border);">
+                    <div id="sysStatInvocations" style="font-size:22px; font-weight:bold; color:var(--accent);">—</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Self-Tracked Requests</div>
+                  </div>
+                  <div style="background:var(--card-bg); border-radius:10px; padding:16px; text-align:center; border:1px solid var(--border);">
+                    <div id="sysStatLatency" style="font-size:22px; font-weight:bold; color:var(--success);">—</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Response Time</div>
+                  </div>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); margin:0; text-align:center;">⚠️ Self-tracked count resets on server cold start. For official totals, use the Vercel dashboard below.</p>
+              </div>
+
+              <!-- Direct Dashboard Link Card -->
+              <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border);">
+                <h3 style="margin:0 0 8px 0; color:var(--text-main);">📊 Official Usage Dashboard</h3>
+                <p style="margin:0 0 16px 0; font-size:13px; color:var(--text-muted);">View official invocation counts, bandwidth, and monthly limits on Vercel.</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <a href="https://vercel.com/account/usage" target="_blank" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:12px 20px; cursor:pointer; font-weight:bold; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">⚡ Open Usage Dashboard</a>
+                  <a href="https://vercel.com/wosproxyid/wos-vercel-proxy" target="_blank" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); border-radius:8px; padding:12px 20px; cursor:pointer; font-weight:bold; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">📁 Open Project</a>
+                  <a href="https://vercel.com/wosproxyid/wos-vercel-proxy/logs" target="_blank" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); border-radius:8px; padding:12px 20px; cursor:pointer; font-weight:bold; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">📋 Live Logs</a>
+                </div>
+              </div>
+
+            </div>
+          </div>` : ''}
+
           <div id="tab-logs" class="admin-tab-content" style="display:none;">
             <div style="background:var(--bg-main); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:15px;">
               <div style="display:flex; justify-content:space-between; align-items:center;">

@@ -1,3 +1,8 @@
+## [1.24.46] - 2026-07-18
+### Added
+- **Admin Panel**: New ⚡ System tab (R5 only) with two sections: (1) A live proxy status card showing online/offline state, self-tracked request count since last cold start, and response latency. (2) Direct one-click buttons to the Vercel Usage Dashboard, Project page, and Live Logs.
+- **Vercel Proxy**: Added `/api/stats` endpoint that returns self-tracked invocation count and links to official dashboards.
+
 ## [1.24.45] - 2026-07-18
 ### Changed
 - **Infrastructure**: Migrated all Century Games Game ID verification calls off Google Apps Script and onto a dedicated free Vercel proxy (`wos-vercel-proxy.vercel.app`). Google Apps Script now exclusively handles Google Sheets operations. This completely separates concerns and eliminates any possibility of ID verification hitting Google's daily quota limits.
