@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.75 - 2026-07-19
+- **Instant Admin UI Updates**: When an R5 grants or revokes an Admin Badge from another player's profile card, the profile card now instantaneously redraws to reflect the new badge (or removal thereof) without needing a page refresh.
+
 ## v1.24.74 - 2026-07-19
 - **Admin Grant/Revoke Safety**: The confirmation popups when granting or revoking Admin Privileges now explicitly display the player's Chief Name alongside their Game ID to prevent accidental clicks on the wrong account.
 

@@ -397,8 +397,10 @@ window.grantAdmin = async (gameId, level = 'R5') => {
   
   try {
     await set(ref(db, `config/admins/${gameId}`), level);
+    window.systemAdmins[gameId] = level;
     window.showToast(`${level} access granted`, 'success');
     if (document.getElementById('adminHubView')) views.admin(); // refresh admin panel if open
+    if (typeof window.activeViewFunc === 'function') window.activeViewFunc();
   } catch (e) {
     if (window.showToast) window.showToast(e.message, "error");
   }
@@ -414,8 +416,10 @@ window.revokeAdmin = async (gameId) => {
   
   try {
     await set(ref(db, `config/admins/${gameId}`), null);
+    delete window.systemAdmins[gameId];
     window.showToast('Admin access revoked', 'error');
     if (document.getElementById('adminHubView')) views.admin(); // refresh admin panel if open
+    if (typeof window.activeViewFunc === 'function') window.activeViewFunc();
   } catch (e) {
     if (window.showToast) window.showToast(e.message, "error");
   }
