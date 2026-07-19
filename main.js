@@ -1230,6 +1230,8 @@ if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
                 if (!chiefName) throw new Error("Chief Name is required.");
             }
             
+            const dateStarted = prompt("One last thing! What date did you start playing Whiteout Survival? (e.g., YYYY-MM-DD or just month/year)") || "";
+            
             // Save to Firebase Realtime Database
             await set(ref(db, `users/${user.uid}`), {
                 email: user.email,
@@ -1242,7 +1244,7 @@ if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
             // Auto-post to giftcodebot Google Sheet via backend API
             try {
                 const token = await user.getIdToken();
-                const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId.trim())}&name=${encodeURIComponent(chiefName.trim())}&dateStarted=&level=${encodeURIComponent(furnaceLevel)}&token=${encodeURIComponent(token)}`;
+                const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId.trim())}&name=${encodeURIComponent(chiefName.trim())}&dateStarted=${encodeURIComponent(dateStarted)}&level=${encodeURIComponent(furnaceLevel)}&token=${encodeURIComponent(token)}`;
                 fetch(url, { mode: 'no-cors' }).catch(e => console.warn("Failed to ping GAS for registration", e));
             } catch(e) {}
             

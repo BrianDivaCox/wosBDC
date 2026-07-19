@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.61 - 2026-07-19
+- **Google Sign-In Date Prompt**: New users registering via Google Sign-In are now prompted to enter the date they started playing WOS so it accurately tracks in the Account Hub.
+
 ## v1.24.60 - 2026-07-19
 - **Google Sign-In**: Added a "Continue with Google" button to the login and registration screen for a seamless authentication experience. Existing users who registered using their Google email and a password can use this button to automatically merge their accounts and log in. New users will be prompted for their Game ID upon first sign-in to complete their registration.
 
