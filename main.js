@@ -2608,6 +2608,8 @@ const views = {
                   for (let i = 1; i < rosterData.length; i++) {
                       if (rosterData[i][1] && rosterData[i][1].toString().trim() === gid.toString().trim()) {
                           foundInRoster = true;
+                          flVal = rosterData[i][2] || 'N/A';
+                          timeActiveVal = rosterData[i][5] || 'Unknown';
                           break;
                       }
                   }

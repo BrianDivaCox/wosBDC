@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.69 - 2026-07-19
+- **Alt Account Stats Fix**: Fixed a bug on the Account Hub where Alt Accounts were correctly matching against the Master Roster, but failing to visually pull their Furnace Level and Time Active stats onto their Alt Cards.
+
 ## v1.24.68 - 2026-07-19
 - **Account Hub Polish**: Increased the size and prominence of the Fire Crystal icon and Furnace Level text on the main Account Hub ID card.
 
