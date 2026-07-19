@@ -1857,7 +1857,7 @@ const views = {
                 <h3 style="margin:0 0 8px 0; color:var(--text-main);">📊 Official Usage Dashboard</h3>
                 <p style="margin:0 0 16px 0; font-size:13px; color:var(--text-muted);">View official invocation counts, bandwidth, and monthly limits on Vercel.</p>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                  <a href="https://vercel.com/account/usage" target="_blank" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:12px 20px; cursor:pointer; font-weight:bold; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">⚡ Open Usage Dashboard</a>
+                  <a href="https://vercel.com/wosproxyid/~/usage" target="_blank" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:12px 20px; cursor:pointer; font-weight:bold; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">⚡ Open Usage Dashboard</a>
                   <a href="https://vercel.com/wosproxyid/wos-vercel-proxy" target="_blank" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); border-radius:8px; padding:12px 20px; cursor:pointer; font-weight:bold; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">📁 Open Project</a>
                   <a href="https://vercel.com/wosproxyid/wos-vercel-proxy/logs" target="_blank" style="background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); border-radius:8px; padding:12px 20px; cursor:pointer; font-weight:bold; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">📋 Live Logs</a>
                 </div>
