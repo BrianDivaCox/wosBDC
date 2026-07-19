@@ -1,3 +1,7 @@
+## [1.24.40] - 2026-07-18
+### Fixed
+- **Frontend**: Fixed an asynchronous race condition on the signup form where typing your Game ID too quickly could cause an older API request for a partial/invalid ID to overwrite the successful response of your full ID.
+
 ## [1.24.39] - 2026-07-18
 ### Changed
 - **Backend API**: The new signup flow will now ONLY insert the Chief Name into the `Chief's List` sheet, leaving all other columns blank so that your Google Sheet formulas can safely pull the data from `giftcodebot` without being permanently overwritten by hardcoded values.

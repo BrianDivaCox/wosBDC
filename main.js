@@ -982,6 +982,7 @@ let wosLookupTimeout = null;
 export let verifiedFurnaceLevel = ""; // Save furnace level to send during registration
 export let verifiedChiefName = ""; // Save verified chief name
 
+let currentWosLookupId = 0;
 if (authGameId && authChiefConfirm) {
   authGameId.addEventListener('input', () => {
     if (!isRegistering) return;
@@ -998,9 +999,12 @@ if (authGameId && authChiefConfirm) {
     
     clearTimeout(wosLookupTimeout);
     wosLookupTimeout = setTimeout(async () => {
+      const lookupId = ++currentWosLookupId;
       try {
         const response = await fetch(`${API_BASE_URL}?api=verifyWosId&id=${encodeURIComponent(val)}`);
         const data = await response.json();
+        
+        if (lookupId !== currentWosLookupId) return; // Ignore stale responses
         
         if (data.success && data.nickname) {
           authChiefConfirm.innerHTML = `Is your Chief Name: <strong style="color:var(--success)">${window.escapeHTML(data.nickname)}</strong>?`;
@@ -1012,6 +1016,7 @@ if (authGameId && authChiefConfirm) {
           verifiedFurnaceLevel = "";
         }
       } catch (err) {
+        if (lookupId !== currentWosLookupId) return; // Ignore stale responses
         authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Error connecting to game servers.</span>`;
         verifiedChiefName = "";
         verifiedFurnaceLevel = "";
