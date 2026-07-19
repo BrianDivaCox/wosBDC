@@ -163,7 +163,9 @@ const authToggleText = document.getElementById('authToggleText');
 const authSubmitBtn = document.getElementById('authSubmitBtn');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
+const authGameIdWrapper = document.getElementById('authGameIdWrapper');
 const authGameId = document.getElementById('authGameId');
+const authVerifyGameIdBtn = document.getElementById('authVerifyGameIdBtn');
 const authChiefName = document.getElementById('authChiefName');
 const authDateStarted = document.getElementById('authDateStarted');
 const authErrorMsg = document.getElementById('authErrorMsg');
@@ -957,7 +959,7 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   authErrorMsg.style.display = 'none';
   if (isRegistering) {
     authModalTitle.textContent = 'Create Account';
-    authGameId.style.display = 'block';
+    authGameIdWrapper.style.display = 'flex';
     const authDateWrapper = document.getElementById('authDateWrapper');
     if (authDateWrapper) authDateWrapper.style.display = 'block';
     authGameId.value = '';
@@ -967,7 +969,7 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
     authToggleBtn.textContent = 'Sign In';
   } else {
     authModalTitle.textContent = 'Sign In';
-    authGameId.style.display = 'none';
+    authGameIdWrapper.style.display = 'none';
     const authDateWrapper = document.getElementById('authDateWrapper');
     if (authDateWrapper) authDateWrapper.style.display = 'none';
     if(authChiefConfirm) authChiefConfirm.style.display = 'none';
@@ -981,10 +983,10 @@ const authChiefConfirm = document.getElementById('authChiefConfirm');
 let wosLookupTimeout = null;
 export let verifiedFurnaceLevel = ""; // Save furnace level to send during registration
 export let verifiedChiefName = ""; // Save verified chief name
-
 let currentWosLookupId = 0;
-if (authGameId && authChiefConfirm) {
-  authGameId.addEventListener('input', () => {
+if (authVerifyGameIdBtn && authChiefConfirm) {
+  authVerifyGameIdBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     if (!isRegistering) return;
     const val = authGameId.value.trim();
     if (!val) {
@@ -998,13 +1000,16 @@ if (authGameId && authChiefConfirm) {
     
     // Only ping Century Games if the ID is at least 7 digits (most are 8-11 digits) to prevent rate limit exhaustion
     if (!/^\d{7,12}$/.test(val)) {
-        authChiefConfirm.innerHTML = `<span style="color:var(--text-muted)">Keep typing... (IDs are numbers only)</span>`;
+        authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Please enter a valid Game ID (7-12 digits).</span>`;
         verifiedFurnaceLevel = "";
         verifiedChiefName = "";
         return;
     }
     
     authChiefConfirm.innerHTML = `<span style="color:var(--text-muted)">Looking up Game ID on official servers...</span>`;
+    
+    authVerifyGameIdBtn.disabled = true;
+    authVerifyGameIdBtn.textContent = '...';
     
     clearTimeout(wosLookupTimeout);
     wosLookupTimeout = setTimeout(async () => {
@@ -1029,11 +1034,15 @@ if (authGameId && authChiefConfirm) {
         authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Error connecting to game servers.</span>`;
         verifiedChiefName = "";
         verifiedFurnaceLevel = "";
+      } finally {
+        if (lookupId === currentWosLookupId) {
+            authVerifyGameIdBtn.disabled = false;
+            authVerifyGameIdBtn.textContent = 'Verify';
+        }
       }
-    }, 600); // 600ms debounce
+    }, 100); // 100ms debounce just to be safe
   });
 }
-
 const showPasswordBtn = document.getElementById('showPasswordBtn');
 if(showPasswordBtn) showPasswordBtn.addEventListener('click', (e) => {
   e.preventDefault();
