@@ -40,9 +40,9 @@ window.escapeHTML = (str) => {
 
 window.formatTimeActiveShort = (str) => {
     if (!str || typeof str !== 'string') return str;
-    return str.replace(/\s*years?/gi, 'Y')
-              .replace(/\s*months?/gi, 'M')
-              .replace(/\s*days?/gi, 'D')
+    return str.replace(/\s*years?/gi, 'y')
+              .replace(/\s*months?/gi, 'm')
+              .replace(/\s*days?/gi, 'd')
               .replace(/,\s*/g, ' ')
               .replace(/\s+/g, ' ')
               .trim();
@@ -2609,7 +2609,7 @@ const views = {
                       if (rosterData[i][1] && rosterData[i][1].toString().trim() === gid.toString().trim()) {
                           foundInRoster = true;
                           flVal = rosterData[i][2] || 'N/A';
-                          timeActiveVal = rosterData[i][5] || 'Unknown';
+                          timeActiveVal = rosterData[i][5] ? window.formatTimeActiveShort(rosterData[i][5].toString()) : 'Unknown';
                           break;
                       }
                   }
@@ -2764,7 +2764,7 @@ const views = {
                        } catch(e){}
                   }
                   if (rosterRawData[i][5]) {
-                      timeActiveStr = rosterRawData[i][5].toString();
+                      timeActiveStr = window.formatTimeActiveShort(rosterRawData[i][5].toString());
                   }
                   break;
               }

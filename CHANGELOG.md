@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.71 - 2026-07-19
+- **Time Active Formatting**: Standardized the "Time Active" display on the Account Hub for both main accounts and Alt accounts to use a short, lowercase format (e.g. `1y 1m 3d`) instead of raw verbose spreadsheet output.
+
 ## v1.24.70 - 2026-07-19
 - **Player Lookup Polish**: Increased the size of the Fire Crystal icon in the Player Profile header badges to match the visual prominence of the Account Hub.
 
