@@ -1,5 +1,9 @@
 # WOS Community Portal - Changelog
 
+## v1.24.64 - 2026-07-19
+- **Admin Panel 2FA Lock**: The Admin Panel now correctly displays the OTP Security Check screen instead of just a blank page when a session is locked.
+- **Login Bug Fix**: Fixed a critical syntax issue that caused buttons like Google Sign-In and Admin Menu to become unresponsive.
+
 ## v1.24.63 - 2026-07-19
 - **Login Notification Fix**: The "Successfully signed in" alert has been updated to automatically disappear after a few seconds instead of staying stuck on the screen until manually closed.
 

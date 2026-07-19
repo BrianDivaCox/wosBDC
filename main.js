@@ -1656,9 +1656,89 @@ const views = {
       return;
     }
     
+    // --- 2FA OTP LOCK SCREEN ---
+    const isUnlocked = await window.isOTPUnlocked();
+    if (!isUnlocked) {
+      app.innerHTML = `
+        <div id="adminHubView" style="padding:20px; max-width:400px; margin:40px auto; background:var(--card-bg); border-radius:12px; border:1px solid var(--border); text-align:center;">
+          <h1 style="color:var(--text-main); margin-bottom:10px; font-size:24px;">🔒 Security Check</h1>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px; line-height:1.5;">To access the Admin Panel, you must unlock your session. A passcode will be sent to your registered email.</p>
+          
+          <button id="otpSendBtn" class="btn" style="width:100%; margin-bottom:15px;">📧 Send Code to Email</button>
+          
+          <div id="otpInputWrapper" style="display:none;">
+            <input type="text" id="otpCodeInput" placeholder="Enter 6-digit code" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); text-align:center; font-size:20px; letter-spacing:5px; margin-bottom:15px; box-sizing:border-box;" maxlength="6">
+            <button id="otpVerifyBtn" class="btn btn-primary" style="width:100%;">Verify & Unlock</button>
+          </div>
+          
+          <p id="otpStatus" style="font-size:13px; margin-top:15px;"></p>
+        </div>
+      `;
+      
+      document.getElementById('otpSendBtn').addEventListener('click', async (e) => {
+          const btn = e.target;
+          const status = document.getElementById('otpStatus');
+          btn.disabled = true;
+          btn.textContent = 'Sending...';
+          try {
+              const token = await getAuthToken();
+              const res = await fetch(`${API_BASE_URL}?api=request_otp&token=${encodeURIComponent(token)}`).then(r => r.json());
+              if (res.success) {
+                  status.textContent = 'Code sent! Check your email inbox & spam folder.';
+                  status.style.color = 'var(--success)';
+                  btn.style.display = 'none';
+                  document.getElementById('otpInputWrapper').style.display = 'block';
+              } else {
+                  status.textContent = 'Error: ' + res.message;
+                  status.style.color = 'var(--danger)';
+                  btn.disabled = false;
+                  btn.textContent = '📧 Send Code to Email';
+              }
+          } catch(err) {
+              status.textContent = 'Network Error: ' + err.message;
+              status.style.color = 'var(--danger)';
+              btn.disabled = false;
+              btn.textContent = '📧 Send Code to Email';
+          }
+      });
+      
+      document.getElementById('otpVerifyBtn').addEventListener('click', async (e) => {
+          const btn = e.target;
+          const code = document.getElementById('otpCodeInput').value.trim();
+          const status = document.getElementById('otpStatus');
+          if (!code) return;
+          
+          btn.disabled = true;
+          btn.textContent = 'Verifying...';
+          try {
+              const token = await getAuthToken();
+              const res = await fetch(`${API_BASE_URL}?api=verify_otp&code=${encodeURIComponent(code)}&token=${encodeURIComponent(token)}`).then(r => r.json());
+              if (res.success) {
+                  status.textContent = 'Unlocked!';
+                  status.style.color = 'var(--success)';
+                  if (window.showToast) window.showToast("Admin Session Unlocked!", "success");
+                  views.admin(); // Re-run to load actual panel
+              } else {
+                  status.textContent = 'Error: ' + res.message;
+                  status.style.color = 'var(--danger)';
+                  btn.disabled = false;
+                  btn.textContent = 'Verify & Unlock';
+              }
+          } catch(err) {
+              status.textContent = 'Network Error: ' + err.message;
+              status.style.color = 'var(--danger)';
+              btn.disabled = false;
+              btn.textContent = 'Verify & Unlock';
+          }
+      });
+      
+      return;
+    }
+    // --- END OTP LOCK SCREEN ---
+    
     const isR5 = window.getAdminLevel(currentUser) === 'R5';
     
-        try {
+    try {
       const [usersSnap, rosterRawData] = await Promise.all([
         get(ref(db, 'users')),
         fetchSheet("Chief's List")
@@ -1666,7 +1746,6 @@ const views = {
       const users = usersSnap.val() || {};
       
       await refreshIdToNameMap();
-
 
       window.sendBroadcastPush = async () => {
         const title = document.getElementById('adminPushTitle').value.trim();
