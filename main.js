@@ -531,7 +531,7 @@ window._executeLogBearTrapWinner = async (name, trap) => {
                 score: res.newTotal,
                 timestamp: Date.now()
             });
-            window.showToast(`✅ Successfully crowned ${name} as Champion! (New Total: ${res.newTotal})`, "success");
+            window.showToast(`🏆 Successfully crowned ${name} as Champion! (New Total: ${res.newTotal})`, "success", true);
             window.searchPlayerFull(name); // Refresh UI
         } else {
             alert(`Error: ${res ? res.message : 'Unknown backend error'}`);
@@ -553,7 +553,7 @@ window.promptLogBearTrapWinner = (name) => {
 window.toggleRosterFilter = async () => {
     try {
         await set(ref(db, 'config/rosterRegisteredOnly'), !globalRosterRegisteredOnly);
-        window.showToast('Global Roster Filter toggled!', 'success');
+        window.showToast('Global Roster Filter toggled!', 'success', true);
         if (document.querySelector('.admin-tab-content')) views.admin();
     } catch(e) {
         alert(e.message);
@@ -566,7 +566,7 @@ window.toggleMaintenance = async () => {
     try {
       await set(ref(db, 'config/maintenanceMode'), false);
       await set(ref(db, 'config/maintenanceEndTime'), null);
-      window.showToast('Maintenance mode is now OFF', 'success');
+      window.showToast('Maintenance mode is now OFF', 'success', true);
       if (app.querySelector('#adminHubView')) views.admin();
     } catch (err) {
       alert(err.message);
@@ -618,7 +618,7 @@ window.toggleMaintenance = async () => {
     try {
       await set(ref(db, 'config/maintenanceMode'), true);
       await set(ref(db, 'config/maintenanceEndTime'), endTime);
-      window.showToast(`Maintenance mode ON${label ? ' — ' + label : ''}`, 'error');
+      window.showToast(`Maintenance mode ON${label ? ' — ' + label : ''}`, 'error', true);
       if (app.querySelector('#adminHubView')) views.admin();
     } catch (err) {
       alert(err.message);
@@ -865,7 +865,7 @@ window.savePlayerFull = async (name) => {
     const token = await getAuthToken();
     const res = await fetch(`${API_BASE_URL}?api=updateFull&name=${encodeURIComponent(name)}&ptStatus=${encodeURIComponent(ptStatus)}&acStatus=${encodeURIComponent(acStatus)}&btAdd=${encodeURIComponent(btAdd)}&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(token)}`).then(r => r.json());
     if (res.success) {
-      window.showToast("Player updated successfully!", "success");
+      window.showToast("Player updated successfully!", "success", true);
       let successMsg = `<div style="color:var(--success); font-weight:bold; margin-bottom:5px;">✅ ${res.message}</div>`;
       if (res.btRes && res.btRes.success) {
         successMsg += `<div style="font-size:13px; color:var(--text-muted);">New Bear Total: ${res.btRes.newTotal}</div>`;
@@ -1106,10 +1106,10 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
           fetch(url, { mode: 'no-cors' }).catch(e => console.warn("Failed to ping GAS for registration", e));
       } catch(e) {}
 
-      window.showToast("Account created & signed in!", "success");
+      window.showToast("Account created & signed in!", "success", true);
     } else {
       await loginUser(email, password);
-      window.showToast("Successfully signed in!", "success");
+      window.showToast("Successfully signed in!", "success", true);
     }
     
     closeAuthModal();
@@ -1243,10 +1243,10 @@ window.showToast = (message, type = 'success', sticky = null) => {
   const toast = document.createElement('div');
   toast.className = `toast-msg ${type}`;
   
-  // Auto-sticky for success/error — they confirm actions and should not vanish
-  // info/accent types (loading states) auto-dismiss
+  // Auto-sticky for errors - errors should not vanish before the user reads them.
+  // Success/info/accent types auto-dismiss by default unless explicitly made sticky.
   if (sticky === null) {
-    sticky = (type === 'success' || type === 'error');
+    sticky = (type === 'error');
   }
   
   if (sticky) {
@@ -2710,7 +2710,7 @@ const views = {
                      if (imgEl.nextElementSibling) imgEl.nextElementSibling.style.display = 'none';
                    }
                    
-                   if (window.showToast) window.showToast('Profile picture updated successfully!', 'success');
+                   if (window.showToast) window.showToast('Profile picture updated successfully!', 'success', true);
                    
                    // Refresh mapping so UI updates immediately globally
                    if (idToNameMap[currentUser.gameId]) {
@@ -3730,7 +3730,7 @@ const views = {
                    if (res.status === 'duplicate_skipped') {
                        window.showToast("You are already enrolled!", "success");
                    } else {
-                       window.showToast("Successfully Enrolled in Auto Redeem!", "success");
+                       window.showToast("Successfully Enrolled in Auto Redeem!", "success", true);
                    }
                    optInBtn.textContent = 'Enrolled o.';
                    optInBtn.style.background = 'var(--bg-card)';
@@ -4874,7 +4874,7 @@ window.promptBearTrap = async (name) => {
     const donToken2 = await getAuthToken();
     const res = await fetch(`${API_BASE_URL}?api=addDonation&name=${encodeURIComponent(name)}&amount=${encodeURIComponent(amt)}&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(donToken2)}`).then(r => r.json());
     if (res.success) {
-      window.showToast("Successfully added! New Total: " + res.newTotal, "success");
+      window.showToast("Successfully added! New Total: " + res.newTotal, "success", true);
       window.sheetCache = {}; 
       window.liveData['LeaderBoards'] = null; window.livePromises['LeaderBoards'] = null;
       window.liveData['activity '] = null; window.livePromises['activity '] = null;
@@ -4962,7 +4962,7 @@ window.openAltPerksModal = (gameId, altName) => {
                 if (res.status === 'duplicate_skipped') {
                     window.showToast("This Alt is already enrolled!", "success");
                 } else {
-                    window.showToast("Successfully Enrolled Alt Account!", "success");
+                    window.showToast("Successfully Enrolled Alt Account!", "success", true);
                 }
                 document.getElementById('altPerksModal').style.display = 'none';
                 document.getElementById('altPerksModalOverlay').style.display = 'none';
