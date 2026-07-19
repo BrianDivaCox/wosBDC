@@ -337,6 +337,18 @@ window.isAdminUser = (user) => {
   return window.getAdminLevel(user) !== false;
 };
 
+window.isOTPUnlocked = async () => {
+    if (!currentUser) return false;
+    try {
+        const sessionSnap = await get(ref(db, `admin_sessions/${currentUser.uid}/unlockedUntil`));
+        if (sessionSnap.exists()) {
+            const unlockedUntil = sessionSnap.val();
+            if (Date.now() < unlockedUntil) return true;
+        }
+    } catch(e) { console.error(e); }
+    return false;
+};
+
 window.renderStaffRoles = () => {
     const container = document.getElementById('adminStaffListContainer');
     if (!container) return;
@@ -888,7 +900,8 @@ window.searchPlayerFull = async (name) => {
         }
     }
     
-    let html = window.generatePlayerProfileHtml(name, pRow, headers, colIsUpcoming, rosterMap[name], null, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, true, altAccounts);
+    const isUnlocked = await window.isOTPUnlocked();
+    let html = window.generatePlayerProfileHtml(name, pRow, headers, colIsUpcoming, rosterMap[name], null, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, isUnlocked, altAccounts);
     
     resDiv.innerHTML = html;
     
@@ -2075,6 +2088,11 @@ const views = {
       views.home();
       return;
     }
+    const isUnlocked = await window.isOTPUnlocked();
+    if (!isUnlocked) {
+        views.admin();
+        return;
+    }
     
     // Fetch roster so datalist has everyone, not just registered users
     let rosterRawData = null;
@@ -2286,6 +2304,11 @@ const views = {
     if (!window.isAdminUser(currentUser)) {
       views.home();
       return;
+    }
+    const isUnlocked = await window.isOTPUnlocked();
+    if (!isUnlocked) {
+        views.admin();
+        return;
     }
     
     let rosterRawData = null;

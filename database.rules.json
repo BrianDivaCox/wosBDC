@@ -3,7 +3,7 @@
     "users": {
       ".read": true,
       "$uid": {
-        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists()"
+        ".write": "$uid === auth.uid || root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && (root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists())"
       }
     },
     "presence": {
@@ -21,7 +21,7 @@
     "avatars": {
       ".read": true,
       "$gameId": {
-        ".write": "auth != null && (root.child('users').child(auth.uid).child('gameId').val() == $gameId || root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists())"
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('gameId').val() == $gameId || root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && (root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists()))"
       }
     },
     "fcmTokens": {
@@ -34,19 +34,19 @@
     "config": {
       ".read": true,
       "rosterRegisteredOnly": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+        ".write": "auth != null && root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
       },
       "admins": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+        ".write": "auth != null && root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
       },
       "maintenanceMode": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+        ".write": "auth != null && root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
       },
       "maintenanceEndTime": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+        ".write": "auth != null && root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
       },
       "$otherConfig": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
+        ".write": "auth != null && root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && root.child('users').child(auth.uid).child('gameId').val() == 318843189"
       }
     },
     "system": { ".read": true, ".write": false },
