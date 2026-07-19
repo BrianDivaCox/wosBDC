@@ -1,3 +1,11 @@
+## [1.24.54] - 2026-07-19
+### Fixed
+- **Registration**: Fixed a severe bug where the global row insertion script would accidentally copy the physical 'FALSE' state of checkboxes or placeholder text from the row above into the new row. This blocked ArrayFormulas (like `=FILTER`) from spilling into the row, resulting in `#REF!` errors. The script now intelligently scans the newly inserted row and instantly clears any cell that does not contain a per-row formula (like `=IF` or `=RANK`), resetting checkboxes to blank and fully unblocking ArrayFormulas.
+
+## [1.24.53] - 2026-07-19
+### Fixed
+- **Changelog**: Fixed a bug where the UI was still attempting to fetch `CHANGELOG.md` from the deprecated `BrianDivaCox/wosBDC` repository. Updated the fetch URL to point to the new `wosbdc/wosBDC.github.io` organization repository.
+
 ## [1.24.52] - 2026-07-19
 ### Fixed
 - **Registration**: Fixed a bug where registering an existing player failed silently. The system now accurately detects duplicates and repurposes the registration flow as a "Level Updater", cleanly overwriting the player's old Furnace Level in Column C of `Chief's List` with the newly verified API level. Also fixed a bug where brand new players were missing their Furnace Level.
