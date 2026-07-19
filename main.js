@@ -217,6 +217,7 @@ export const refreshIdToNameMap = async () => {
         // will get undefined unless we explicitly assign them here.
         window.nameToIdMap = nameToIdMap;
         window.idToNameMap = idToNameMap;
+        window.enrolledGameIds = enrolledGameIds;
     } catch(e) { console.error("Error refreshing ID map:", e); }
 };
 
@@ -1878,7 +1879,7 @@ const views = {
       let html = `
         <div class="card" style="max-width:800px; margin:0 auto; animation: fadeIn 0.3s ease;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="color:var(--danger); margin:0;">🛠️ Admin Control Panel</h2>
+            <h2 style="color:var(--danger); margin:0;">🛡️ Admin Menu</h2>
           </div>
           
           <!-- Tab Navigation -->

@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.73 - 2026-07-19
+- **Admin Menu Updates**: Renamed "Admin Tools" / "Admin Control Panel" to "Admin Menu" across the dashboard to better align with its purpose. Also fixed a bug that prevented the Player Database Editor from opening after a recent security update.
+
 ## v1.24.72 - 2026-07-19
 - **Time Active Polish**: The "Time Active" formatter now intelligently strips out any `0` values (e.g. `0y`, `0m`, `0d`) to keep the display as clean and minimal as possible (e.g. `4m 0d` becomes just `4m`).
 
