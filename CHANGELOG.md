@@ -1,3 +1,7 @@
+## [1.24.52] - 2026-07-19
+### Fixed
+- **Registration**: Fixed a bug where registering an existing player failed silently. The system now accurately detects duplicates and repurposes the registration flow as a "Level Updater", cleanly overwriting the player's old Furnace Level in Column C of `Chief's List` with the newly verified API level. Also fixed a bug where brand new players were missing their Furnace Level.
+
 ## [1.24.51] - 2026-07-19
 ### Changed
 - **Registration**: Implemented global row insertion across all 10 major Google Sheets. When the table becomes full, the system automatically inserts a new row strictly 2 rows from the bottom (pushing the footer down) and cleanly inherits all complex visual formatting, data validation, and array formulas.
