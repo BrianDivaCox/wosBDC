@@ -227,6 +227,17 @@
       
       <button id="authSubmitBtn" style="width:100%; padding:12px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Sign In</button>
       
+      <div style="text-align:center; margin:15px 0; color:var(--text-muted); font-size:12px; display:flex; align-items:center; gap:10px;">
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+        OR
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+      </div>
+      
+      <button id="authGoogleBtn" style="width:100%; padding:12px; background:#fff; color:#444; border:1px solid #ddd; border-radius:6px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='#f1f1f1'" onmouseout="this.style.background='#fff'">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px; height:18px;" alt="Google">
+        Continue with Google
+      </button>
+      
       <div style="text-align:center; margin-top:15px; font-size:13px; color:var(--text-muted);">
         <span id="authToggleText">Need an account?</span> 
         <a href="#" id="authToggleBtn" style="color:var(--accent); text-decoration:none; font-weight:bold;">Register</a>

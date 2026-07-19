@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, onDisconnect, set, push, runTransaction, get } from "firebase/database";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 const firebaseConfig = {
   apiKey: "AIzaSyBuw51XRkUz5sbr-i8DKiGUgMpAPSiR-vs",
@@ -101,6 +101,13 @@ export async function registerUser(email, password, gameId, chiefName) {
 
 export async function loginUser(email, password) {
   return signInWithEmailAndPassword(auth, email, password);
+}
+
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+export async function loginWithGoogle() {
+  return signInWithPopup(auth, googleProvider);
 }
 
 export async function logoutUser() {

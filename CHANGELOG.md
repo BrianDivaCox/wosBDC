@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.60 - 2026-07-19
+- **Google Sign-In**: Added a "Continue with Google" button to the login and registration screen for a seamless authentication experience. Existing users who registered using their Google email and a password can use this button to automatically merge their accounts and log in. New users will be prompted for their Game ID upon first sign-in to complete their registration.
+
 ## v1.24.59 - 2026-07-19
 - **Admin 2FA Security**: The Admin Panel is now protected by an Email OTP system. Admins must enter a 6-digit code sent to their registered email to unlock their session (valid for 2 hours). This protection is enforced directly at the Firebase Rules and Google Apps Script level, making it impossible to bypass even if a password is compromised.
 

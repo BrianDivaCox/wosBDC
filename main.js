@@ -1,5 +1,5 @@
 import './style.css'
-import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
+import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount, loginWithGoogle } from './src/firebase.js'
 import { ref, onValue, get, set, remove } from 'firebase/database'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby5XvCRuDftskUEOE0-kZAYmony3jQ1vSkCRh0oC1T0GgmQhbLfxxB2BULQu7_Nsks/exec';
@@ -1179,6 +1179,87 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
     authSubmitBtn.disabled = false;
     authSubmitBtn.textContent = isRegistering ? 'Create Account' : 'Sign In';
   }
+});
+
+const authGoogleBtn = document.getElementById('authGoogleBtn');
+if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
+    try {
+        authGoogleBtn.disabled = true;
+        const originalHtml = authGoogleBtn.innerHTML;
+        authGoogleBtn.innerHTML = "Loading...";
+        
+        const userCredential = await loginWithGoogle();
+        const user = userCredential.user;
+        
+        // Check if user is mapped in Realtime Database
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        
+        if (snapshot.exists()) {
+            window.showToast("Successfully signed in with Google!", "success", true);
+            closeAuthModal();
+        } else {
+            // New user! They signed in with Google but we don't have their WOS Game ID
+            // We need to ask for it.
+            const gameId = prompt("Welcome! To complete your registration, please enter your WOS Game ID (found in your Player Profile):");
+            if (!gameId || gameId.trim() === '') {
+                throw new Error("Game ID is required to register.");
+            }
+            
+            // Check for deduplication locally first
+            const existingGid = Object.values(window.nameToIdMap || {}).includes(parseInt(gameId));
+            if (existingGid) {
+                // If they enter an ID that's already registered, they should just link it or it's a dupe.
+                // But let backend handle it or just allow it.
+            }
+            
+            // For a new Google user, we don't know their chiefName, so we should look it up from the roster.
+            let chiefName = "";
+            let furnaceLevel = "";
+            const roster = window.liveData ? window.liveData["Chief's List"] : null;
+            if (roster) {
+                const row = roster.find(r => String(r[1]).trim() === String(gameId).trim());
+                if (row) {
+                    chiefName = String(row[0]).trim();
+                    furnaceLevel = String(row[4] || "").trim(); // Assuming col E is Furnace
+                }
+            }
+            
+            if (!chiefName) {
+                chiefName = prompt("We couldn't find your Game ID on the roster. Please enter your Chief Name exactly as it appears in-game:");
+                if (!chiefName) throw new Error("Chief Name is required.");
+            }
+            
+            // Save to Firebase Realtime Database
+            await set(ref(db, `users/${user.uid}`), {
+                email: user.email,
+                gameId: gameId.trim(),
+                name: chiefName.trim(),
+                createdAt: new Date().toISOString(),
+                authProvider: 'google'
+            });
+            
+            // Auto-post to giftcodebot Google Sheet via backend API
+            try {
+                const token = await user.getIdToken();
+                const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId.trim())}&name=${encodeURIComponent(chiefName.trim())}&dateStarted=&level=${encodeURIComponent(furnaceLevel)}&token=${encodeURIComponent(token)}`;
+                fetch(url, { mode: 'no-cors' }).catch(e => console.warn("Failed to ping GAS for registration", e));
+            } catch(e) {}
+            
+            window.showToast("Account created & signed in with Google!", "success", true);
+            closeAuthModal();
+        }
+    } catch(err) {
+        if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+            authErrorMsg.textContent = err.message;
+            authErrorMsg.style.display = 'block';
+        }
+    } finally {
+        if (authGoogleBtn) {
+            authGoogleBtn.disabled = false;
+            authGoogleBtn.innerHTML = `<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px; height:18px;" alt="Google"> Continue with Google`;
+        }
+    }
 });
 
 
