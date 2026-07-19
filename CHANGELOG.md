@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.72 - 2026-07-19
+- **Time Active Polish**: The "Time Active" formatter now intelligently strips out any `0` values (e.g. `0y`, `0m`, `0d`) to keep the display as clean and minimal as possible (e.g. `4m 0d` becomes just `4m`).
+
 ## v1.24.71 - 2026-07-19
 - **Time Active Formatting**: Standardized the "Time Active" display on the Account Hub for both main accounts and Alt accounts to use a short, lowercase format (e.g. `1y 1m 3d`) instead of raw verbose spreadsheet output.
 

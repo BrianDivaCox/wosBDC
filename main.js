@@ -40,12 +40,15 @@ window.escapeHTML = (str) => {
 
 window.formatTimeActiveShort = (str) => {
     if (!str || typeof str !== 'string') return str;
-    return str.replace(/\s*years?/gi, 'y')
+    let formatted = str.replace(/\s*years?/gi, 'y')
               .replace(/\s*months?/gi, 'm')
               .replace(/\s*days?/gi, 'd')
               .replace(/,\s*/g, ' ')
               .replace(/\s+/g, ' ')
               .trim();
+              
+    let filtered = formatted.split(' ').filter(part => !part.match(/^0[ymd]$/i)).join(' ');
+    return filtered === '' ? '0d' : filtered;
 };
 
 
