@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.70 - 2026-07-19
+- **Player Lookup Polish**: Increased the size of the Fire Crystal icon in the Player Profile header badges to match the visual prominence of the Account Hub.
+
 ## v1.24.69 - 2026-07-19
 - **Alt Account Stats Fix**: Fixed a bug on the Account Hub where Alt Accounts were correctly matching against the Master Roster, but failing to visually pull their Furnace Level and Time Active stats onto their Alt Cards.
 

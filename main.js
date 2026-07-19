@@ -4810,7 +4810,7 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
   if (rosterInfo) {
     let flVal = rosterInfo.furnaceLevel;
     if (flVal && flVal.toString().trim() !== "") {
-       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold; display:inline-flex; align-items:center;">' + window.getFurnaceIconHtml(flVal) + '</span>';
+       headerBadgesHtml += '<span style="background:color-mix(in srgb, var(--accent) 15%, transparent); border:1px solid var(--accent); color:var(--text-main); padding:4px 10px; border-radius:12px; font-size:14px; font-weight:bold; display:inline-flex; align-items:center;">' + window.getFurnaceIconHtml(flVal, 48) + '</span>';
     }
     let gcVal = rosterInfo.giftCodes;
     if (gcVal === true || gcVal === 'TRUE' || (typeof gcVal === 'string' && gcVal.toLowerCase().trim() === 'true')) {
