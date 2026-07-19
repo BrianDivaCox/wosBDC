@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.67 - 2026-07-19
+- **Premium Player Database Editor Search**: Applied the same custom-built, premium autocomplete dropdown menu from the Player Lookup tool to the Admin Player Database Editor for a consistent, seamless experience.
+
 ## v1.24.66 - 2026-07-19
 - **Premium Player Lookup**: Completely replaced the generic browser dropdown on the Player Lookup search box with a custom-built, premium autocomplete dropdown menu. The list now only appears when you start typing, filtering results instantly with a modern look and feel.
 

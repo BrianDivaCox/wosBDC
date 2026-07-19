@@ -2504,12 +2504,13 @@ const views = {
     
     await refreshIdToNameMap();
     players.sort((a, b) => a.localeCompare(b));
-    let playerOptions = `<option value="">-- Select a Chief --</option>`;
-    players.forEach(p => {
-      let gid = nameToIdMap[p];
-      let isRegistered = (gid && registeredGameIds.has(gid.toString().trim()));
-      let displayStr = isRegistered ? `✅ ${p}` : p;
-      playerOptions += `<option value="${window.escapeHTML(displayStr)}">${window.escapeHTML(displayStr)}</option>`;
+    
+    let dropdownItems = [];
+    players.forEach((p) => {
+      let name = p.toString().trim();
+      let gid = window.nameToIdMap[name];
+      let isRegistered = gid ? window.enrolledGameIds.has(gid.toString().trim()) : false;
+      dropdownItems.push({ name: name, isReg: isRegistered, nt: /^[ -~]*$/.test(name) ? 'notranslate' : '' });
     });
 
     app.innerHTML = `
@@ -2521,18 +2522,12 @@ const views = {
           <button onclick="views.admin()" style="background:var(--bg-main); color:var(--text-main); border:1px solid var(--border); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">◀ Back</button>
         </div>
         
-        <p style="margin:0 0 20px 0; font-size:14px; color:var(--text-muted);">
-          Select a chief from the dropdown below to view their profile, manage their event participation, edit their stats, and add Alt Accounts.
-        </p>
-
         <div style="display:flex; gap:10px; margin-bottom:20px;">
           <div style="position:relative; flex:1; display:flex; align-items:center;">
-            <input type="text" id="uniSearchInput" list="uniSearchDatalist" onchange="window.searchPlayerFull(this.value)" placeholder="Search Chief Name..." style="width:100%; padding:14px 40px 14px 16px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box;">
-            <button onclick="document.getElementById('uniSearchInput').value=''; window.searchPlayerFull(''); document.getElementById('uniSearchInput').focus();" style="position:absolute; right:12px; background:transparent; border:none; color:var(--danger); font-size:20px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; border-radius:50%;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">❌</button>
+            <input type="text" id="uniSearchInput" placeholder="Search Chief Name..." autocomplete="off" style="width:100%; padding:14px 40px 14px 16px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box; position:relative; z-index:101;">
+            <button onclick="document.getElementById('uniSearchInput').value=''; window.searchPlayerFull(''); document.getElementById('uniSearchInput').focus();" style="position:absolute; right:12px; background:transparent; border:none; color:var(--danger); font-size:20px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; border-radius:50%; z-index:102;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">✖</button>
+            <div id="uniSearchCustomDropdown" style="display:none; position:absolute; top:calc(100% - 8px); left:0; width:100%; max-height:300px; overflow-y:auto; background:var(--card-bg); border:1px solid var(--border); border-radius:0 0 8px 8px; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.6); flex-direction:column; padding-top:8px;"></div>
           </div>
-          <datalist id="uniSearchDatalist">
-            ${playerOptions}
-          </datalist>
           <button onclick="window.searchPlayerFull(document.getElementById('uniSearchInput').value)" style="background:var(--accent); color:#fff; border:none; padding:0 24px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px;">Search</button>
         </div>
         
@@ -2541,6 +2536,52 @@ const views = {
         </div>
       </div>
     `;
+    
+    // Bind logic for custom autocomplete
+    const searchInput = document.getElementById('uniSearchInput');
+    const dropdown = document.getElementById('uniSearchCustomDropdown');
+    
+    const filterAndShowDropdown = () => {
+        const query = searchInput.value.toLowerCase().trim();
+        if (!query) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        
+        const matches = dropdownItems.filter(item => item.name.toLowerCase().includes(query)).slice(0, 50);
+        
+        if (matches.length === 0) {
+            dropdown.innerHTML = `<div style="padding:12px; color:var(--text-muted); text-align:center; font-size:14px;">No matches found.</div>`;
+        } else {
+            dropdown.innerHTML = matches.map(item => `
+                <div class="uni-dropdown-item ${item.nt}" data-value="${item.name}" style="padding:12px 15px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--text-main); font-weight:bold; font-size:15px; display:flex; align-items:center; gap:8px; transition:0.2s;">
+                    ${item.isReg ? '<span style="color:var(--success); font-size:12px;">✅</span> ' : ''}${window.escapeHTML(item.name)}
+                </div>
+            `).join('');
+            
+            dropdown.querySelectorAll('.uni-dropdown-item').forEach(el => {
+                el.addEventListener('mouseover', () => el.style.background = 'var(--bg-main)');
+                el.addEventListener('mouseout', () => el.style.background = 'transparent');
+                el.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    searchInput.value = el.getAttribute('data-value');
+                    dropdown.style.display = 'none';
+                    window.searchPlayerFull(searchInput.value);
+                });
+            });
+        }
+        dropdown.style.display = 'flex';
+    };
+    
+    searchInput.addEventListener('input', filterAndShowDropdown);
+    searchInput.addEventListener('focus', filterAndShowDropdown);
+    searchInput.addEventListener('blur', () => { setTimeout(() => dropdown.style.display = 'none', 150); });
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        dropdown.style.display = 'none';
+        window.searchPlayerFull(e.target.value);
+      }
+    });
   },
   
   account: async () => {
