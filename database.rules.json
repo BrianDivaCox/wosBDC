@@ -12,6 +12,12 @@
         ".write": "$uid === auth.uid"
       }
     },
+    "admin_sessions": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": false
+      }
+    },
     "stats": {
       "totalViews": {
         ".read": true,
