@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.65 - 2026-07-19
+- **API Disconnect Fix**: Corrected a critical backend disconnection where the frontend was pointing to an older deployment of the API, causing the OTP code to fail with "Error: undefined".
+
 ## v1.24.64 - 2026-07-19
 - **Admin Panel 2FA Lock**: The Admin Panel now correctly displays the OTP Security Check screen instead of just a blank page when a session is locked.
 - **Login Bug Fix**: Fixed a critical syntax issue that caused buttons like Google Sign-In and Admin Menu to become unresponsive.
