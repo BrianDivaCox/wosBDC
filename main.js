@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
 import { ref, onValue, get, set } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzlonPDkURHV2LwG3qu6muH5BXOyU17phAio6gTDqgPU3_WOipTgQ9eg0G-k-SYCHM/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbymkbD3g3r6LDytZiE0p_vNIpx21paf663dipDsZBlczCugptxaCTFzsrxSuTEmVXU/exec';
 const VERIFY_PROXY_URL = 'https://wos-vercel-proxy.vercel.app/api/verify'; // Dedicated proxy for Century Games ID verification (bypasses Google quota limits)
 
 // Get a fresh Firebase ID token for the current user (replaces hardcoded APP_SECRET)
