@@ -1,3 +1,7 @@
+## [1.24.43] - 2026-07-18
+### Fixed
+- **Frontend**: Removed the native up/down spinner arrows that some browsers added to the Game ID input box on the signup form, which are useless and confusing for typing an ID.
+
 ## [1.24.42] - 2026-07-18
 ### Changed
 - **Frontend**: Added a manual "Verify" button next to the Game ID input on the signup form. The website will no longer try to verify the Game ID while you are typing; it will only connect to the Century Games API when you explicitly click the Verify button. This completely eliminates all rate limiting and typing lag.

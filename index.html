@@ -220,7 +220,7 @@
         <input type="date" id="authDateStarted" title="Date Started" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
       </div>
       <div id="authGameIdWrapper" style="display:none; margin-bottom:20px; align-items:stretch;">
-          <input type="number" id="authGameId" placeholder="Game ID (Found in Player Profile)" style="flex:1; padding:10px; border-radius:6px 0 0 6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="authGameId" placeholder="Game ID (Found in Player Profile)" style="flex:1; padding:10px; border-radius:6px 0 0 6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
           <button id="authVerifyGameIdBtn" style="padding:0 15px; background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); border-left:none; border-radius:0 6px 6px 0; cursor:pointer; font-weight:bold;">Verify</button>
       </div>
       <div id="authChiefConfirm" style="display:none; font-size:13px; margin-bottom:15px; margin-top:-10px; text-align:center;"></div>
