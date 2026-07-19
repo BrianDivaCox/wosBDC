@@ -1,3 +1,21 @@
+## [1.24.51] - 2026-07-19
+### Changed
+- **Registration**: Implemented global row insertion across all 10 major Google Sheets. When the table becomes full, the system automatically inserts a new row strictly 2 rows from the bottom (pushing the footer down) and cleanly inherits all complex visual formatting, data validation, and array formulas.
+
+## [1.24.50] - 2026-07-19
+### Fixed
+- **UI Alerts**: Reprogrammed Toast notifications to allow auto-dismiss logic (5s timeout) for generic tasks. Critical data-mutating tasks (Bear Trap additions, crowning champions, editing player stats) correctly persist on screen and must be manually dismissed, ensuring no important changes are missed.
+
+## [1.24.49] - 2026-07-19
+### Fixed
+- **Registration**: Implemented dynamic capacity bounds-checking during registration. If `giftcodebot` lacks physical rows to store new players, the system will programmatically expand the sheet via `getMaxRows()` tracking to prevent silent out-of-bounds `insertRow()` errors.
+
+## [1.24.48] - 2026-07-19
+### Changed
+- **API Migration**: Fully migrated frontend endpoints to hit the newly deployed Google Apps Script (v81) to pick up the registration bug fixes.
+- **Frontend Build Pipeline**: Reconfigured Vite to deploy `index.html` assets directly to the root domain (`wosbdc.github.io`) instead of forcing the `/wosBDC/` sub-path.
+- **Hosting**: Successfully migrated the repository and Github Pages live hosting exclusively over to the `wosbdc` Github organization.
+
 ## [1.24.47] - 2026-07-18
 ### Fixed
 - **Admin Panel**: Fixed incorrect Vercel Usage Dashboard URL.
