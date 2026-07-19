@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.66 - 2026-07-19
+- **Premium Player Lookup**: Completely replaced the generic browser dropdown on the Player Lookup search box with a custom-built, premium autocomplete dropdown menu. The list now only appears when you start typing, filtering results instantly with a modern look and feel.
+
 ## v1.24.65 - 2026-07-19
 - **API Disconnect Fix**: Corrected a critical backend disconnection where the frontend was pointing to an older deployment of the API, causing the OTP code to fail with "Error: undefined".
 

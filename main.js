@@ -3774,12 +3774,10 @@ const views = {
 
                       <div style="display:flex; justify-content:center; align-items:center;">
                         <div style="position:relative; width:100%; max-width:400px; display:flex; align-items:center;">
-                          <input type="text" id="playerLookupSelect" list="playerLookupDatalist" placeholder="Search Chief Name..." style="width:100%; padding:12px 40px 12px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box;">
-                          <button onclick="let input = document.getElementById('playerLookupSelect'); input.value=''; input.dispatchEvent(new Event('input')); input.focus();" style="position:absolute; right:10px; background:transparent; border:none; color:var(--danger); font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:28px; height:28px; padding:0; border-radius:50%;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">✖</button>
+                          <input type="text" id="playerLookupSelect" placeholder="Search Chief Name..." autocomplete="off" style="width:100%; padding:12px 40px 12px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:16px; font-weight:bold; cursor:text; box-sizing:border-box; position:relative; z-index:101;">
+                          <button onclick="let input = document.getElementById('playerLookupSelect'); input.value=''; input.dispatchEvent(new Event('input')); input.focus();" style="position:absolute; right:10px; background:transparent; border:none; color:var(--danger); font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; width:28px; height:28px; padding:0; border-radius:50%; z-index:102;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">✖</button>
+                          <div id="playerLookupCustomDropdown" style="display:none; position:absolute; top:calc(100% - 8px); left:0; width:100%; max-height:300px; overflow-y:auto; background:var(--card-bg); border:1px solid var(--border); border-radius:0 0 8px 8px; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.6); flex-direction:column; padding-top:8px;"></div>
                         </div>
-                        <datalist id="playerLookupDatalist">
-                          <!-- Options rendered via JS -->
-                        </datalist>
                       </div>
                     </div>
                     
@@ -3795,25 +3793,59 @@ const views = {
         const container = document.getElementById('playerProfileContainer');
         const regToggle = document.getElementById('registeredOnlyToggle');
         
+        const dropdown = document.getElementById('playerLookupCustomDropdown');
+        let dropdownItems = [];
+        
         const renderDropdownOptions = () => {
             const onlyReg = globalRosterRegisteredOnly || (regToggle && regToggle.checked);
-            let optsHtml = '';
             
-            const datalist = document.getElementById('playerLookupDatalist');
-            
+            dropdownItems = [];
             players.forEach((p, i) => {
                 let name = p[0].toString().trim();
                 let isReg = false;
                 let gid = nameToIdMap[name];
                 if (gid && registeredGameIds.has(gid.toString().trim())) isReg = true;
-                
                 if (onlyReg && !isReg) return;
-                
-                let nt = /^[ -~]*$/.test(name) ? 'class="notranslate"' : '';
-                optsHtml += `<option value="${name}" ${nt}>${isReg ? '(✅) ' : ''}${name}</option>`;
+                dropdownItems.push({ name: name, isReg: isReg, nt: /^[ -~]*$/.test(name) ? 'notranslate' : '' });
             });
-            if (datalist) datalist.innerHTML = optsHtml;
         };
+        
+        const filterAndShowDropdown = () => {
+            const query = select.value.toLowerCase().trim();
+            if (!query) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            
+            const matches = dropdownItems.filter(item => item.name.toLowerCase().includes(query)).slice(0, 50); // limit to 50 for perf
+            
+            if (matches.length === 0) {
+                dropdown.innerHTML = `<div style="padding:12px; color:var(--text-muted); text-align:center; font-size:14px;">No matches found.</div>`;
+            } else {
+                dropdown.innerHTML = matches.map(item => `
+                    <div class="custom-dropdown-item ${item.nt}" data-value="${item.name}" style="padding:12px 15px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--text-main); font-weight:bold; font-size:15px; display:flex; align-items:center; gap:8px; transition:0.2s;">
+                        ${item.isReg ? '<span style="color:var(--success); font-size:12px;">✅</span> ' : ''}${window.escapeHTML(item.name)}
+                    </div>
+                `).join('');
+                
+                // Add hover effects and click listeners
+                dropdown.querySelectorAll('.custom-dropdown-item').forEach(el => {
+                    el.addEventListener('mouseover', () => el.style.background = 'var(--bg-main)');
+                    el.addEventListener('mouseout', () => el.style.background = 'transparent');
+                    el.addEventListener('mousedown', (e) => {
+                        e.preventDefault(); // prevent blur
+                        select.value = el.getAttribute('data-value');
+                        dropdown.style.display = 'none';
+                        renderCardForChief(select.value);
+                    });
+                });
+            }
+            dropdown.style.display = 'flex';
+        };
+        
+        select.addEventListener('input', filterAndShowDropdown);
+        select.addEventListener('focus', filterAndShowDropdown);
+        select.addEventListener('blur', () => { setTimeout(() => dropdown.style.display = 'none', 150); });
         
         renderDropdownOptions();
       
@@ -3865,6 +3897,13 @@ const views = {
                 }
             }
         }
+        
+        select.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            dropdown.style.display = 'none';
+            renderCardForChief(e.target.value);
+          }
+        });
         
         let html = window.generatePlayerProfileHtml(chiefName, p, headers, colIsUpcoming, rosterMap[chiefName], lbData, dynamicSD, showdownActive, bearBoth, bear1, bear2, bearAllTime, btDonationsAllTime, btDonationsCurrent, otherLbs, false, altAccounts);
         container.innerHTML = html;
