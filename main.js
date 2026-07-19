@@ -1230,7 +1230,7 @@ if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
                 if (!chiefName) throw new Error("Chief Name is required.");
             }
             
-            const dateStarted = prompt("One last thing! What date did you start playing Whiteout Survival? (e.g., YYYY-MM-DD or just month/year)") || "";
+            const dateStarted = prompt("One last thing! What date did you start playing Whiteout Survival? (e.g., MM/DD/YYYY)") || "";
             
             // Save to Firebase Realtime Database
             await set(ref(db, `users/${user.uid}`), {
