@@ -1,3 +1,7 @@
+## [1.24.41] - 2026-07-18
+### Fixed
+- **Frontend**: Greatly reduced the chance of exhausting the Century Games API rate limit by only attempting to look up Game IDs that are at least 7 digits long. This prevents the website from pinging the game servers for invalid partial numbers while you are still typing your ID.
+
 ## [1.24.40] - 2026-07-18
 ### Fixed
 - **Frontend**: Fixed an asynchronous race condition on the signup form where typing your Game ID too quickly could cause an older API request for a partial/invalid ID to overwrite the successful response of your full ID.

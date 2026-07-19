@@ -995,6 +995,15 @@ if (authGameId && authChiefConfirm) {
     }
     
     authChiefConfirm.style.display = 'block';
+    
+    // Only ping Century Games if the ID is at least 7 digits (most are 8-11 digits) to prevent rate limit exhaustion
+    if (!/^\d{7,12}$/.test(val)) {
+        authChiefConfirm.innerHTML = `<span style="color:var(--text-muted)">Keep typing... (IDs are numbers only)</span>`;
+        verifiedFurnaceLevel = "";
+        verifiedChiefName = "";
+        return;
+    }
+    
     authChiefConfirm.innerHTML = `<span style="color:var(--text-muted)">Looking up Game ID on official servers...</span>`;
     
     clearTimeout(wosLookupTimeout);
