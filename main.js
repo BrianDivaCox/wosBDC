@@ -1025,13 +1025,25 @@ if (authVerifyGameIdBtn && authChiefConfirm) {
           verifiedChiefName = data.nickname;
           verifiedFurnaceLevel = data.stove_lv || "";
         } else {
-          authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Game ID not found or invalid.</span>`;
+          authChiefConfirm.innerHTML = `
+            <span style="color:var(--danger)">API Limit Reached or ID Not Found.</span>
+            <div style="margin-top:10px; text-align:left;">
+                <input type="text" id="manualChiefName" placeholder="Enter Chief Name manually" style="width:100%; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
+                <input type="number" id="manualFurnaceLevel" placeholder="Enter Furnace Level (optional)" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
+                <div style="font-size:12px; color:var(--text-muted); text-align:center;">Please verify your Game ID is correct before submitting.</div>
+            </div>`;
           verifiedChiefName = "";
           verifiedFurnaceLevel = "";
         }
       } catch (err) {
         if (lookupId !== currentWosLookupId) return; // Ignore stale responses
-        authChiefConfirm.innerHTML = `<span style="color:var(--danger)">Error connecting to game servers.</span>`;
+        authChiefConfirm.innerHTML = `
+            <span style="color:var(--danger)">Error connecting to game servers.</span>
+            <div style="margin-top:10px; text-align:left;">
+                <input type="text" id="manualChiefName" placeholder="Enter Chief Name manually" style="width:100%; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
+                <input type="number" id="manualFurnaceLevel" placeholder="Enter Furnace Level (optional)" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); box-sizing:border-box;">
+                <div style="font-size:12px; color:var(--text-muted); text-align:center;">Please verify your Game ID is correct before submitting.</div>
+            </div>`;
         verifiedChiefName = "";
         verifiedFurnaceLevel = "";
       } finally {
@@ -1059,8 +1071,16 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
   const email = authEmail.value.trim().toLowerCase();
   const password = authPassword.value;
   const gameId = authGameId.value.trim();
-  const chiefName = verifiedChiefName;
   const dateStarted = authDateStarted ? authDateStarted.value : "";
+  
+  // Check for manual overrides if API failed
+  const manualChiefNameEl = document.getElementById('manualChiefName');
+  const manualFurnaceLevelEl = document.getElementById('manualFurnaceLevel');
+  const manualChiefName = manualChiefNameEl ? manualChiefNameEl.value.trim() : "";
+  const manualFurnaceLevel = manualFurnaceLevelEl ? manualFurnaceLevelEl.value.trim() : "";
+  
+  const chiefName = verifiedChiefName || manualChiefName;
+  const furnaceLevel = verifiedFurnaceLevel || manualFurnaceLevel;
   
   if (!email || !password) {
     authErrorMsg.textContent = 'Email and password required.';
@@ -1074,14 +1094,14 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
     
     if (isRegistering) {
       if (!gameId) throw new Error('Game ID is required.');
-      if (!chiefName) throw new Error('Valid Game ID is required to verify Chief Name.');
+      if (!chiefName) throw new Error('You must verify your Game ID or manually enter your Chief Name.');
       
       await registerUser(email, password, gameId, chiefName);
       
       // Auto-post to giftcodebot Google Sheet via backend API
       try {
           const regToken = await getAuthToken();
-          const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}&level=${encodeURIComponent(verifiedFurnaceLevel)}${regToken ? '&token=' + encodeURIComponent(regToken) : ''}`;
+          const url = `${API_BASE_URL}?api=registerNewPlayer&gameId=${encodeURIComponent(gameId)}&name=${encodeURIComponent(chiefName)}&dateStarted=${encodeURIComponent(dateStarted)}&level=${encodeURIComponent(furnaceLevel)}${regToken ? '&token=' + encodeURIComponent(regToken) : ''}`;
           fetch(url, { mode: 'no-cors' }).catch(e => console.warn("Failed to ping GAS for registration", e));
       } catch(e) {}
 

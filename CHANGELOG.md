@@ -1,3 +1,7 @@
+## [1.24.44] - 2026-07-18
+### Added
+- **Frontend**: Added a manual fallback override for Game ID verification. If your Google Account exhausts its daily 20,000 API requests limit (or if the Century Games API goes down), the "Verify" button will now gracefully fail and display manual input fields so you can still type in your Chief Name and Furnace Level by hand to successfully register!
+
 ## [1.24.43] - 2026-07-18
 ### Fixed
 - **Frontend**: Removed the native up/down spinner arrows that some browsers added to the Game ID input box on the signup form, which are useless and confusing for typing an ID.
