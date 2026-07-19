@@ -1,6 +1,6 @@
 import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount } from './src/firebase.js'
-import { ref, onValue, get, set } from 'firebase/database'
+import { ref, onValue, get, set, remove } from 'firebase/database'
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby5XvCRuDftskUEOE0-kZAYmony3jQ1vSkCRh0oC1T0GgmQhbLfxxB2BULQu7_Nsks/exec';
 const VERIFY_PROXY_URL = 'https://wos-vercel-proxy.vercel.app/api/verify'; // Dedicated proxy for Century Games ID verification (bypasses Google quota limits)
@@ -542,16 +542,41 @@ window._executeLogBearTrapWinner = async (name, trap) => {
 };
 
 window.adminDeletePlayer = async (name) => {
-    let confirmDelete = confirm(`??? WARNING ???\n\nAre you sure you want to COMPLETELY DELETE ${name}?\n\nThis will remove them from the Chief's List, Giftcode Bot, and wipe all their ghost rows.\n\nThis action cannot be undone.`);
+    let confirmDelete = confirm(`??? WARNING ???\n\nAre you sure you want to COMPLETELY DELETE ${name}?\n\nThis will remove them from the Chief's List, Giftcode Bot, wipe their ghost rows, AND permanently delete their Firebase account profile.\n\nThis action cannot be undone.`);
     if (!confirmDelete) return;
     
     window.showToast("Deleting Player...", "danger");
     try {
+        const gameId = window.nameToIdMap[name];
+        let targetUid = null;
+        
+        // Find their Firebase UID if they have an account
+        if (gameId) {
+            const usersSnap = await get(ref(db, 'users'));
+            const users = usersSnap.val() || {};
+            for (const [uid, u] of Object.entries(users)) {
+                if (Number(u.gameId) === Number(gameId)) {
+                    targetUid = uid;
+                    break;
+                }
+            }
+        }
+
         const token = await getAuthToken();
         const url = `${API_BASE_URL}?api=delete_player&name=${encodeURIComponent(name)}&token=${encodeURIComponent(token)}`;
         const res = await fetch(url).then(r => r.json());
         
         if (res && res.success) {
+            // Delete from Firebase account system
+            if (targetUid) {
+                await remove(ref(db, `users/${targetUid}`));
+            }
+            
+            // Instantly remove from local data so the player card disappears immediately
+            if (typeof globalData !== 'undefined' && globalData && globalData.chiefsList) {
+                globalData.chiefsList = globalData.chiefsList.filter(row => row[0] !== name);
+            }
+            
             window.showToast(`?? Successfully deleted ${name}.`, "success", true);
             if (document.querySelector('.admin-tab-content')) views.admin();
         } else {

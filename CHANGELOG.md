@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.58 - 2026-07-19
+- **Firebase Account Deletion**: The "Delete Player" button now additionally hunts down and permanently deletes the player's Firebase Account Profile (Avatar, Bio, etc.) and instantly removes their Player Card from the dashboard without waiting for the nightly sync.
+
 ## v1.24.57 - 2026-07-19
 - **Hotfix**: Improved the ghost-row cleanup logic. The automated cleanup tool now correctly identifies empty checkboxes and formula `#N/A` errors as ghost-rows and scrubs them properly.
 
