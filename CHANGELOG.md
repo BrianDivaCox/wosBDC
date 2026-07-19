@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.68 - 2026-07-19
+- **Account Hub Polish**: Increased the size and prominence of the Fire Crystal icon and Furnace Level text on the main Account Hub ID card.
+
 ## v1.24.67 - 2026-07-19
 - **Premium Player Database Editor Search**: Applied the same custom-built, premium autocomplete dropdown menu from the Player Lookup tool to the Admin Player Database Editor for a consistent, seamless experience.
 

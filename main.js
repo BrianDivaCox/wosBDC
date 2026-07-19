@@ -16,14 +16,14 @@ const getAuthToken = async () => {
 };
 
 
-window.getFurnaceIconHtml = (level) => {
+window.getFurnaceIconHtml = (level, size = 36) => {
     if (!level || level === "N/A") return '🔥 ' + level;
     let lv = parseInt(level, 10);
     if (isNaN(lv)) return '🔥 ' + level;
     if (lv <= 30) return `🔥 Lv ${lv}`;
     let n = Math.floor((lv - 30) / 5);
     let url = `https://gof-formal-avatar.akamaized.net/img/icon/stove_lv_${n}.png`;
-    return `<img src="${url}" style="width:36px; height:36px; vertical-align:middle; margin-right:4px; object-fit:contain; image-rendering:-webkit-optimize-contrast;" />`;
+    return `<img src="${url}" style="width:${size}px; height:${size}px; vertical-align:middle; margin-right:4px; object-fit:contain; image-rendering:-webkit-optimize-contrast;" />`;
 };
 
 // --- Security Helpers ---
@@ -2808,7 +2808,7 @@ const views = {
                 </div>
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
                     <span style="color:var(--text-muted); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Furnace Level</span>
-                    <span style="color:var(--text-main); font-weight:bold; font-size:15px; text-align:right; display:flex; align-items:center;">${window.getFurnaceIconHtml(furnaceLevelStr)}</span>
+                    <span style="color:var(--text-main); font-weight:bold; font-size:20px; text-align:right; display:flex; align-items:center;">${window.getFurnaceIconHtml(furnaceLevelStr, 64)}</span>
                 </div>
                 
                 <div class="id-card-stat-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px;">
