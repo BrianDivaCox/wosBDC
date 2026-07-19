@@ -541,6 +541,27 @@ window._executeLogBearTrapWinner = async (name, trap) => {
     }
 };
 
+window.adminDeletePlayer = async (name) => {
+    let confirmDelete = confirm(`??? WARNING ???\n\nAre you sure you want to COMPLETELY DELETE ${name}?\n\nThis will remove them from the Chief's List, Giftcode Bot, and wipe all their ghost rows.\n\nThis action cannot be undone.`);
+    if (!confirmDelete) return;
+    
+    window.showToast("Deleting Player...", "danger");
+    try {
+        const token = await getAuthToken();
+        const url = `${API_BASE_URL}?api=delete_player&name=${encodeURIComponent(name)}&token=${encodeURIComponent(token)}`;
+        const res = await fetch(url).then(r => r.json());
+        
+        if (res && res.success) {
+            window.showToast(`?? Successfully deleted ${name}.`, "success", true);
+            if (document.querySelector('.admin-tab-content')) views.admin();
+        } else {
+            alert(`Error: ${res ? res.message : 'Unknown backend error'}`);
+        }
+    } catch (e) {
+        alert(`Network Error: ${e.message}`);
+    }
+};
+
 window.promptLogBearTrapWinner = (name) => {
     let trapNum = prompt(`Log Bear Trap Win for ${name}!\n\nWhich event did they win?\nEnter '1' for Bear Trap 1, or '2' for Bear Trap 2:`);
     if (trapNum === '1' || trapNum === '2') {
@@ -4671,6 +4692,8 @@ window.generatePlayerProfileHtml = (chiefName, p, headers, colIsUpcoming, roster
           <button onclick="window.promptBearTrap('${chiefName.replace(/'/g, "\\'")}')" style="background:rgba(46,204,113,0.1); color:var(--success); border:1px solid rgba(46,204,113,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(46,204,113,0.2)'" onmouseout="this.style.background='rgba(46,204,113,0.1)'">🥩 + Bear Donation</button>
           <button onclick="window.promptEditEvents('${chiefName.replace(/'/g, "\\'")}', decodeURIComponent('${missedJson}'))" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">📝 Edit Events</button>
           <button onclick="window.adminLinkAltAccountPromptByChief('${chiefName.replace(/'/g, "\\'")}')" style="background:rgba(52,152,219,0.1); color:var(--accent); border:1px solid rgba(52,152,219,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s; margin-top:5px;" onmouseover="this.style.background='rgba(52,152,219,0.2)'" onmouseout="this.style.background='rgba(52,152,219,0.1)'">➕ Add Alt Account</button>
+          <div style="height:1px; background:var(--border); margin:5px 0;"></div>
+          <button onclick="window.adminDeletePlayer('${chiefName.replace(/'/g, "\\'")}')" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.3); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; text-align:left; transition: 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">🗑️ Delete Player</button>
         </div>
       </div>
     `;

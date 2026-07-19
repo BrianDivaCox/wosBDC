@@ -1,6 +1,6 @@
 {
-  "name": "wos-public-website",
-  "version": "1.24.55",
+  "name": "wos-dashboard",
+  "version": "1.24.56",
   "private": true,
   "type": "module",
   "scripts": {

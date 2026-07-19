@@ -1,3 +1,9 @@
+# WOS Community Portal - Changelog
+
+## v1.24.56 - 2026-07-19
+- **Admin Tools Update**: Added a new "Delete Player" button to the website's Admin Panel. Admins can now securely delete a player directly from the website without opening Google Sheets.
+- **Automated Ghost Row Cleanup**: Integrated a nightly silent cleanup script (`cleanUpEmptyRowsSilent`) to the 1:00 AM auto-sync. It will automatically sweep all formatted sheets and remove empty rows to keep the footers correctly positioned.
+
 ## [1.24.55] - 2026-07-19
 ### Fixed
 - **Registration**: Fixed a typo in the internal sheet targeting logic where the "Polar Terrors" sheet was misspelled as "Polar Terror". This typo caused the script to completely skip inserting a row in that specific sheet, which in turn caused its top-level array formula to hit the bottom border/footer and crash with a `#REF!` error. The spelling has been corrected and the sheet will now receive its rows normally.
