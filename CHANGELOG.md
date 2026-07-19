@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.63 - 2026-07-19
+- **Login Notification Fix**: The "Successfully signed in" alert has been updated to automatically disappear after a few seconds instead of staying stuck on the screen until manually closed.
+
 ## v1.24.61 - 2026-07-19
 - **Google Sign-In Date Prompt**: New users registering via Google Sign-In are now prompted to enter the date they started playing WOS so it accurately tracks in the Account Hub.
 

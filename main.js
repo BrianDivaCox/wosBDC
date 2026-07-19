@@ -1165,10 +1165,10 @@ if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
           fetch(url, { mode: 'no-cors' }).catch(e => console.warn("Failed to ping GAS for registration", e));
       } catch(e) {}
 
-      window.showToast("Account created & signed in!", "success", true);
+      window.showToast("Account created & signed in!", "success");
     } else {
       await loginUser(email, password);
-      window.showToast("Successfully signed in!", "success", true);
+      window.showToast("Successfully signed in!", "success");
     }
     
     closeAuthModal();
@@ -1196,7 +1196,7 @@ if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
         const snapshot = await get(userRef);
         
         if (snapshot.exists()) {
-            window.showToast("Successfully signed in with Google!", "success", true);
+            window.showToast("Successfully signed in with Google!", "success");
             closeAuthModal();
         } else {
             // New user! They signed in with Google but we don't have their WOS Game ID
@@ -1248,7 +1248,7 @@ if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
                 fetch(url, { mode: 'no-cors' }).catch(e => console.warn("Failed to ping GAS for registration", e));
             } catch(e) {}
             
-            window.showToast("Account created & signed in with Google!", "success", true);
+            window.showToast("Account created & signed in with Google!", "success");
             closeAuthModal();
         }
     } catch(err) {
