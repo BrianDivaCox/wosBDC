@@ -1,3 +1,7 @@
+## [1.24.47] - 2026-07-18
+### Fixed
+- **Admin Panel**: Fixed incorrect Vercel Usage Dashboard URL.
+
 ## [1.24.46] - 2026-07-18
 ### Added
 - **Admin Panel**: New ⚡ System tab (R5 only) with two sections: (1) A live proxy status card showing online/offline state, self-tracked request count since last cold start, and response latency. (2) Direct one-click buttons to the Vercel Usage Dashboard, Project page, and Live Logs.
