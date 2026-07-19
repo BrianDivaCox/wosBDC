@@ -391,7 +391,8 @@ window.renderStaffRoles = () => {
 window.grantAdmin = async (gameId, level = 'R5') => {
   if (window.getAdminLevel(currentUser) !== 'R5') return;
   
-  const confirmed = await window.customConfirm(`Are you sure you want to GRANT ${level} admin access to Game ID ${gameId}?`);
+  const cName = window.idToNameMap[gameId] ? window.idToNameMap[gameId] : "Unknown Chief";
+  const confirmed = await window.customConfirm(`Are you sure you want to GRANT ${level} admin access to ${cName} (Game ID: ${gameId})?`);
   if (!confirmed) return;
   
   try {
@@ -407,7 +408,8 @@ window.revokeAdmin = async (gameId) => {
   if (window.getAdminLevel(currentUser) !== 'R5') return;
   if (gameId == 318843189) { if (window.showToast) window.showToast("Cannot revoke Root Admin.", "error"); return; }
   
-  const confirmed = await window.customConfirm(`Are you sure you want to REVOKE admin access for Game ID ${gameId}?`);
+  const cName = window.idToNameMap[gameId] ? window.idToNameMap[gameId] : "Unknown Chief";
+  const confirmed = await window.customConfirm(`Are you sure you want to REVOKE admin access for ${cName} (Game ID: ${gameId})?`);
   if (!confirmed) return;
   
   try {

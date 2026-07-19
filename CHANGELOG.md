@@ -1,5 +1,8 @@
 # WOS Community Portal - Changelog
 
+## v1.24.74 - 2026-07-19
+- **Admin Grant/Revoke Safety**: The confirmation popups when granting or revoking Admin Privileges now explicitly display the player's Chief Name alongside their Game ID to prevent accidental clicks on the wrong account.
+
 ## v1.24.73 - 2026-07-19
 - **Admin Menu Updates**: Renamed "Admin Tools" / "Admin Control Panel" to "Admin Menu" across the dashboard to better align with its purpose. Also fixed a bug that prevented the Player Database Editor from opening after a recent security update.
 
