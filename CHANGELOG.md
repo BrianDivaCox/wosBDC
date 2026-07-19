@@ -1,5 +1,11 @@
 # WOS Community Portal - Changelog
 
+## v1.25.0 - 2026-07-19
+- **Site Audit & Polish**:
+  - **Custom Modals**: Replaced all native browser popups (`alert`, `confirm`, `prompt`) with premium, styled custom modals (`window.customPrompt`, `window.customAlert`, `window.customConfirm`) for a unified aesthetic experience. Most minor errors now use Toast notifications.
+  - **Account Deletion Fix**: Added a direct "Delete Account" action to the Admin Users tab. This safely purges rogue users from the Firebase authentication system if they managed to register but don't exist on the main Google Sheet roster.
+  - **Instant UI Reloads**: Added the instant-reload mechanism to Alt Account Linking/Unlinking, so your view refreshes immediately after connecting or disconnecting an Alt without a manual page refresh.
+
 ## v1.24.75 - 2026-07-19
 - **Instant Admin UI Updates**: When an R5 grants or revokes an Admin Badge from another player's profile card, the profile card now instantaneously redraws to reflect the new badge (or removal thereof) without needing a page refresh.
 

@@ -152,7 +152,7 @@ if (enablePushBtn) {
 listenForForegroundMessages((payload) => {
   const title = payload.notification?.title || 'New Alert';
   const body = payload.notification?.body || '';
-  alert(`🔔 ${title}\n${body}`);
+  window.showToast(`🔔 ${title}\n${body}`, "error");
 });
 
 
@@ -243,31 +243,33 @@ window.unlinkAltAccountPrompt = async (gid) => {
     try {
         await unlinkAltAccount(currentUser.uid, gid.toString().trim(), currentUser.linkedGameIds || []);
         if(window.showToast) window.showToast("Account unlinked.", "success");
+        if (typeof window.activeViewFunc === 'function') window.activeViewFunc();
     } catch(e) {
         if(window.showToast) window.showToast(e.message, "error");
-        else alert(e.message);
+        else window.showToast(e.message, "error");
     }
 };
 
 window.adminLinkAltAccountPrompt = async (uid, cName, currentLinksStr) => {
-    const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${cName}:`);
+    const altId = await window.customPrompt(`Enter the Game ID of the Alt Account you want to link to ${cName}:`);
     if (!altId || altId.trim() === '') return;
     const currentLinks = currentLinksStr ? currentLinksStr.split(',') : [];
     try {
         await linkAltAccount(uid, altId.trim(), currentLinks);
         if (window.showToast) window.showToast(`Alt Account linked for ${cName}!`, "success");
+        if (typeof window.activeViewFunc === 'function') window.activeViewFunc();
     } catch(e) {
-        alert(e.message);
+        window.showToast(e.message, "error");
     }
 };
 
 window.adminUnlinkAltAccountPrompt = async (chiefName, altId) => {
-    if (!confirm(`Are you sure you want to unlink ${altId} from ${chiefName}?`)) return;
+    if (!(await window.customConfirm(`Are you sure you want to unlink ${altId} from ${chiefName}?`))) return;
     
     const gameId = window.nameToIdMap[chiefName];
     if (!gameId) {
         if(window.showToast) window.showToast("Could not find Game ID for " + chiefName, "error");
-        else alert("Could not find Game ID");
+        else window.showToast("Could not find Game ID", "error");
         return;
     }
     
@@ -296,7 +298,7 @@ window.adminUnlinkAltAccountPrompt = async (chiefName, altId) => {
         if (window.showToast) window.showToast(`Unlinked ${altId} from ${chiefName}!`, "success");
         if (window.searchPlayerFull) window.searchPlayerFull(chiefName);
     } catch(e) {
-        alert(e.message);
+        window.showToast(e.message, "error");
     }
 };
 
@@ -304,11 +306,11 @@ window.adminLinkAltAccountPromptByChief = async (chiefName) => {
     const gameId = window.nameToIdMap[chiefName];
     if (!gameId) {
         if(window.showToast) window.showToast("Could not find Game ID for " + chiefName, "error");
-        else alert("Could not find Game ID");
+        else window.showToast("Could not find Game ID", "error");
         return;
     }
     
-    const altId = prompt(`Enter the Game ID of the Alt Account you want to link to ${chiefName}:`);
+    const altId = await window.customPrompt(`Enter the Game ID of the Alt Account you want to link to ${chiefName}:`);
     if (!altId || altId.trim() === '') return;
     
     try {
@@ -323,7 +325,7 @@ window.adminLinkAltAccountPromptByChief = async (chiefName) => {
             alert(json.message || "Failed to link alt account.");
         }
     } catch(e) {
-        alert(e.message);
+        window.showToast(e.message, "error");
     }
 };
 
@@ -556,15 +558,29 @@ window._executeLogBearTrapWinner = async (name, trap) => {
             window.showToast(`🏆 Successfully crowned ${name} as Champion! (New Total: ${res.newTotal})`, "success", true);
             window.searchPlayerFull(name); // Refresh UI
         } else {
-            alert(`Error: ${res ? res.message : 'Unknown backend error'}`);
+            window.showToast(`Error: ${res ? res.message : 'Unknown backend error'}`, "error");
         }
     } catch (e) {
-        alert(`Network Error: ${e.message}`);
+        window.showToast(`Network Error: ${e.message}`, "error");
     }
 };
 
-window.adminDeletePlayer = async (name) => {
-    let confirmDelete = confirm(`??? WARNING ???\n\nAre you sure you want to COMPLETELY DELETE ${name}?\n\nThis will remove them from the Chief's List, Giftcode Bot, wipe their ghost rows, AND permanently delete their Firebase account profile.\n\nThis action cannot be undone.`);
+  window.adminDeleteUserRow = async (uid, name) => {
+      let confirmDelete = await window.customConfirm(`Are you sure you want to delete the Firebase account for ${name}?\n\nThis will wipe their website access.`);
+      if (!confirmDelete) return;
+      
+      window.showToast("Deleting Account...", "danger");
+      try {
+          await remove(ref(db, `users/${uid}`));
+          window.showToast(`Successfully deleted account.`, "success");
+          if (document.getElementById('adminHubView')) views.admin();
+      } catch (e) {
+          if (window.showToast) window.showToast(e.message, "error");
+      }
+  };
+
+  window.adminDeletePlayer = async (name) => {
+    let confirmDelete = await window.customConfirm(`??? WARNING ???\n\nAre you sure you want to COMPLETELY DELETE ${name}?\n\nThis will remove them from the Chief's List, Giftcode Bot, wipe their ghost rows, AND permanently delete their Firebase account profile.\n\nThis action cannot be undone.`);
     if (!confirmDelete) return;
     
     window.showToast("Deleting Player...", "danger");
@@ -602,19 +618,19 @@ window.adminDeletePlayer = async (name) => {
             window.showToast(`?? Successfully deleted ${name}.`, "success", true);
             if (document.querySelector('.admin-tab-content')) views.admin();
         } else {
-            alert(`Error: ${res ? res.message : 'Unknown backend error'}`);
+            window.showToast(`Error: ${res ? res.message : 'Unknown backend error'}`, "error");
         }
     } catch (e) {
-        alert(`Network Error: ${e.message}`);
+        window.showToast(`Network Error: ${e.message}`, "error");
     }
 };
 
-window.promptLogBearTrapWinner = (name) => {
-    let trapNum = prompt(`Log Bear Trap Win for ${name}!\n\nWhich event did they win?\nEnter '1' for Bear Trap 1, or '2' for Bear Trap 2:`);
+window.promptLogBearTrapWinner = async (name) => {
+    let trapNum = await window.customPrompt(`Log Bear Trap Win for ${name}!\n\nWhich event did they win?\nEnter '1' for Bear Trap 1, or '2' for Bear Trap 2:`);
     if (trapNum === '1' || trapNum === '2') {
         window._executeLogBearTrapWinner(name, trapNum);
     } else if (trapNum !== null && trapNum.trim() !== "") {
-        alert("Invalid input. Please enter 1 or 2.");
+        window.showToast("Invalid input. Please enter 1 or 2.", "error");
     }
 };
 
@@ -624,7 +640,7 @@ window.toggleRosterFilter = async () => {
         window.showToast('Global Roster Filter toggled!', 'success', true);
         if (document.querySelector('.admin-tab-content')) views.admin();
     } catch(e) {
-        alert(e.message);
+        window.showToast(e.message, "error");
     }
 };
 
@@ -637,7 +653,7 @@ window.toggleMaintenance = async () => {
       window.showToast('Maintenance mode is now OFF', 'success', true);
       if (app.querySelector('#adminHubView')) views.admin();
     } catch (err) {
-      alert(err.message);
+      window.showToast(err.message, "error");
     }
     return;
   }
@@ -689,7 +705,7 @@ window.toggleMaintenance = async () => {
       window.showToast(`Maintenance mode ON${label ? ' — ' + label : ''}`, 'error', true);
       if (app.querySelector('#adminHubView')) views.admin();
     } catch (err) {
-      alert(err.message);
+      window.showToast(err.message, "error");
     }
   };
   
@@ -706,7 +722,7 @@ window.toggleMaintenance = async () => {
   // Custom hours
   document.getElementById('customMaintBtn').addEventListener('click', () => {
     const val = parseFloat(document.getElementById('customMaintHours').value);
-    if (!val || val <= 0) { alert('Please enter a valid number of hours.'); return; }
+    if (!val || val <= 0) { window.showToast('Please enter a valid number of hours.', "error"); return; }
     activateMaintenance(Date.now() + (val * 60 * 60 * 1000), val + ' hr countdown');
   });
   
@@ -714,12 +730,12 @@ window.toggleMaintenance = async () => {
   document.getElementById('customMaintDateBtn').addEventListener('click', () => {
     const dateVal = document.getElementById('customMaintDateOnly').value;
     const timeVal = document.getElementById('customMaintTimeOnly').value;
-    if (!dateVal || !timeVal) { alert('Please select both a date and a time.'); return; }
+    if (!dateVal || !timeVal) { window.showToast('Please select both a date and a time.', "error"); return; }
     
     // Combine date and time strings (e.g. "2023-10-15T14:30")
     const combinedStr = dateVal + 'T' + timeVal;
     const targetDate = new Date(combinedStr).getTime();
-    if (targetDate <= Date.now()) { alert('Please select a future date and time.'); return; }
+    if (targetDate <= Date.now()) { window.showToast('Please select a future date and time.', "error"); return; }
     activateMaintenance(targetDate, 'countdown set to ' + new Date(combinedStr).toLocaleString());
   });
   
@@ -1211,7 +1227,7 @@ if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
         } else {
             // New user! They signed in with Google but we don't have their WOS Game ID
             // We need to ask for it.
-            const gameId = prompt("Welcome! To complete your registration, please enter your WOS Game ID (found in your Player Profile):");
+            const gameId = await window.customPrompt("Welcome! To complete your registration, please enter your WOS Game ID (found in your Player Profile):");
             if (!gameId || gameId.trim() === '') {
                 throw new Error("Game ID is required to register.");
             }
@@ -1236,11 +1252,11 @@ if (authGoogleBtn) authGoogleBtn.addEventListener('click', async () => {
             }
             
             if (!chiefName) {
-                chiefName = prompt("We couldn't find your Game ID on the roster. Please enter your Chief Name exactly as it appears in-game:");
+                chiefName = await window.customPrompt("We couldn't find your Game ID on the roster. Please enter your Chief Name exactly as it appears in-game:");
                 if (!chiefName) throw new Error("Chief Name is required.");
             }
             
-            const dateStarted = prompt("One last thing! What date did you start playing Whiteout Survival? (e.g., MM/DD/YYYY)") || "";
+            const dateStarted = await window.customPrompt("One last thing! What date did you start playing Whiteout Survival? (e.g., MM/DD/YYYY)") || "";
             
             // Save to Firebase Realtime Database
             await set(ref(db, `users/${user.uid}`), {
@@ -1388,6 +1404,57 @@ window.customAlert = (message) => {
     });
 };
 window.alert = window.customAlert;
+
+window.customPrompt = (message, defaultValue = '') => {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.2s; backdrop-filter:blur(3px);';
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background:var(--bg-main); padding:25px; border-radius:12px; max-width:400px; width:90%; border:1px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,0.5); text-align:center; transform:scale(0.95); animation:zoomIn 0.2s forwards; display:flex; flex-direction:column; gap:15px;';
+        
+        const text = document.createElement('p');
+        text.style.cssText = 'margin:0; color:var(--text-main); font-size:16px; font-weight:bold;';
+        text.innerText = message;
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = defaultValue;
+        input.style.cssText = 'width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:16px; font-weight:bold; box-sizing:border-box;';
+        
+        const btnContainer = document.createElement('div');
+        btnContainer.style.cssText = 'display:flex; justify-content:center; gap:10px; margin-top:10px;';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.innerText = 'Cancel';
+        cancelBtn.style.cssText = 'padding:10px 20px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); border-radius:8px; cursor:pointer; font-weight:bold; transition:0.2s; flex:1;';
+        cancelBtn.onmouseover = () => cancelBtn.style.background = 'var(--border)';
+        cancelBtn.onmouseout = () => cancelBtn.style.background = 'var(--card-bg)';
+        cancelBtn.onclick = () => { document.body.removeChild(overlay); resolve(null); };
+        
+        const okBtn = document.createElement('button');
+        okBtn.innerText = 'Submit';
+        okBtn.style.cssText = 'padding:10px 20px; border:none; background:var(--accent); color:#fff; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.2s; flex:1;';
+        okBtn.onmouseover = () => okBtn.style.opacity = '0.8';
+        okBtn.onmouseout = () => okBtn.style.opacity = '1';
+        okBtn.onclick = () => { document.body.removeChild(overlay); resolve(input.value); };
+        
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') okBtn.click();
+            if (e.key === 'Escape') cancelBtn.click();
+        });
+        
+        btnContainer.appendChild(cancelBtn);
+        btnContainer.appendChild(okBtn);
+        modal.appendChild(text);
+        modal.appendChild(input);
+        modal.appendChild(btnContainer);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        setTimeout(() => input.focus(), 100);
+    });
+};
 
 window.showToast = (message, type = 'success', sticky = null) => {
   const container = document.getElementById('toast-container');
@@ -1961,7 +2028,7 @@ const views = {
                 <tbody>
       `;
       
-      for (const [, u] of Object.entries(users)) {
+      for (const [uid, u] of Object.entries(users)) {
         const cName = idToNameMap[u.gameId] || "Not Found";
         const hasAvatar = avatarMap[u.gameId] ? true : false;
         const avatarSrc = avatarMap[u.gameId] || `images/${cName}.png`;
@@ -2003,8 +2070,9 @@ const views = {
                 <img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.style.display='none';">
               </div>
             </td>
-            <td style="padding:10px;">
-              ${hasAvatar ? `<button class="delete-avatar-btn" data-id="${u.gameId}" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Delete Avatar</button>` : `<span style="color:var(--text-muted); font-size:12px;">Default</span>`}
+            <td style="padding:10px; display:flex; gap:5px; flex-wrap:wrap;">
+              ${hasAvatar ? `<button class="delete-avatar-btn" data-id="${u.gameId}" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Delete Avatar</button>` : ``}
+              <button onclick="window.adminDeleteUserRow('${uid}', '${cName.replace(/'/g, "\\'")}')" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Delete Account</button>
             </td>
           </tr>
         `;
@@ -2212,7 +2280,7 @@ const views = {
             await deleteAvatar(gid);
             views.admin(); // Refresh view
           } catch(err) {
-             alert(err.message);
+             window.showToast(err.message, "error");
           }
         });
       });
@@ -2899,7 +2967,7 @@ const views = {
                   if(window.showToast) window.showToast("Alt account linked!", "success");
               } catch(e) {
                   if(window.showToast) window.showToast(e.message, "error");
-                  else alert(e.message);
+                  else window.showToast(e.message, "error");
                   submitAltBtn.textContent = "Confirm Link";
                   submitAltBtn.disabled = false;
               }
@@ -5108,7 +5176,7 @@ window.promptEditEvents = (name, missedEventsStr) => {
   try { missedEvents = JSON.parse(missedEventsStr); } catch { /* ignore */ }
   
   if (missedEvents.length === 0) {
-    if (window.showToast) { window.showToast("This player has no supported missing events this week.", "info"); } else { alert("This player has no supported missing events this week."); }
+    if (window.showToast) { window.showToast("This player has no supported missing events this week.", "info"); } else { window.showToast("This player has no supported missing events this week.", "error"); }
     return;
   }
   
@@ -5149,7 +5217,7 @@ window.promptEditEvents = (name, missedEventsStr) => {
     }
     
     if (checked.length === 0) {
-      alert("No events selected.");
+      window.showToast("No events selected.", "error");
       return;
     }
     
@@ -5167,11 +5235,11 @@ window.promptEditEvents = (name, missedEventsStr) => {
         const evToken = await getAuthToken();
         const res = await fetch(`${API_BASE_URL}?api=updateEvent&name=${encodeURIComponent(name)}&eventName=${encodeURIComponent(eventSheetName)}&status=yes&admin=${encodeURIComponent(adminName)}&token=${encodeURIComponent(evToken)}`).then(r => r.json());
         if (!res.success) {
-          alert(`Error updating ${ev}: ${res.message}`);
+          window.showToast(`Error updating ${ev}: ${res.message}`, "error");
           break; // stop on error
         }
       } catch (err) {
-        alert(`Network Error on ${ev}: ${err.message}`);
+        window.showToast(`Network Error on ${ev}: ${err.message}`, "error");
         break; // stop on error
       }
     }
@@ -5189,9 +5257,9 @@ window.promptEditEvents = (name, missedEventsStr) => {
 };
 
 window.promptBearTrap = async (name) => {
-  let amt = prompt("Enter Bear Trap Donation Amount to ADD for " + name + ":");
+  let amt = await window.customPrompt("Enter Bear Trap Donation Amount to ADD for " + name + ":");
   if (!amt) return;
-  if (isNaN(amt)) { alert("Invalid number"); return; }
+  if (isNaN(amt)) { window.showToast("Invalid number", "error"); return; }
   
   window.showToast("Adding donation...", "success");
   const adminName = currentUser ? (idToNameMap[currentUser.gameId] || "Admin") : "Admin";
@@ -5209,10 +5277,10 @@ window.promptBearTrap = async (name) => {
         views.roster();
       }
     } else {
-      alert("Error: " + res.message);
+      window.showToast("Error: " + res.message, "error");
     }
   } catch (err) {
-    alert("Network Error: " + err.message);
+    window.showToast("Network Error: " + err.message, "error");
   }
 };
 
