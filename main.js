@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount, loginWithGoogle } from './src/firebase.js'
 import { ref, onValue, get, set, remove } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyti1VGP5ZcniZyA7k6mFIzFcVVrZvRcqADM3m2wl9H2nYHBYPwrPnOQt8pIQzh1JU/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxPXSETAg2kInzdHlVY72DNliEPGDysYYn9LTVXEtoyDSg2WA1-nefHb6oSpYPl2LM/exec';
 const VERIFY_PROXY_URL = 'https://wos-vercel-proxy.vercel.app/api/verify'; // Dedicated proxy for Century Games ID verification (bypasses Google quota limits)
 
 // Get a fresh Firebase ID token for the current user (replaces hardcoded APP_SECRET)
@@ -1926,6 +1926,7 @@ const views = {
           <!-- Tab Navigation -->
           <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:10px;">
             <button class="admin-tab-btn active" data-tab="tab-tools" style="background:none; border:none; color:var(--accent); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid var(--accent);">🛠️ Daily Tools</button>
+            <button class="admin-tab-btn" data-tab="tab-frost" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">❄️ Frost Clan</button>
             ${isR5 ? `<button class="admin-tab-btn" data-tab="tab-users" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">👥 Users</button>
             <button class="admin-tab-btn" data-tab="tab-settings" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">⚙️ Settings</button>` : ''}
             <button class="admin-tab-btn" data-tab="tab-logs" style="background:none; border:none; color:var(--text-muted); font-weight:bold; font-size:16px; cursor:pointer; padding:5px 10px; border-bottom:2px solid transparent;">📋 Logs</button>
@@ -2168,6 +2169,16 @@ const views = {
               </div>
             </div>
           </div>
+          
+          <!-- Tab 6: Frost Clan -->
+          <div id="tab-frost" class="admin-tab-content" style="display:none;">
+            <div id="frostClanContainer" style="text-align:center;">
+              <div style="margin:40px 0; color:var(--text-muted);">
+                <div style="border:4px solid rgba(255,255,255,0.1); border-top-color:var(--accent); border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite; margin:0 auto 15px;"></div>
+                Decrypting Frost Clan Data...
+              </div>
+            </div>
+          </div>
         </div>`;
       app.innerHTML = html;
       if (window.renderStaffRoles) window.renderStaffRoles();
@@ -2184,8 +2195,166 @@ const views = {
           e.target.style.color = 'var(--accent)';
           e.target.style.borderBottomColor = 'var(--accent)';
           document.getElementById(e.target.getAttribute('data-tab')).style.display = 'block';
+          
+          if (e.target.getAttribute('data-tab') === 'tab-frost' && !window.frostDataLoaded) {
+            window.loadFrostClanData();
+          }
         });
       });
+      
+      window.frostDataLoaded = false;
+      window.frostState = { alts: [] };
+      
+      window.loadFrostClanData = async function() {
+        const container = document.getElementById('frostClanContainer');
+        if (!container) return;
+        
+        container.innerHTML = `
+          <div style="margin:40px 0; color:var(--text-muted);">
+            <div style="border:4px solid rgba(255,255,255,0.1); border-top-color:var(--accent); border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite; margin:0 auto 15px;"></div>
+            Decrypting Frost Clan Data...
+          </div>
+        `;
+        
+        try {
+          const adminToken = await auth.currentUser.getIdToken(true);
+          const res = await fetch(`${API_BASE_URL}?api=getFrostData&token=${encodeURIComponent(adminToken)}`).then(r => r.json());
+          
+          if (res.error || !res.success) {
+            container.innerHTML = `<div style="color:var(--danger); margin:40px 0;">❌ Error loading data: ${res.error || 'Unknown Error'}</div>`;
+            return;
+          }
+          
+          window.frostState.alts = res.alts || [];
+          window.frostDataLoaded = true;
+          window.renderFrostClan();
+        } catch (err) {
+          container.innerHTML = `<div style="color:var(--danger); margin:40px 0;">❌ Failed to load: ${err.message}</div>`;
+        }
+      };
+      
+      window.renderFrostClan = function() {
+        const container = document.getElementById('frostClanContainer');
+        if (!container) return;
+        
+        if (window.frostState.alts.length === 0) {
+          container.innerHTML = `<div style="color:var(--text-muted); margin:40px 0;">No alt accounts found.</div>`;
+          return;
+        }
+        
+        let html = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+            <div style="text-align:left;">
+              <h2 style="margin:0; font-size:22px; color:var(--text-main);">Frost Clan Command Center</h2>
+              <p style="margin:4px 0 0; color:var(--text-muted); font-size:13px;">Private Dashboard & Tracker</p>
+            </div>
+            <button onclick="window.resetFrostClan()" style="background:linear-gradient(135deg, #ef4444, #b91c1c); color:white; border:none; padding:10px 20px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:14px; box-shadow:0 4px 15px rgba(239,68,68,0.3);">
+              ⚠️ Reset Shields & Tomes
+            </button>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:25px; text-align:left;">
+        `;
+        
+        window.frostState.alts.forEach((alt, idx) => {
+          html += `
+            <div style="background:var(--bg-card, #1a0b2e); border:1px solid var(--border); border-radius:16px; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.1); position:relative; overflow:hidden;">
+              <div style="display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px; margin-bottom:20px;">
+                <div style="width:50px; height:50px; border-radius:12px; background:linear-gradient(135deg, var(--accent), #8b5cf6); overflow:hidden; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:24px;">
+                  <img src="images/${encodeURIComponent(alt.name)}.png" alt="${alt.name}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.parentElement.innerHTML='${alt.name.charAt(0).toUpperCase()}';">
+                </div>
+                <div>
+                  <h2 style="margin:0; font-size:22px; font-weight:700;">${alt.name}</h2>
+                  <div style="color:var(--text-muted); font-size:12px; margin-top:2px;">Frost Clan Member</div>
+                </div>
+              </div>
+              
+              <div style="font-size:13px; color:var(--text-muted); margin-bottom:10px; font-weight:600;">Main Alliance Tracked</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
+                <div style="background:rgba(15,23,42,0.5); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-bottom:8px;">Championship</div>
+                  <div style="font-size:22px;">${alt.champ ? '✅' : '❌'}</div>
+                </div>
+                <div style="background:rgba(15,23,42,0.5); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center;">
+                  <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-bottom:8px;">Mercenary</div>
+                  <div style="font-size:22px;">${alt.merc ? '✅' : '❌'}</div>
+                </div>
+                <div style="background:rgba(15,23,42,0.5); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; grid-column:1 / -1;">
+                  <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-bottom:8px;">Polar Terrors</div>
+                  <div style="font-size:22px;">${alt.polar ? '✅' : '❌'}</div>
+                </div>
+              </div>
+              
+              <div style="font-size:13px; color:var(--accent); margin-bottom:10px; font-weight:600;">Click to Update</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div style="background:rgba(15,23,42,0.5); border:1px solid rgba(56, 189, 248, 0.3); border-radius:12px; padding:12px; text-align:center; cursor:pointer; transition:transform 0.1s;" onclick="window.toggleFrostCheckbox(${idx}, 'shields')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                  <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-bottom:8px;">🛡️ Shields</div>
+                  <div id="val_${idx}_shields" style="font-size:22px; user-select:none;">${alt.shields ? '✅' : '❌'}</div>
+                </div>
+                <div style="background:rgba(15,23,42,0.5); border:1px solid rgba(56, 189, 248, 0.3); border-radius:12px; padding:12px; text-align:center; cursor:pointer; transition:transform 0.1s;" onclick="window.toggleFrostCheckbox(${idx}, 'rebirth')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                  <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-bottom:8px;">📖 Rebirth Tomes</div>
+                  <div id="val_${idx}_rebirth" style="font-size:22px; user-select:none;">${alt.rebirth ? '✅' : '❌'}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += `</div>`;
+        container.innerHTML = html;
+      };
+      
+      window.toggleFrostCheckbox = async function(idx, field) {
+        const alt = window.frostState.alts[idx];
+        const newVal = !alt[field];
+        alt[field] = newVal; // Optimistic update
+        
+        const el = document.getElementById(`val_${idx}_${field}`);
+        if (el) el.textContent = newVal ? '✅' : '❌';
+        
+        try {
+          const adminToken = await auth.currentUser.getIdToken(true);
+          const res = await fetch(`${API_BASE_URL}?api=updateFrost&row=${alt.row}&field=${field}&value=${newVal}&token=${encodeURIComponent(adminToken)}`).then(r => r.json());
+          
+          if (!res.success) {
+            window.showToast("Failed to save!", "error");
+            alt[field] = !newVal; // Revert
+            if (el) el.textContent = alt[field] ? '✅' : '❌';
+          }
+        } catch (e) {
+          window.showToast("Network error!", "error");
+          alt[field] = !newVal; // Revert
+          if (el) el.textContent = alt[field] ? '✅' : '❌';
+        }
+      };
+      
+      window.resetFrostClan = async function() {
+        if (!confirm("Are you sure you want to uncheck all Shields and Rebirth Tomes for Frost Clan?")) return;
+        
+        window.frostState.alts.forEach((alt, idx) => {
+          alt.shields = false;
+          alt.rebirth = false;
+          let elS = document.getElementById(`val_${idx}_shields`);
+          let elR = document.getElementById(`val_${idx}_rebirth`);
+          if(elS) elS.textContent = '❌';
+          if(elR) elR.textContent = '❌';
+        });
+        
+        window.showToast("Resetting...");
+        try {
+          const adminToken = await auth.currentUser.getIdToken(true);
+          const res = await fetch(`${API_BASE_URL}?api=resetFrost&token=${encodeURIComponent(adminToken)}`).then(r => r.json());
+          
+          if (res.success) {
+            window.showToast("✅ Reset successful!", "success", true);
+          } else {
+            window.showToast("Reset failed.", "error");
+            window.loadFrostClanData(); // Reload from server
+          }
+        } catch (e) {
+          window.showToast("Network error!", "error");
+          window.loadFrostClanData();
+        }
+      };
       
       // Listen to Live Sync Status
       const syncStatusDiv = document.getElementById('adminSyncStatusList');

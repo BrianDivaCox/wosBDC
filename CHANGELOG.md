@@ -1,3 +1,7 @@
+## [1.26.3] - 2026-07-20
+- Integrated Frost Clan Command Center into the Admin Hub.
+- Added secure backend endpoints to view and manage Frost Clan shields and tomes.
+
 ## [1.26.2] - 2026-07-20
 - Added Forgot Password link and functionality to the auth modal.
 - Replaced native datalist with a custom autocomplete dropdown in Bear Trap popup.
