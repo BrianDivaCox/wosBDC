@@ -1,3 +1,6 @@
+## [1.26.13] - 2026-07-20
+- Fixed a bug where master accounts could not upload or edit their own profile pictures or their linked alt accounts' profile pictures due to strict database security rule type coercion.
+
 ## [1.26.12] - 2026-07-20
 - Fixed mobile responsiveness on the Staff page (added box-sizing to cards and stacked layout for small screens).
 
