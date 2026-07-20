@@ -614,17 +614,21 @@ tr:hover td {
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 .staff-card:hover {
   transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
 }
 .staff-card.rank-r5 {
   border: 2px solid #fbbf24;
-  box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(30, 41, 59, 0.8) 100%);
+  transform: scale(1.03);
 }
 .staff-card.rank-r5:hover {
-  box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
+  box-shadow: 0 0 35px rgba(251, 191, 36, 0.5);
+  transform: translateY(-5px) scale(1.05);
 }
 .staff-card.rank-r4 {
   border: 2px solid #94a3b8;

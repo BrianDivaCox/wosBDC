@@ -235,6 +235,7 @@ onValue(ref(db, 'config/admins'), (snap) => {
   window.systemAdmins = snap.val() || {};
   if (typeof window.renderStaffRoles === 'function') window.renderStaffRoles();
   if (typeof checkMaintenanceAccess === 'function') checkMaintenanceAccess();
+  if (document.querySelector('.staff-grid')) views.staff();
 });
 
 window.unlinkAltAccountPrompt = async (gid) => {
@@ -1737,68 +1738,56 @@ document.head.appendChild(style);
 // View renderers
 const views = {
   staff: async () => {
-    app.innerHTML = `
-      <div class="card fade-in">
-        <h2 style="color:var(--accent); text-align:center; margin-bottom:5px; font-size:28px;">👑 Alliance Leadership</h2>
-        <p style="text-align:center; color:var(--text-muted); margin-bottom:30px; font-size:14px;">Meet the dedicated team working hard to keep the alliance strong.</p>
-        
-        <div class="staff-grid">
-          
-          <!-- R5 Leader -->
-          <div class="staff-card rank-r5" onclick="this.classList.toggle('flipped')">
-            <img src="https://ui-avatars.com/api/?name=Leader&background=fbbf24&color=fff&size=128" alt="R5" class="staff-avatar">
-            <div class="staff-name">DivaCox</div>
-            <div class="staff-role">R5 Leader</div>
+    let r5Html = '';
+    let r4Html = '';
+
+    // Build the dynamic cards
+    Object.entries(window.systemAdmins).forEach(([gid, level]) => {
+      if (gid === "318843189") level = "R5"; 
+      if (level === true) level = "R5"; // legacy fix
+
+      const name = window.idToNameMap[gid] || 'Unknown Chief';
+      const isR5 = level === 'R5';
+      const color = isR5 ? 'fbbf24' : '94a3b8';
+      const title = isR5 ? 'R5 Leader' : 'R4 Officer';
+      
+      const cardHtml = `
+          <div class="staff-card rank-${level.toLowerCase()}" onclick="this.classList.toggle('flipped')">
+            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=128" alt="${level}" class="staff-avatar">
+            <div class="staff-name">${name}</div>
+            <div class="staff-role">${title}</div>
             
             <div class="staff-details">
               <div class="staff-details-row">
                 <span>In-Game ID:</span>
-                <span style="color:var(--text-main); font-weight:bold;">318843189 <button class="copy-id-btn" onclick="event.stopPropagation(); navigator.clipboard.writeText('318843189'); window.showToast('Copied ID!', 'success')">Copy</button></span>
-              </div>
-              <div class="staff-details-row">
-                <span>Timezone:</span>
-                <span style="color:var(--text-main);">EST</span>
-              </div>
-              <div class="staff-details-row">
-                <span>Specialty:</span>
-                <span style="color:var(--text-main);">Everything</span>
+                <span style="color:var(--text-main); font-weight:bold;">${gid} <button class="copy-id-btn" onclick="event.stopPropagation(); navigator.clipboard.writeText('${gid}'); window.showToast('Copied ID!', 'success')">Copy</button></span>
               </div>
             </div>
           </div>
+      `;
 
-          <!-- R4 Officers (Mock Data) -->
-          <div class="staff-card rank-r4" onclick="this.classList.toggle('flipped')">
-            <img src="https://ui-avatars.com/api/?name=Officer1&background=94a3b8&color=fff&size=128" alt="R4" class="staff-avatar">
-            <div class="staff-name">Officer One</div>
-            <div class="staff-role">R4 • Event Coordinator</div>
-            <div class="staff-details">
-              <div class="staff-details-row">
-                <span>Timezone:</span>
-                <span style="color:var(--text-main);">GMT</span>
-              </div>
-              <div class="staff-details-row">
-                <span>Specialty:</span>
-                <span style="color:var(--text-main);">Bear Trap</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="staff-card rank-r4" onclick="this.classList.toggle('flipped')">
-            <img src="https://ui-avatars.com/api/?name=Officer2&background=94a3b8&color=fff&size=128" alt="R4" class="staff-avatar">
-            <div class="staff-name">Officer Two</div>
-            <div class="staff-role">R4 • Recruitment</div>
-            <div class="staff-details">
-              <div class="staff-details-row">
-                <span>Timezone:</span>
-                <span style="color:var(--text-main);">PST</span>
-              </div>
-              <div class="staff-details-row">
-                <span>Specialty:</span>
-                <span style="color:var(--text-main);">Alliance Growth</span>
-              </div>
-            </div>
-          </div>
+      if (isR5) {
+        r5Html += cardHtml;
+      } else {
+        r4Html += cardHtml;
+      }
+    });
 
+    app.innerHTML = `
+      <div class="card fade-in" style="background: transparent; border: none; box-shadow: none;">
+        <div style="text-align:center; margin-bottom:40px;">
+          <h2 style="color:var(--text-main); font-size:36px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.4); margin-bottom:10px;">👑 Alliance Leadership</h2>
+          <p style="color:var(--text-muted); font-size:16px;">Meet the dedicated team keeping the alliance strong.</p>
+        </div>
+        
+        <div style="margin-bottom: 40px; display: flex; justify-content: center;">
+          <div style="max-width: 350px; width: 100%;">
+            ${r5Html}
+          </div>
+        </div>
+
+        <div class="staff-grid">
+          ${r4Html}
         </div>
       </div>
     `;

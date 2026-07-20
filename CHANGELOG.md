@@ -1,3 +1,7 @@
+## [1.26.10] - 2026-07-20
+- Staff page is now fully dynamic, pulling from the live admin list in Firebase.
+- Enhanced the Staff page UI with more "pop" (glowing borders, elevated R5 prominence).
+
 ## [1.26.9] - 2026-07-20
 - Added a new Staff page to showcase alliance leadership with dynamic glassmorphism trading cards.
 - Added Staff navigation link to the main menu.
