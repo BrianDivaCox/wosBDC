@@ -1,3 +1,6 @@
+## [1.26.4] - 2026-07-20
+- Restricted Frost Clan Command Center tab visibility exclusively to the root admin account.
+
 ## [1.26.3] - 2026-07-20
 - Integrated Frost Clan Command Center into the Admin Hub.
 - Added secure backend endpoints to view and manage Frost Clan shields and tomes.
