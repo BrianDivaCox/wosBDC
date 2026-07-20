@@ -30,6 +30,12 @@
         ".write": "auth != null && (root.child('users').child(auth.uid).child('gameId').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('0').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('1').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('2').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('3').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('4').val() + '' == $gameId || root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && (root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists()))"
       }
     },
+    "staffProfiles": {
+      ".read": true,
+      "$gameId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('gameId').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('0').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('1').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('2').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('3').val() + '' == $gameId || root.child('users').child(auth.uid).child('linkedGameIds').child('4').val() + '' == $gameId || root.child('admin_sessions').child(auth.uid).child('unlockedUntil').val() > now && (root.child('users').child(auth.uid).child('gameId').val() == 318843189 || root.child('config/admins').child(root.child('users').child(auth.uid).child('gameId').val() + '').exists()))"
+      }
+    },
     "fcmTokens": {
       "$token": {
         ".read": false,

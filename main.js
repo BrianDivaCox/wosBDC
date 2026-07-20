@@ -177,6 +177,7 @@ const authModalTitle = document.getElementById('authModalTitle');
 
 let isRegistering = false;
 export let avatarMap = {}; // Global cache for avatars
+export let staffProfilesMap = {}; // Global cache for staff profiles
 
 // Global mappings
 export let idToNameMap = {};
@@ -235,6 +236,18 @@ onValue(ref(db, 'config/admins'), (snap) => {
   window.systemAdmins = snap.val() || {};
   if (typeof window.renderStaffRoles === 'function') window.renderStaffRoles();
   if (typeof checkMaintenanceAccess === 'function') checkMaintenanceAccess();
+  if (document.querySelector('.staff-grid')) views.staff();
+});
+
+onValue(ref(db, 'avatars'), (snap) => {
+  avatarMap = snap.val() || {};
+  if (document.querySelector('.staff-grid')) views.staff();
+  if (document.querySelector('.r4-grid')) views.roster();
+});
+
+onValue(ref(db, 'staffProfiles'), (snap) => {
+  staffProfilesMap = snap.val() || {};
+  window.staffProfilesMap = staffProfilesMap; // Attach to window for global access
   if (document.querySelector('.staff-grid')) views.staff();
 });
 
@@ -1769,18 +1782,25 @@ const views = {
       const avatarSrc = window.avatarMap && window.avatarMap[gid] 
           ? window.avatarMap[gid] 
           : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=128`;
+          
+      const profile = window.staffProfilesMap && window.staffProfilesMap[gid] ? window.staffProfilesMap[gid] : null;
+      let deptText = profile && profile.department ? profile.department : title;
+      let tzHtml = profile && profile.timezone ? `<div class="staff-details-row"><span>Timezone:</span><span style="color:var(--text-main); font-weight:bold;">${window.escapeHTML(profile.timezone)}</span></div>` : '';
+      let bioHtml = profile && profile.bio ? `<div class="staff-bio">"${window.escapeHTML(profile.bio)}"</div>` : '';
       
       const cardHtml = `
           <div class="staff-card rank-${level.toLowerCase()}" onclick="this.classList.toggle('flipped')">
             <img src="${avatarSrc}" alt="${level}" class="staff-avatar">
             <div class="staff-name">${name}</div>
-            <div class="staff-role">${title}</div>
+            <div class="staff-role">${window.escapeHTML(deptText)}</div>
+            ${bioHtml}
             
             <div class="staff-details">
               <div class="staff-details-row">
                 <span>In-Game ID:</span>
                 <span style="color:var(--text-main); font-weight:bold;">${gid} <button class="copy-id-btn" onclick="event.stopPropagation(); navigator.clipboard.writeText('${gid}'); window.showToast('Copied ID!', 'success')">Copy</button></span>
               </div>
+              ${tzHtml}
             </div>
           </div>
       `;
@@ -3077,6 +3097,33 @@ const views = {
       const botStatusHtml = isEnrolled 
           ? `<div style="background:rgba(16,185,129,0.1); border:1px solid var(--success); color:var(--success); padding:8px 16px; border-radius:8px; font-weight:bold; font-size:14px; display:inline-flex; align-items:center; gap:8px;">&#x2705; Active Bot Link</div>`
           : `<div style="background:rgba(239,68,68,0.1); border:1px solid var(--danger); color:var(--danger); padding:8px 16px; border-radius:8px; font-weight:bold; font-size:14px; display:inline-flex; align-items:center; gap:8px;">&#x274C; No Bot Link</div>`;
+          
+      let staffProfileHtml = '';
+      if (accLevel) { // Only show to admins
+          let p = window.staffProfilesMap && window.staffProfilesMap[currentUser.gameId] ? window.staffProfilesMap[currentUser.gameId] : {department:'', timezone:'', bio:''};
+          staffProfileHtml = `
+          <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; margin-top:20px; margin-bottom:20px;">
+              <h3 style="margin-top:0; color:var(--text-main); font-size:18px; font-weight:bold;">🛡️ Staff Profile</h3>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">This information will be displayed publicly on the Staff page.</p>
+              
+              <div style="display:flex; flex-direction:column; gap:12px; background:var(--card-bg); padding:15px; border-radius:8px; border:1px solid var(--border);">
+                  <div>
+                      <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Department / Specialty</label>
+                      <input type="text" id="staffDeptInput" placeholder="e.g. Event Coordinator" value="${window.escapeHTML(p.department || '')}" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
+                  </div>
+                  <div>
+                      <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Timezone</label>
+                      <input type="text" id="staffTzInput" placeholder="e.g. EST" value="${window.escapeHTML(p.timezone || '')}" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box;">
+                  </div>
+                  <div>
+                      <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Bio / Tagline</label>
+                      <textarea id="staffBioInput" placeholder="A short fun quote..." style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); font-size:14px; box-sizing:border-box; resize:vertical; min-height:60px;">${window.escapeHTML(p.bio || '')}</textarea>
+                  </div>
+                  <button id="saveStaffProfileBtn" style="background:var(--accent); color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; margin-top:5px; transition:0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Save Staff Profile</button>
+              </div>
+          </div>
+          `;
+      }
     
     app.innerHTML = `
       <div id="accountHubView" class="card" style="max-width:600px; margin:0 auto; text-align:center;">
@@ -3132,6 +3179,7 @@ const views = {
           
           <input type="file" id="avatarUploadInput" accept="image/png, image/jpeg, image/webp" style="display:none;">
         </div>
+            ${staffProfileHtml}
             ${linkedHtml}
         
         <button id="logoutBtn" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold;">Sign Out</button>
@@ -3143,6 +3191,30 @@ const views = {
       window.showToast("Signed out successfully.", "success");
       views.home();
     });
+    
+    if (document.getElementById('saveStaffProfileBtn')) {
+        document.getElementById('saveStaffProfileBtn').addEventListener('click', async () => {
+            const dept = document.getElementById('staffDeptInput').value.trim();
+            const tz = document.getElementById('staffTzInput').value.trim();
+            const bio = document.getElementById('staffBioInput').value.trim();
+            const btn = document.getElementById('saveStaffProfileBtn');
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+            try {
+                await set(ref(db, \`staffProfiles/\${currentUser.gameId}\`), {
+                    department: dept,
+                    timezone: tz,
+                    bio: bio
+                });
+                window.showToast("Staff Profile saved successfully!", "success", true);
+            } catch (err) {
+                window.showToast("Error saving profile.", "error");
+                console.error(err);
+            }
+            btn.textContent = 'Save Staff Profile';
+            btn.disabled = false;
+        });
+    }
     
     
       const openLinkAltBtn = document.getElementById('openLinkAltBtn');

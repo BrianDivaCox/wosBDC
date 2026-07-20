@@ -1,3 +1,8 @@
+## [1.27.0] - 2026-07-20
+- Added Staff Profile editor in Account Settings for alliance leadership.
+- Staff page cards now display Department/Specialty, Timezone, and custom Bios.
+- Updated database rules to securely allow admins to edit their own staff profiles.
+
 ## [1.26.15] - 2026-07-20
 - Added a hardcoded placeholder on the Staff page for Afu_D until she formally registers her account.
 

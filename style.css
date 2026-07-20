@@ -694,6 +694,16 @@ tr:hover td {
 }
 .staff-card.rank-r5 .staff-role {
   color: #fbbf24;
+  background: rgba(251,191,36,0.15);
+}
+.staff-bio {
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+  margin-top: 10px;
+  line-height: 1.4;
+  padding: 0 10px;
+  opacity: 0.9;
 }
 .staff-details {
   display: flex;
