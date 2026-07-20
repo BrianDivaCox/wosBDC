@@ -1742,7 +1742,14 @@ const views = {
     let r4Html = '';
 
     // Build the dynamic cards
-    Object.entries(window.systemAdmins).forEach(([gid, level]) => {
+    const allAdmins = { ...window.systemAdmins };
+    
+    // Ensure root admin is always in the list
+    if (!allAdmins["318843189"]) {
+      allAdmins["318843189"] = "R5";
+    }
+
+    Object.entries(allAdmins).forEach(([gid, level]) => {
       if (gid === "318843189") level = "R5"; 
       if (level === true) level = "R5"; // legacy fix
 

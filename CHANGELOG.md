@@ -1,3 +1,6 @@
+## [1.26.11] - 2026-07-20
+- Fixed an issue where the root R5 admin was missing from the Staff page because they are hardcoded and not saved in the Firebase database list.
+
 ## [1.26.10] - 2026-07-20
 - Staff page is now fully dynamic, pulling from the live admin list in Firebase.
 - Enhanced the Staff page UI with more "pop" (glowing borders, elevated R5 prominence).
