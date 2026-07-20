@@ -1047,6 +1047,8 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   if (isRegistering) {
     authModalTitle.textContent = 'Create Account';
     authGameIdWrapper.style.display = 'flex';
+    const authForgotPwWrapper = document.getElementById('authForgotPwWrapper');
+    if (authForgotPwWrapper) authForgotPwWrapper.style.display = 'none';
     const authDateWrapper = document.getElementById('authDateWrapper');
     if (authDateWrapper) authDateWrapper.style.display = 'block';
     authGameId.value = '';
@@ -1057,6 +1059,8 @@ if(authToggleBtn) authToggleBtn.addEventListener('click', (e) => {
   } else {
     authModalTitle.textContent = 'Sign In';
     authGameIdWrapper.style.display = 'none';
+    const authForgotPwWrapper = document.getElementById('authForgotPwWrapper');
+    if (authForgotPwWrapper) authForgotPwWrapper.style.display = 'block';
     const authDateWrapper = document.getElementById('authDateWrapper');
     if (authDateWrapper) authDateWrapper.style.display = 'none';
     if(authChiefConfirm) authChiefConfirm.style.display = 'none';
@@ -1154,7 +1158,33 @@ if(showPasswordBtn) showPasswordBtn.addEventListener('click', (e) => {
   }
 });
 
+const authForgotPwBtn = document.getElementById('authForgotPwBtn');
+if (authForgotPwBtn) {
+  authForgotPwBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = authEmail.value.trim();
+    if (!email) {
+      authErrorMsg.textContent = 'Please enter your email address first.';
+      authErrorMsg.style.color = 'var(--danger)';
+      authErrorMsg.style.display = 'block';
+      return;
+    }
+    firebase.auth().sendPasswordResetEmail(email)
+      .then(() => {
+        authErrorMsg.textContent = 'Password reset email sent! Check your inbox.';
+        authErrorMsg.style.color = 'var(--success)';
+        authErrorMsg.style.display = 'block';
+      })
+      .catch((error) => {
+        authErrorMsg.textContent = error.message;
+        authErrorMsg.style.color = 'var(--danger)';
+        authErrorMsg.style.display = 'block';
+      });
+  });
+}
+
 if(authSubmitBtn) authSubmitBtn.addEventListener('click', async () => {
+  authErrorMsg.style.color = 'var(--danger)'; // Reset color to red for login errors
   const email = authEmail.value.trim().toLowerCase();
   const password = authPassword.value;
   const gameId = authGameId.value.trim();

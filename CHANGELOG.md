@@ -1,3 +1,8 @@
+## [1.26.2] - 2026-07-20
+- Added Forgot Password link and functionality to the auth modal.
+- Replaced native datalist with a custom autocomplete dropdown in Bear Trap popup.
+- Adjusted UI flex scaling for the Bear Trap popup.
+
 # WOS Community Portal - Changelog
 
 ## v1.26.0 - 2026-07-19
