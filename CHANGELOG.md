@@ -1,3 +1,6 @@
+## [1.26.15] - 2026-07-20
+- Added a hardcoded placeholder on the Staff page for Afu_D until she formally registers her account.
+
 ## [1.26.14] - 2026-07-20
 - Fixed an issue where the Staff page displayed default fallback avatars instead of the custom avatars uploaded by the alliance leadership.
 

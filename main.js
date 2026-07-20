@@ -1748,12 +1748,20 @@ const views = {
     if (!allAdmins["318843189"]) {
       allAdmins["318843189"] = "R5";
     }
+    
+    // Add placeholder for Afu_D until she registers
+    if (!allAdmins["338675830"]) {
+      allAdmins["338675830"] = "R4";
+    }
 
     Object.entries(allAdmins).forEach(([gid, level]) => {
       if (gid === "318843189") level = "R5"; 
       if (level === true) level = "R5"; // legacy fix
 
-      const name = window.idToNameMap[gid] || 'Unknown Chief';
+      let name = window.idToNameMap[gid] || 'Unknown Chief';
+      if (gid === "338675830" && name === 'Unknown Chief') {
+        name = 'Afu_D';
+      }
       const isR5 = level === 'R5';
       const color = isR5 ? 'fbbf24' : '94a3b8';
       const title = isR5 ? 'R5 Leader' : 'R4 Officer';
