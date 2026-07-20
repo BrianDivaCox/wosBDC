@@ -345,8 +345,15 @@ window.isAdminUser = (user) => {
 
 window.isOTPUnlocked = async () => {
     if (!currentUser || !auth || !auth.currentUser) return false;
-    // Check if the user signed in using Google
-    return auth.currentUser.providerData.some(p => p.providerId === 'google.com');
+    try {
+        // We must check the token claims to see how they signed in for THIS specific session
+        // providerData just lists all linked accounts, which could allow a weak password to bypass security
+        const idTokenResult = await auth.currentUser.getIdTokenResult();
+        return idTokenResult.claims.firebase.sign_in_provider === 'google.com';
+    } catch (e) {
+        console.warn("Failed to get sign-in provider:", e);
+        return false;
+    }
 };
 
 window.renderStaffRoles = () => {
