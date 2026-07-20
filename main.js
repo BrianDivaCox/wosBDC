@@ -344,15 +344,9 @@ window.isAdminUser = (user) => {
 };
 
 window.isOTPUnlocked = async () => {
-    if (!currentUser) return false;
-    try {
-        const sessionSnap = await get(ref(db, `admin_sessions/${currentUser.uid}/unlockedUntil`));
-        if (sessionSnap.exists()) {
-            const unlockedUntil = sessionSnap.val();
-            if (Date.now() < unlockedUntil) return true;
-        }
-    } catch(e) { console.error(e); }
-    return false;
+    if (!currentUser || !auth || !auth.currentUser) return false;
+    // Check if the user signed in using Google
+    return auth.currentUser.providerData.some(p => p.providerId === 'google.com');
 };
 
 window.renderStaffRoles = () => {
@@ -1739,84 +1733,13 @@ const views = {
       app.innerHTML = `
         <div id="adminHubView" style="padding:20px; max-width:400px; margin:40px auto; background:var(--card-bg); border-radius:12px; border:1px solid var(--border); text-align:center;">
           <h1 style="color:var(--text-main); margin-bottom:10px; font-size:24px;">🔒 Security Check</h1>
-          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px; line-height:1.5;">To access the Admin Panel, you must unlock your session. A passcode will be sent to your registered email.</p>
-          
-          <button id="otpSendBtn" class="btn" style="width:100%; margin-bottom:15px;">📧 Send Code to Email</button>
-          
-          <div id="otpInputWrapper" style="display:none;">
-            <input type="text" id="otpCodeInput" placeholder="Enter 6-digit code" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-main); color:var(--text-main); text-align:center; font-size:20px; letter-spacing:5px; margin-bottom:15px; box-sizing:border-box;" maxlength="6">
-            <button id="otpVerifyBtn" class="btn btn-primary" style="width:100%;">Verify & Unlock</button>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px; line-height:1.5;">To access the Admin Panel, you must be signed in using a <b>Google Account</b> for enhanced security.</p>
+          <div style="background:rgba(231, 76, 60, 0.1); border:1px solid rgba(231, 76, 60, 0.3); border-radius:8px; padding:15px; margin-bottom:20px;">
+            <p style="color:var(--danger); font-size:13px; margin:0;">It looks like you signed in using Email & Password. Please log out and sign back in using the <b>"Sign in with Google"</b> button on the main page.</p>
           </div>
-          
-          <p id="otpStatus" style="font-size:13px; margin-top:15px;"></p>
+          <button onclick="window.location.reload()" class="btn" style="width:100%;">Go Back</button>
         </div>
       `;
-      
-      document.getElementById('otpSendBtn').addEventListener('click', async (e) => {
-          const btn = e.target;
-          const status = document.getElementById('otpStatus');
-          btn.disabled = true;
-          btn.textContent = 'Sending...';
-          try {
-              const token = await getAuthToken();
-              const res = await fetch(`${API_BASE_URL}`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify({ api: 'request_otp', token: token })
-              }).then(r => r.json());
-              if (res.success) {
-                  status.textContent = 'Code sent! Check your email inbox & spam folder.';
-                  status.style.color = 'var(--success)';
-                  btn.style.display = 'none';
-                  document.getElementById('otpInputWrapper').style.display = 'block';
-              } else {
-                  status.textContent = 'Error: ' + res.message;
-                  status.style.color = 'var(--danger)';
-                  btn.disabled = false;
-                  btn.textContent = '📧 Send Code to Email';
-              }
-          } catch(err) {
-              status.textContent = 'Network Error: ' + err.message;
-              status.style.color = 'var(--danger)';
-              btn.disabled = false;
-              btn.textContent = '📧 Send Code to Email';
-          }
-      });
-      
-      document.getElementById('otpVerifyBtn').addEventListener('click', async (e) => {
-          const btn = e.target;
-          const code = document.getElementById('otpCodeInput').value.trim();
-          const status = document.getElementById('otpStatus');
-          if (!code) return;
-          
-          btn.disabled = true;
-          btn.textContent = 'Verifying...';
-          try {
-              const token = await getAuthToken();
-              const res = await fetch(`${API_BASE_URL}`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify({ api: 'verify_otp', code: code, token: token })
-              }).then(r => r.json());
-              if (res.success) {
-                  status.textContent = 'Unlocked!';
-                  status.style.color = 'var(--success)';
-                  if (window.showToast) window.showToast("Admin Session Unlocked!", "success");
-                  views.admin(); // Re-run to load actual panel
-              } else {
-                  status.textContent = 'Error: ' + res.message;
-                  status.style.color = 'var(--danger)';
-                  btn.disabled = false;
-                  btn.textContent = 'Verify & Unlock';
-              }
-          } catch(err) {
-              status.textContent = 'Network Error: ' + err.message;
-              status.style.color = 'var(--danger)';
-              btn.disabled = false;
-              btn.textContent = 'Verify & Unlock';
-          }
-      });
-      
       return;
     }
     // --- END OTP LOCK SCREEN ---
