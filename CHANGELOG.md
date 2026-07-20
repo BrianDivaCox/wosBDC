@@ -1,3 +1,6 @@
+## [1.26.8] - 2026-07-20
+- Added a dedicated Sign Out button to the user account sidebar menu.
+
 ## [1.26.7] - 2026-07-20
 - Refactored Frost Clan Command Center to fetch all alliance activity tracking directly from the Frost Clan sheet instead of cross-referencing the Activity sheet.
 

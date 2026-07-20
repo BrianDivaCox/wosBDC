@@ -429,6 +429,7 @@ window.revokeAdmin = async (gameId) => {
 };
 
 const adminSidebarBtn = document.getElementById('adminSidebarBtn');
+const signOutSidebarBtn = document.getElementById('signOutSidebarBtn');
 
 
 // --- Maintenance Mode State ---
@@ -983,6 +984,7 @@ listenToAuth((user) => {
     } else if (adminSidebarBtn) {
       adminSidebarBtn.style.display = 'none';
     }
+    if(signOutSidebarBtn) signOutSidebarBtn.style.display = 'block';
     
     if (navIndicator) {
       navIndicator.innerHTML = `👤 ${name}`;
@@ -994,6 +996,7 @@ listenToAuth((user) => {
   } else {
     if(authSidebarBtn) authSidebarBtn.innerHTML = `👤 Sign In / Register`;
     if(adminSidebarBtn) adminSidebarBtn.style.display = 'none';
+    if(signOutSidebarBtn) signOutSidebarBtn.style.display = 'none';
     if (navIndicator) navIndicator.style.display = 'none';
     
     if (app.querySelector('#accountHubView') || app.querySelector('#adminHubView')) views.home(); // Kick to home
@@ -1035,6 +1038,13 @@ if(adminSidebarBtn) adminSidebarBtn.addEventListener('click', (e) => {
   settingsSidebar.classList.remove('open');
   sidebarOverlay.classList.remove('active');
   views.admin();
+});
+
+if(signOutSidebarBtn) signOutSidebarBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  settingsSidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('active');
+  logoutUser();
 });
 
 if(closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
