@@ -2,7 +2,7 @@ import './style.css'
 import { initPresence, listenToAuth, loginUser, logoutUser, registerUser, uploadAvatar, deleteAvatar, db, auth, requestPushPermission, listenForForegroundMessages, linkAltAccount, unlinkAltAccount, loginWithGoogle } from './src/firebase.js'
 import { ref, onValue, get, set, remove } from 'firebase/database'
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbz-Lmm2cumcJlF0QL9TIq-4Gvk-ZmCw_U6ShUp2hgUoh47ZCyMtlvaqPux2VpmDYPo/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyti1VGP5ZcniZyA7k6mFIzFcVVrZvRcqADM3m2wl9H2nYHBYPwrPnOQt8pIQzh1JU/exec';
 const VERIFY_PROXY_URL = 'https://wos-vercel-proxy.vercel.app/api/verify'; // Dedicated proxy for Century Games ID verification (bypasses Google quota limits)
 
 // Get a fresh Firebase ID token for the current user (replaces hardcoded APP_SECRET)
@@ -1759,7 +1759,11 @@ const views = {
           btn.textContent = 'Sending...';
           try {
               const token = await getAuthToken();
-              const res = await fetch(`${API_BASE_URL}?api=request_otp&token=${encodeURIComponent(token)}`).then(r => r.json());
+              const res = await fetch(`${API_BASE_URL}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify({ api: 'request_otp', token: token })
+              }).then(r => r.json());
               if (res.success) {
                   status.textContent = 'Code sent! Check your email inbox & spam folder.';
                   status.style.color = 'var(--success)';
@@ -1789,7 +1793,11 @@ const views = {
           btn.textContent = 'Verifying...';
           try {
               const token = await getAuthToken();
-              const res = await fetch(`${API_BASE_URL}?api=verify_otp&code=${encodeURIComponent(code)}&token=${encodeURIComponent(token)}`).then(r => r.json());
+              const res = await fetch(`${API_BASE_URL}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  body: JSON.stringify({ api: 'verify_otp', code: code, token: token })
+              }).then(r => r.json());
               if (res.success) {
                   status.textContent = 'Unlocked!';
                   status.style.color = 'var(--success)';
