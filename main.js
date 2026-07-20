@@ -1736,6 +1736,73 @@ document.head.appendChild(style);
 
 // View renderers
 const views = {
+  staff: async () => {
+    app.innerHTML = `
+      <div class="card fade-in">
+        <h2 style="color:var(--accent); text-align:center; margin-bottom:5px; font-size:28px;">👑 Alliance Leadership</h2>
+        <p style="text-align:center; color:var(--text-muted); margin-bottom:30px; font-size:14px;">Meet the dedicated team working hard to keep the alliance strong.</p>
+        
+        <div class="staff-grid">
+          
+          <!-- R5 Leader -->
+          <div class="staff-card rank-r5" onclick="this.classList.toggle('flipped')">
+            <img src="https://ui-avatars.com/api/?name=Leader&background=fbbf24&color=fff&size=128" alt="R5" class="staff-avatar">
+            <div class="staff-name">DivaCox</div>
+            <div class="staff-role">R5 Leader</div>
+            
+            <div class="staff-details">
+              <div class="staff-details-row">
+                <span>In-Game ID:</span>
+                <span style="color:var(--text-main); font-weight:bold;">318843189 <button class="copy-id-btn" onclick="event.stopPropagation(); navigator.clipboard.writeText('318843189'); window.showToast('Copied ID!', 'success')">Copy</button></span>
+              </div>
+              <div class="staff-details-row">
+                <span>Timezone:</span>
+                <span style="color:var(--text-main);">EST</span>
+              </div>
+              <div class="staff-details-row">
+                <span>Specialty:</span>
+                <span style="color:var(--text-main);">Everything</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- R4 Officers (Mock Data) -->
+          <div class="staff-card rank-r4" onclick="this.classList.toggle('flipped')">
+            <img src="https://ui-avatars.com/api/?name=Officer1&background=94a3b8&color=fff&size=128" alt="R4" class="staff-avatar">
+            <div class="staff-name">Officer One</div>
+            <div class="staff-role">R4 • Event Coordinator</div>
+            <div class="staff-details">
+              <div class="staff-details-row">
+                <span>Timezone:</span>
+                <span style="color:var(--text-main);">GMT</span>
+              </div>
+              <div class="staff-details-row">
+                <span>Specialty:</span>
+                <span style="color:var(--text-main);">Bear Trap</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="staff-card rank-r4" onclick="this.classList.toggle('flipped')">
+            <img src="https://ui-avatars.com/api/?name=Officer2&background=94a3b8&color=fff&size=128" alt="R4" class="staff-avatar">
+            <div class="staff-name">Officer Two</div>
+            <div class="staff-role">R4 • Recruitment</div>
+            <div class="staff-details">
+              <div class="staff-details-row">
+                <span>Timezone:</span>
+                <span style="color:var(--text-main);">PST</span>
+              </div>
+              <div class="staff-details-row">
+                <span>Specialty:</span>
+                <span style="color:var(--text-main);">Alliance Growth</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  },
   admin: async () => {
     window.refreshAdminUsers = async () => {
         if (window.showToast) window.showToast("Refreshing user database...", "info");

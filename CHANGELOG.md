@@ -1,3 +1,7 @@
+## [1.26.9] - 2026-07-20
+- Added a new Staff page to showcase alliance leadership with dynamic glassmorphism trading cards.
+- Added Staff navigation link to the main menu.
+
 ## [1.26.8] - 2026-07-20
 - Added a dedicated Sign Out button to the user account sidebar menu.
 
