@@ -1,3 +1,7 @@
+## [1.26.5] - 2026-07-20
+- Fixed an issue where the Frost Clan dashboard failed to load due to a typo in the Google Sheet name referenced by the backend API.
+- Updated frontend API_BASE_URL to point to the patched Apps Script deployment.
+
 ## [1.26.4] - 2026-07-20
 - Restricted Frost Clan Command Center tab visibility exclusively to the root admin account.
 
