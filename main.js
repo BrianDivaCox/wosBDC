@@ -2221,7 +2221,7 @@ const views = {
           const res = await fetch(`${API_BASE_URL}?api=getFrostData&token=${encodeURIComponent(adminToken)}`).then(r => r.json());
           
           if (res.error || !res.success) {
-            container.innerHTML = `<div style="color:var(--danger); margin:40px 0;">❌ Error loading data: ${res.error || 'Unknown Error'}</div>`;
+            container.innerHTML = `<div style="color:var(--danger); margin:40px 0;">❌ Error loading data: ${res.error || res.message || 'Unknown Error'}</div>`;
             return;
           }
           
