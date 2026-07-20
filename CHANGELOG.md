@@ -1,3 +1,6 @@
+## [1.26.7] - 2026-07-20
+- Refactored Frost Clan Command Center to fetch all alliance activity tracking directly from the Frost Clan sheet instead of cross-referencing the Activity sheet.
+
 ## [1.26.5] - 2026-07-20
 - Fixed an issue where the Frost Clan dashboard failed to load due to a typo in the Google Sheet name referenced by the backend API.
 - Updated frontend API_BASE_URL to point to the patched Apps Script deployment.
