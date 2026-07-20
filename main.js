@@ -3201,7 +3201,7 @@ const views = {
             btn.textContent = 'Saving...';
             btn.disabled = true;
             try {
-                await set(ref(db, \`staffProfiles/\${currentUser.gameId}\`), {
+                await set(ref(db, `staffProfiles/${currentUser.gameId}`), {
                     department: dept,
                     timezone: tz,
                     bio: bio

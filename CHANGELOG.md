@@ -1,3 +1,6 @@
+## [1.27.1] - 2026-07-20
+- Fixed a syntax error that was causing the site build to fail on Vercel (which prevented the version badge and changelog from updating).
+
 ## [1.27.0] - 2026-07-20
 - Added Staff Profile editor in Account Settings for alliance leadership.
 - Staff page cards now display Department/Specialty, Timezone, and custom Bios.
