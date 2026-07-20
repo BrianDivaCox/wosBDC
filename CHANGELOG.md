@@ -1,3 +1,6 @@
+## [1.26.12] - 2026-07-20
+- Fixed mobile responsiveness on the Staff page (added box-sizing to cards and stacked layout for small screens).
+
 ## [1.26.11] - 2026-07-20
 - Fixed an issue where the root R5 admin was missing from the Staff page because they are hardcoded and not saved in the Firebase database list.
 

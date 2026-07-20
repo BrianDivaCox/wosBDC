@@ -1783,8 +1783,8 @@ const views = {
     app.innerHTML = `
       <div class="card fade-in" style="background: transparent; border: none; box-shadow: none;">
         <div style="text-align:center; margin-bottom:40px;">
-          <h2 style="color:var(--text-main); font-size:36px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.4); margin-bottom:10px;">👑 Alliance Leadership</h2>
-          <p style="color:var(--text-muted); font-size:16px;">Meet the dedicated team keeping the alliance strong.</p>
+          <h2 class="staff-title">👑 Alliance Leadership</h2>
+          <p class="staff-subtitle">Meet the dedicated team keeping the alliance strong.</p>
         </div>
         
         <div style="margin-bottom: 40px; display: flex; justify-content: center;">

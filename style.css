@@ -596,6 +596,24 @@ tr:hover td {
 }
 
 /* --- Staff Page Styles --- */
+.staff-title {
+  color: var(--text-main);
+  font-size: 36px;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+  margin-bottom: 10px;
+}
+.staff-subtitle {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+@media (max-width: 600px) {
+  .staff-title {
+    font-size: 26px;
+  }
+  .staff-subtitle {
+    font-size: 14px;
+  }
+}
 .staff-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -603,6 +621,7 @@ tr:hover td {
   margin-top: 20px;
 }
 .staff-card {
+  box-sizing: border-box;
   background: rgba(30, 41, 59, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -615,6 +634,16 @@ tr:hover td {
   overflow: hidden;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  width: 100%;
+}
+@media (max-width: 600px) {
+  .staff-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .staff-card {
+    padding: 15px;
+  }
 }
 .staff-card:hover {
   transform: translateY(-5px) scale(1.02);
