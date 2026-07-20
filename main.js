@@ -1758,9 +1758,13 @@ const views = {
       const color = isR5 ? 'fbbf24' : '94a3b8';
       const title = isR5 ? 'R5 Leader' : 'R4 Officer';
       
+      const avatarSrc = window.avatarMap && window.avatarMap[gid] 
+          ? window.avatarMap[gid] 
+          : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=128`;
+      
       const cardHtml = `
           <div class="staff-card rank-${level.toLowerCase()}" onclick="this.classList.toggle('flipped')">
-            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=128" alt="${level}" class="staff-avatar">
+            <img src="${avatarSrc}" alt="${level}" class="staff-avatar">
             <div class="staff-name">${name}</div>
             <div class="staff-role">${title}</div>
             

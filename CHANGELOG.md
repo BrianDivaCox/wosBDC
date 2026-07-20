@@ -1,3 +1,6 @@
+## [1.26.14] - 2026-07-20
+- Fixed an issue where the Staff page displayed default fallback avatars instead of the custom avatars uploaded by the alliance leadership.
+
 ## [1.26.13] - 2026-07-20
 - Fixed a bug where master accounts could not upload or edit their own profile pictures or their linked alt accounts' profile pictures due to strict database security rule type coercion.
 
